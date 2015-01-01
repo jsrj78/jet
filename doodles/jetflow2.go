@@ -71,7 +71,7 @@ func (g *Gadget) runner(self Circuitry) {
 
 	self.Setup()
 	for x := range g.feed {
-		*x.pin = Inlet{x.msg}
+		*x.pin = x.msg
 		if x.pin == g.inlets[0] {
 			self.Trigger()
 		}
@@ -111,11 +111,9 @@ type Incoming struct {
 	pin *Inlet
 }
 
-type Inlet struct {
-	Message
-}
+type Inlet Message
 
-func (i *Inlet) Set(m Message) {
+func SetInlet(i *Inlet, m Message) {
 	owners[i].feed <- Incoming{m, i}
 }
 
@@ -127,7 +125,7 @@ func (o *Outlet) IsActive() bool {
 
 func (o *Outlet) Send(m Message) {
 	for _, x := range *o {
-		x.Set(m)
+		SetInlet(x, m)
 	}
 }
 
