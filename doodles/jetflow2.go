@@ -32,7 +32,9 @@ type Gadget struct {
 	done    chan interface{}
 }
 
-var inlets = make(map[*Inlet]*Gadget)
+// map inlets back to their owning gadgets for sending
+// TODO will need a mutex unless this map becomes per-circuit
+var owners = make(map[*Inlet]*Gadget)
 
 func (g *Gadget) Launch(self Circuitry) {
 	// use reflection to create lists of all the inlets and outlets
@@ -44,11 +46,12 @@ func (g *Gadget) Launch(self Circuitry) {
 		fmt.Println("fp", i, fTyp.Name, fTyp.Type)
 		switch fVal.Type().String() {
 		case "main.Inlet":
-			iPtr := fVal.Addr().Interface().(*Inlet)
-			g.inlets = append(g.inlets, iPtr)
-			inlets[iPtr] = g
+			in := fVal.Addr().Interface().(*Inlet)
+			g.inlets = append(g.inlets, in)
+			owners[in] = g
 		case "main.Outlet":
-			g.outlets = append(g.outlets, fVal.Addr().Interface().(*Outlet))
+			out := fVal.Addr().Interface().(*Outlet)
+			g.outlets = append(g.outlets, out)
 		}
 	}
 
@@ -59,6 +62,13 @@ func (g *Gadget) Launch(self Circuitry) {
 }
 
 func (g *Gadget) runner(self Circuitry) {
+	defer func() {
+		for _, x := range g.inlets {
+			delete(owners, x)
+		}
+		close(g.done)
+	}()
+
 	self.Setup()
 	for x := range g.feed {
 		*x.pin = Inlet{x.msg}
@@ -67,7 +77,6 @@ func (g *Gadget) runner(self Circuitry) {
 		}
 	}
 	self.Cleanup()
-	close(g.done)
 }
 
 func (g *Gadget) Terminate() {
@@ -107,7 +116,7 @@ type Inlet struct {
 }
 
 func (i *Inlet) Set(m Message) {
-	inlets[i].feed <- Incoming{m, i}
+	owners[i].feed <- Incoming{m, i}
 }
 
 type Outlet []*Inlet
@@ -155,7 +164,7 @@ func (g *PrintG) Trigger() {
 }
 
 func main() {
-	fmt.Println("jethub 0.2.1")
+	fmt.Println("jetflow 0.2.2")
 	g1 := new(MetroG)
 	g1.Launch(g1)
 	g2 := new(PrintG)
@@ -169,5 +178,5 @@ func main() {
 
 	g1.Terminate()
 	g2.Terminate()
-	fmt.Println("exit")
+	fmt.Println("exit", len(owners))
 }
