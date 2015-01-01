@@ -129,12 +129,26 @@ func (o *Outlet) Send(m Message) {
 	}
 }
 
-func Connect(from Circuitry, fpin int, to Circuitry, tpin int) {
-	//*f.outlets[fpin] = append(*f.outlets[fpin], to.inlets[tpin])
+func (o *Outlet) indexOf(i *Inlet) int {
+	for n, x := range *o {
+		if x == i {
+			return n
+		}
+	}
+	return -1
 }
 
-func Disconnect(from *Gadget, fpin int, to *Gadget, tpin int) {
-	// ...
+func (o *Outlet) Connect(i *Inlet) {
+	if o.indexOf(i) >= 0 {
+		panic(fmt.Errorf("already connected"))
+	}
+	*o = append(*o, i)
+}
+
+func (o *Outlet) Disconnect(i *Inlet) {
+	if n := o.indexOf(i); n >= 0 {
+		*o = append((*o)[:n], (*o)[n+1:]...)
+	}
 }
 
 type MetroG struct {
@@ -169,10 +183,7 @@ func main() {
 	g2.Launch(g2)
 	fmt.Println("g1#out", g1.NumOutlets(), "g2#in", g2.NumInlets())
 
-	//Connect(g1, 0, g2, 0)
-	//*f.outlets[fpin] = append(*f.outlets[fpin], to.inlets[tpin])
-	// FIXME couldn't get Connect to work yet, so wiring is hard-coded for now
-	*g1.outlets[0] = append(*g1.outlets[0], g2.inlets[0])
+	g1.Out.Connect(&g2.In)
 
 	g1.Terminate()
 	g2.Terminate()
