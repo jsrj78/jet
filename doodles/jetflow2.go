@@ -22,6 +22,12 @@ type Circuitry interface {
 // A circuit is a collection of gadgets.
 type Circuit struct {
 	Gadget
+	children map[string]*Gadget
+}
+
+// Add a gadget to the circuit.
+func (c *Circuit) Add(name string, g *Gadget) {
+	c.children[name] = g
 }
 
 // NewCircuit creates a new empty circuit.
@@ -187,14 +193,14 @@ func (o *Outlet) Disconnect(i *Inlet) {
 
 // sample gadgets for a trivial pipeline: MetroG -> RepeatG -> PrintG
 
-// MetroG is a gadget which sends out periodic messages (current code is stub).
+// A MetroG gadget sends out periodic messages.
 type MetroG struct {
 	Gadget
 	Out Outlet
 }
 
-// Setup is called just before a gadget starts normal processing.
 func (g *MetroG) Setup() {
+	// TODO this is test code, needs a real implementation
 	fmt.Println("MetroG setup")
 	time.Sleep(time.Second)
 	g.Out.Send("hi!")
@@ -204,7 +210,7 @@ func (g *MetroG) Setup() {
 	g.Out.Send("ho!")
 }
 
-// RepeatG is a gadget which repeats each incoming message Num times.
+// A RepeatG gadget repeats each incoming message Num times.
 type RepeatG struct {
 	Gadget
 	In  Inlet
@@ -212,20 +218,18 @@ type RepeatG struct {
 	Out Outlet
 }
 
-// Trigger gets called when a message arrives at inlet zero.
 func (g *RepeatG) Trigger() {
 	for i := 0; i < g.Num.(int); i++ {
 		g.Out.Send(g.In)
 	}
 }
 
-// PrintG is a gadget which prints everythign received on its main inlet.
+// A PrintG gadget prints everything received on its main inlet.
 type PrintG struct {
 	Gadget
 	In Inlet
 }
 
-// Trigger gets called when a message arrives at inlet zero.
 func (g *PrintG) Trigger() {
 	fmt.Println(g.In)
 }
