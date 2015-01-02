@@ -28,6 +28,7 @@ type Circuit struct {
 // Add a gadget to the circuit.
 func (c *Circuit) Add(name string, g *Gadget) {
 	c.children[name] = g
+	g.owner = c
 }
 
 // NewCircuit creates a new empty circuit.
@@ -44,12 +45,13 @@ type Gadget struct {
 	inlets  []*Inlet
 	outlets []*Outlet
 	feed    chan incoming
-	done    chan interface{}
+	done    chan struct{}
+	owner   *Circuit
 }
 
 // map inlets back to their owning gadgets for sending
 // TODO will need a mutex unless this map becomes per-circuit
-var owners = make(map[*Inlet]*Gadget)
+var inletMap = make(map[*Inlet]*Gadget)
 
 // Launch must be called once to intialise a gadget.
 func (g *Gadget) Launch(self Circuitry) {
@@ -64,7 +66,7 @@ func (g *Gadget) Launch(self Circuitry) {
 		case "main.Inlet":
 			in := fVal.Addr().Interface().(*Inlet)
 			g.inlets = append(g.inlets, in)
-			owners[in] = g
+			inletMap[in] = g
 		case "main.Outlet":
 			out := fVal.Addr().Interface().(*Outlet)
 			g.outlets = append(g.outlets, out)
@@ -72,7 +74,7 @@ func (g *Gadget) Launch(self Circuitry) {
 	}
 
 	g.feed = make(chan incoming)
-	g.done = make(chan interface{})
+	g.done = make(chan struct{})
 
 	go g.runner(self)
 }
@@ -80,7 +82,7 @@ func (g *Gadget) Launch(self Circuitry) {
 func (g *Gadget) runner(self Circuitry) {
 	defer func() {
 		for _, x := range g.inlets {
-			delete(owners, x)
+			delete(inletMap, x)
 		}
 		close(g.done)
 	}()
@@ -149,15 +151,15 @@ type Inlet Message
 
 // SetInlet will store a message into a specified inlet.
 func SetInlet(i *Inlet, m Message) {
-	owners[i].feed <- incoming{m, i}
+	inletMap[i].feed <- incoming{m, i}
 }
 
 // An Outlet can be connected to zero or more inlets.
 type Outlet []*Inlet
 
-// IsActive returns true if the outlet is connected to at least one inlet.
-func (o *Outlet) IsActive() bool {
-	return len(*o) > 0
+// FanOut returns the number of inlets currently connected.
+func (o *Outlet) FanOut() int {
+	return len(*o)
 }
 
 // Send will send out a message to all the attached inlets.
@@ -251,5 +253,5 @@ func main() {
 	g1.Terminate()
 	g2.Terminate()
 	g3.Terminate()
-	fmt.Println("exit", len(owners))
+	fmt.Println("exit", len(inletMap))
 }
