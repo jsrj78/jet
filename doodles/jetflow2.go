@@ -30,11 +30,31 @@ type Circuit struct {
 }
 
 // Add a new gadget to the circuit.
-func (c *Circuit) Add(name, typ string) Circuitry {
-	cy := Registry[typ]()
-	c.gadgets[name] = cy.install(cy, name, c)
-	// TODO probably no need to return this once circuit setup works
-	return cy
+func (c *Circuit) Add(name, typ string) {
+	g := Registry[typ]()
+	c.gadgets[name] = g.install(g, name, c)
+}
+
+// Add a new wire connection to a circuit.
+func (c *Circuit) Connect(fname string, fpin int, tname string, tpin int) {
+	fg := c.gadgets[fname]
+	tg := c.gadgets[tname]
+	fg.Outlet(fpin).Connect(tg.Inlet(tpin))
+}
+
+// Set a pin to a specified value.
+func (c *Circuit) SetPin(name string, pin int, m Message) {
+	g := c.gadgets[name]
+	*g.Inlet(pin) = m
+}
+
+// Terminate all the gadgets in the circuit.
+func (c *Circuit) Terminate() {
+	for _, g := range c.gadgets {
+		g.Terminate()
+	}
+	//close(c.feed)
+	//<-c.done
 }
 
 // NewCircuit creates a new empty circuit.
@@ -261,21 +281,18 @@ func (g *PrintG) Trigger() {
 }
 
 func main() {
-	fmt.Println("jetflow 0.2.3")
+	fmt.Println("jetflow 0.2.4")
 
 	c := NewCircuit()
-	// TODO still needs explicit casts to access pins by name
-	g1 := c.Add("g1", "metro").(*MetroG)
-	g2 := c.Add("g2", "repeat").(*RepeatG)
-	g3 := c.Add("g3", "print").(*PrintG)
+	c.Add("g1", "metro")
+	c.Add("g2", "repeat")
+	c.Add("g3", "print")
 
-	g2.Num = 3
+	c.SetPin("g2", 1, 3)
 
-	g1.Out.Connect(&g2.In)
-	g2.Out.Connect(&g3.In)
+	c.Connect("g1", 0, "g2", 0)
+	c.Connect("g2", 0, "g3", 0)
 
-	g1.Terminate()
-	g2.Terminate()
-	g3.Terminate()
+	c.Terminate()
 	fmt.Println("exit", len(inletMap))
 }
