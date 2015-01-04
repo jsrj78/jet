@@ -6,6 +6,8 @@ import (
 	"time"
 )
 
+var Registry = map[string]func() Circuitry{}
+
 // Circuitry is the collective name for gadgets and circuits.
 type Circuitry interface {
 	NumInlets() int
@@ -17,6 +19,8 @@ type Circuitry interface {
 	Setup()
 	Trigger()
 	Cleanup()
+
+	install(self Circuitry, name string, owner *Circuit) *Gadget
 }
 
 // A circuit is a collection of gadgets.
@@ -25,14 +29,16 @@ type Circuit struct {
 	gadgets map[string]*Gadget
 }
 
-// Add a gadget to the circuit.
-func (c *Circuit) Add(name string, g *Gadget) {
-	c.gadgets[name] = g
-	g.owner = c
+// Add a new gadget to the circuit.
+func (c *Circuit) Add(name, typ string) Circuitry {
+	cy := Registry[typ]()
+	c.gadgets[name] = cy.install(cy, name, c)
+	// TODO probably no need to return this once circuit setup works
+	return cy
 }
 
 // NewCircuit creates a new empty circuit.
-func NewCircuit() Circuitry {
+func NewCircuit() *Circuit {
 	return &Circuit{
 		gadgets: make(map[string]*Gadget),
 	}
@@ -44,6 +50,7 @@ func (c *Circuit) Trigger() {
 
 // A Gadget is the building block for creating circuits with.
 type Gadget struct {
+	name    string
 	owner   *Circuit
 	feed    chan incoming
 	done    chan struct{}
@@ -55,8 +62,15 @@ type Gadget struct {
 // TODO will need a mutex unless this map becomes per-circuit
 var inletMap = make(map[*Inlet]*Gadget)
 
-// Launch must be called once to intialise a gadget.
-func (g *Gadget) Launch(self Circuitry) {
+// String returns the name of this gadget.
+func (g *Gadget) String() string {
+	return g.name
+}
+
+// Install intialises a gadget for use inside a circuit.
+func (g *Gadget) install(self Circuitry, name string, owner *Circuit) *Gadget {
+	g.name = name
+	g.owner = owner
 	g.feed = make(chan incoming)
 	g.done = make(chan struct{})
 
@@ -79,6 +93,8 @@ func (g *Gadget) Launch(self Circuitry) {
 	}
 
 	go g.run(self)
+
+	return g
 }
 
 func (g *Gadget) run(self Circuitry) {
@@ -197,6 +213,12 @@ func (o *Outlet) Disconnect(i *Inlet) {
 
 // sample gadgets for a trivial pipeline: MetroG -> RepeatG -> PrintG
 
+func init() {
+	Registry["metro"] = func() Circuitry { return new(MetroG) }
+	Registry["repeat"] = func() Circuitry { return new(RepeatG) }
+	Registry["print"] = func() Circuitry { return new(PrintG) }
+}
+
 // A MetroG gadget sends out periodic messages.
 type MetroG struct {
 	Gadget
@@ -206,11 +228,11 @@ type MetroG struct {
 func (g *MetroG) Setup() {
 	// TODO this is test code, needs a real implementation
 	fmt.Println("MetroG setup")
-	time.Sleep(time.Second)
+	time.Sleep(500 * time.Millisecond)
 	g.Out.Send("hi!")
-	time.Sleep(time.Second)
+	time.Sleep(500 * time.Millisecond)
 	g.Out.Send("ha!")
-	time.Sleep(time.Second)
+	time.Sleep(500 * time.Millisecond)
 	g.Out.Send("ho!")
 }
 
@@ -239,13 +261,13 @@ func (g *PrintG) Trigger() {
 }
 
 func main() {
-	fmt.Println("jetflow 0.2.2")
-	g1 := new(MetroG)
-	g1.Launch(g1)
-	g2 := new(RepeatG)
-	g2.Launch(g2)
-	g3 := new(PrintG)
-	g3.Launch(g3)
+	fmt.Println("jetflow 0.2.3")
+
+	c := NewCircuit()
+	// TODO still needs explicit casts to access pins by name
+	g1 := c.Add("g1", "metro").(*MetroG)
+	g2 := c.Add("g2", "repeat").(*RepeatG)
+	g3 := c.Add("g3", "print").(*PrintG)
 
 	g2.Num = 3
 
