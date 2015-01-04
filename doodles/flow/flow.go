@@ -1,12 +1,12 @@
-package main
+// Flow implements a Pure-data like dataflow mechanism.
+package flow
 
 import (
 	"fmt"
 	"reflect"
-	"time"
 )
 
-var Registry = map[string]func() Circuitry{}
+var registry = map[string]func() Circuitry{}
 
 // Circuitry is the collective name for gadgets and circuits.
 type Circuitry interface {
@@ -23,6 +23,11 @@ type Circuitry interface {
 	install(self Circuitry, name string, owner *Circuit) *Gadget
 }
 
+// Register a constructor for a named gadget type.
+func Register(name string, f func() Circuitry) {
+	registry[name] = f
+}
+
 // A circuit is a collection of gadgets.
 type Circuit struct {
 	Gadget
@@ -31,7 +36,7 @@ type Circuit struct {
 
 // Add a new gadget to the circuit.
 func (c *Circuit) Add(name, typ string) {
-	g := Registry[typ]()
+	g := registry[typ]()
 	c.gadgets[name] = g.install(g, name, c)
 }
 
@@ -39,7 +44,7 @@ func (c *Circuit) Add(name, typ string) {
 func (c *Circuit) Connect(fname string, fpin int, tname string, tpin int) {
 	fg := c.gadgets[fname]
 	tg := c.gadgets[tname]
-	fg.Outlet(fpin).connect(tg.Inlet(tpin))
+	fg.Outlet(fpin).Connect(tg.Inlet(tpin))
 }
 
 // Set a pin to a specified value.
@@ -102,11 +107,11 @@ func (g *Gadget) install(self Circuitry, name string, owner *Circuit) *Gadget {
 		fTyp := gTyp.Field(i)
 		fmt.Println("fp", i, fTyp.Name, fTyp.Type)
 		switch fVal.Type().String() {
-		case "main.Inlet":
+		case "flow.Inlet":
 			in := fVal.Addr().Interface().(*Inlet)
 			g.inlets = append(g.inlets, in)
 			inletMap[in] = g
-		case "main.Outlet":
+		case "flow.Outlet":
 			out := fVal.Addr().Interface().(*Outlet)
 			g.outlets = append(g.outlets, out)
 		}
@@ -163,17 +168,17 @@ func (g *Gadget) Outlet(n int) *Outlet {
 
 // Setup is called just before a gadget starts normal processing.
 func (g *Gadget) Setup() {
-	fmt.Println("Gadget setup")
+	fmt.Println("Gadget setup:", g.name)
 }
 
 // Trigger gets called when a message arrives at inlet zero.
 func (g *Gadget) Trigger() {
-	fmt.Println("Gadget trigger")
+	fmt.Println("Gadget trigger:", g.name)
 }
 
 // Cleanup is called just after a gadget has finished normal processing.
 func (g *Gadget) Cleanup() {
-	fmt.Println("Gadget cleanup")
+	fmt.Println("Gadget cleanup:", g.name)
 }
 
 // A message is a generic data item which can be sent between gadgets.
@@ -217,7 +222,7 @@ func (o *Outlet) indexOf(i *Inlet) int {
 }
 
 // Connect an outlet to a specified inlet.
-func (o *Outlet) connect(i *Inlet) {
+func (o *Outlet) Connect(i *Inlet) {
 	if o.indexOf(i) >= 0 {
 		panic(fmt.Errorf("already connected"))
 	}
@@ -225,74 +230,8 @@ func (o *Outlet) connect(i *Inlet) {
 }
 
 // Disconnect a specified inlet from the outlet.
-func (o *Outlet) disconnect(i *Inlet) {
+func (o *Outlet) Disconnect(i *Inlet) {
 	if n := o.indexOf(i); n >= 0 {
 		*o = append((*o)[:n], (*o)[n+1:]...)
 	}
-}
-
-// sample gadgets for a trivial pipeline: MetroG -> RepeatG -> PrintG
-
-func init() {
-	Registry["metro"] = func() Circuitry { return new(MetroG) }
-	Registry["repeat"] = func() Circuitry { return new(RepeatG) }
-	Registry["print"] = func() Circuitry { return new(PrintG) }
-}
-
-// A MetroG gadget sends out periodic messages.
-type MetroG struct {
-	Gadget
-	Out Outlet
-}
-
-func (g *MetroG) Setup() {
-	// TODO this is test code, needs a real implementation
-	fmt.Println("MetroG setup")
-	time.Sleep(500 * time.Millisecond)
-	g.Out.Send("hi!")
-	time.Sleep(500 * time.Millisecond)
-	g.Out.Send("ha!")
-	time.Sleep(500 * time.Millisecond)
-	g.Out.Send("ho!")
-}
-
-// A RepeatG gadget repeats each incoming message Num times.
-type RepeatG struct {
-	Gadget
-	In  Inlet
-	Num Inlet
-	Out Outlet
-}
-
-func (g *RepeatG) Trigger() {
-	for i := 0; i < g.Num.(int); i++ {
-		g.Out.Send(g.In)
-	}
-}
-
-// A PrintG gadget prints everything received on its main inlet.
-type PrintG struct {
-	Gadget
-	In Inlet
-}
-
-func (g *PrintG) Trigger() {
-	fmt.Println(g.In)
-}
-
-func main() {
-	fmt.Println("jetflow 0.2.4")
-
-	c := NewCircuit()
-	c.Add("g1", "metro")
-	c.Add("g2", "repeat")
-	c.Add("g3", "print")
-
-	c.SetPin("g2", 1, 3)
-
-	c.Connect("g1", 0, "g2", 0)
-	c.Connect("g2", 0, "g3", 0)
-
-	c.Terminate()
-	fmt.Println("exit", len(inletMap))
 }
