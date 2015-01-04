@@ -22,18 +22,20 @@ type Circuitry interface {
 // A circuit is a collection of gadgets.
 type Circuit struct {
 	Gadget
-	children map[string]*Gadget
+	gadgets map[string]*Gadget
 }
 
 // Add a gadget to the circuit.
 func (c *Circuit) Add(name string, g *Gadget) {
-	c.children[name] = g
+	c.gadgets[name] = g
 	g.owner = c
 }
 
 // NewCircuit creates a new empty circuit.
 func NewCircuit() Circuitry {
-	return &Circuit{}
+	return &Circuit{
+		gadgets: make(map[string]*Gadget),
+	}
 }
 
 // Trigger gets called when a message arrives at inlet zero.
@@ -42,11 +44,11 @@ func (c *Circuit) Trigger() {
 
 // A Gadget is the building block for creating circuits with.
 type Gadget struct {
-	inlets  []*Inlet
-	outlets []*Outlet
+	owner   *Circuit
 	feed    chan incoming
 	done    chan struct{}
-	owner   *Circuit
+	inlets  []*Inlet
+	outlets []*Outlet
 }
 
 // map inlets back to their owning gadgets for sending
@@ -55,6 +57,9 @@ var inletMap = make(map[*Inlet]*Gadget)
 
 // Launch must be called once to intialise a gadget.
 func (g *Gadget) Launch(self Circuitry) {
+	g.feed = make(chan incoming)
+	g.done = make(chan struct{})
+
 	// use reflection to create lists of all the inlets and outlets
 	gVal := reflect.ValueOf(self).Elem()
 	gTyp := reflect.TypeOf(self).Elem()
@@ -73,13 +78,10 @@ func (g *Gadget) Launch(self Circuitry) {
 		}
 	}
 
-	g.feed = make(chan incoming)
-	g.done = make(chan struct{})
-
-	go g.runner(self)
+	go g.run(self)
 }
 
-func (g *Gadget) runner(self Circuitry) {
+func (g *Gadget) run(self Circuitry) {
 	defer func() {
 		for _, x := range g.inlets {
 			delete(inletMap, x)
