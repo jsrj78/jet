@@ -1,6 +1,6 @@
 package flow
 
-// A circuit is a collection of gadgets.
+// Circuit is a collection of gadgets.
 type Circuit struct {
 	Gadget
 	gadgets map[string]*Gadget

@@ -5,7 +5,7 @@ import (
 	"reflect"
 )
 
-// A Gadget is the building block for creating circuits with.
+// Gadget is the building block for creating circuits with.
 type Gadget struct {
 	name    string
 	owner   *Circuit
