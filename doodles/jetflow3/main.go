@@ -63,15 +63,12 @@ func main() {
 	c := flow.NewCircuit()
 
 	// TODO generate these requests from text lines with a suitable parser
-
-	c.Request(flow.AddSym, "metro")
-	c.Request(flow.AddSym, "repeat")
-	c.Request(flow.AddSym, "print")
-
-	c.Request(flow.ConnectSym, 0, 0, 1, 0)
-	c.Request(flow.ConnectSym, 1, 0, 2, 0)
-
-	c.Request(flow.SendToPinSym, 1, 1, 3)
+	c.Request("add", "metro")
+	c.Request("add", "repeat")
+	c.Request("add", "print")
+	c.Request("connect", 0, 0, 1, 0)
+	c.Request("connect", 1, 0, 2, 0)
+	c.Request("send2pin", 1, 1, 3)
 
 	c.Terminate()
 	fmt.Println("exit")
