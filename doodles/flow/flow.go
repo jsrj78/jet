@@ -58,7 +58,7 @@ func (c *Circuit) Disconnect(fname string, fpin int, tname string, tpin int) {
 }
 
 // Set a pin to a specified value.
-func (c *Circuit) SetPin(name string, pin int, m Message) {
+func (c *Circuit) SendToPin(name string, pin int, m Message) {
 	g := c.gadgets[name]
 	sendToInlet(g.Inlet(pin), m)
 }

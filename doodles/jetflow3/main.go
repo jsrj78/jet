@@ -65,10 +65,10 @@ func main() {
 	c.Add("g2", "repeat")
 	c.Add("g3", "print")
 
-	c.SetPin("g2", 1, 3)
-
 	c.Connect("g1", 0, "g2", 0)
 	c.Connect("g2", 0, "g3", 0)
+
+	c.SendToPin("g2", 1, 3)
 
 	c.Terminate()
 	fmt.Println("exit")
