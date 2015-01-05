@@ -16,33 +16,27 @@ func NewCircuit() *Circuit {
 }
 
 func (c *Circuit) request(v ...Message) {
-	fmt.Println("req:", v)
 	c.feed <- incoming{msg: v}
 }
 
 // Add a new gadget to the circuit.
 func (c *Circuit) Add(typ string) {
 	c.request(AddSym, typ)
-	//g := registry[Sym(typ)]()
-	//c.gadgets = append(c.gadgets, g.install(g, c))
 }
 
 // Add a new wire connection to a circuit.
 func (c *Circuit) Connect(fidx, fpin, tidx, tpin int) {
 	c.request(ConnectSym, fidx, fpin, tidx, tpin)
-	//c.gadgets[fidx].Outlet(fpin).Connect(c.gadgets[tidx].Inlet(tpin))
 }
 
 // Remove an existing wire connection from a circuit.
 func (c *Circuit) Disconnect(fidx, fpin, tidx, tpin int) {
 	c.request(DisconnectSym, fidx, fpin, tidx, tpin)
-	//c.gadgets[fidx].Outlet(fpin).Disconnect(c.gadgets[tidx].Inlet(tpin))
 }
 
 // Set a pin to a specified value.
 func (c *Circuit) SendToPin(idx, pin int, m Message) {
 	c.request(SendToPinSym, idx, pin, m)
-	//sendToInlet(c.gadgets[idx].Inlet(pin), m)
 }
 
 // Terminate all the gadgets in the circuit.
