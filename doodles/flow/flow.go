@@ -17,6 +17,7 @@ type Circuitry interface {
 	Outlet(n int) *Outlet
 
 	Setup()
+	Loop()
 	Trigger()
 	Cleanup()
 
@@ -50,7 +51,7 @@ func (c *Circuit) Connect(fname string, fpin int, tname string, tpin int) {
 // Set a pin to a specified value.
 func (c *Circuit) SetPin(name string, pin int, m Message) {
 	g := c.gadgets[name]
-	*g.Inlet(pin) = m
+	sendToInlet(g.Inlet(pin), m)
 }
 
 // Terminate all the gadgets in the circuit.
@@ -77,6 +78,7 @@ func (c *Circuit) Trigger() {
 type Gadget struct {
 	name    string
 	owner   *Circuit
+	self    Circuitry
 	feed    chan incoming
 	done    chan struct{}
 	inlets  []*Inlet
@@ -84,7 +86,7 @@ type Gadget struct {
 }
 
 // map inlets back to their owning gadgets for sending
-// TODO will need a mutex unless this map becomes per-circuit
+// TODO will need a mutex or channel, see sendToInlet()
 var inletMap = make(map[*Inlet]*Gadget)
 
 // String returns the name of this gadget.
@@ -96,6 +98,7 @@ func (g *Gadget) String() string {
 func (g *Gadget) install(self Circuitry, name string, owner *Circuit) *Gadget {
 	g.name = name
 	g.owner = owner
+	g.self = self
 	g.feed = make(chan incoming)
 	g.done = make(chan struct{})
 
@@ -117,27 +120,32 @@ func (g *Gadget) install(self Circuitry, name string, owner *Circuit) *Gadget {
 		}
 	}
 
-	go g.run(self)
+	go g.run()
 
 	return g
 }
 
-func (g *Gadget) run(self Circuitry) {
-	defer func() {
-		for _, x := range g.inlets {
-			delete(inletMap, x)
-		}
-		close(g.done)
-	}()
+func (g *Gadget) run() {
+	defer g.unlink()
 
-	self.Setup()
-	for x := range g.feed {
-		*x.pin = x.msg
-		if x.pin == g.inlets[0] {
-			self.Trigger()
+	g.self.Setup()
+	g.self.Loop()
+	g.self.Cleanup()
+}
+
+// Unlink from inletMap and from all outlets connected to this gadget.
+func (g *Gadget) unlink() {
+	for _, x := range g.inlets {
+		delete(inletMap, x)
+		// TODO inefficient, this iterates over all possible combinations
+		// could set up a map with all *relevant* inlets or outlets instead
+		for _, y := range g.owner.gadgets {
+			for i := 0; i < y.NumOutlets(); i++ {
+				y.Outlet(i).Disconnect(x)
+			}
 		}
 	}
-	self.Cleanup()
+	close(g.done)
 }
 
 // Terminate causes the gadget to end and cleanup, and returns when it's done.
@@ -171,6 +179,16 @@ func (g *Gadget) Setup() {
 	fmt.Println("Gadget setup:", g.name)
 }
 
+// Loop is called to process messages received from the inlet feed.
+func (g *Gadget) Loop() {
+	for x := range g.feed {
+		*x.pin = x.msg
+		if x.pin == g.inlets[0] {
+			g.self.Trigger()
+		}
+	}
+}
+
 // Trigger gets called when a message arrives at inlet zero.
 func (g *Gadget) Trigger() {
 	fmt.Println("Gadget trigger:", g.name)
@@ -184,17 +202,19 @@ func (g *Gadget) Cleanup() {
 // A message is a generic data item which can be sent between gadgets.
 type Message interface{}
 
-type incoming struct {
-	msg Message
-	pin *Inlet
-}
-
 // An Inlet is a slot to store incoming messages.
 type Inlet Message
 
-// SetInlet will store a message into a specified inlet.
-func SetInlet(i *Inlet, m Message) {
-	inletMap[i].feed <- incoming{m, i}
+type incoming struct {
+	pin *Inlet
+	msg Message
+}
+
+// SendToInlet will store a message into a specified inlet.
+func sendToInlet(i *Inlet, m Message) {
+	// TODO access to inletMap is not protected against map changes right now
+	// could be either a mutex or an additional global channel added in front
+	inletMap[i].feed <- incoming{pin: i, msg: m}
 }
 
 // An Outlet can be connected to zero or more inlets.
@@ -207,8 +227,10 @@ func (o *Outlet) FanOut() int {
 
 // Send will send out a message to all the attached inlets.
 func (o *Outlet) Send(m Message) {
+	// TODO add logging capability
+	// could use an "outletMap" to retrieve the sending gadget's name
 	for _, x := range *o {
-		SetInlet(x, m)
+		sendToInlet(x, m)
 	}
 }
 
