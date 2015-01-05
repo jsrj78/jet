@@ -61,9 +61,14 @@ func main() {
 	fmt.Println("jetflow 0.2.4")
 
 	c := flow.NewCircuit()
-	g1 := c.Add("metro")
-	g2 := c.Add("repeat")
-	g3 := c.Add("print")
+	const (
+		g1 = iota
+		g2
+		g3
+	)
+	c.Add("metro")
+	c.Add("repeat")
+	c.Add("print")
 
 	c.Connect(g1, 0, g2, 0)
 	c.Connect(g2, 0, g3, 0)

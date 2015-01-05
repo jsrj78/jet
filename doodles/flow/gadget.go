@@ -5,7 +5,7 @@ import (
 	"reflect"
 )
 
-// Gadget is the building block for creating circuits with.
+// Gadget is the building block for creating circuits.
 type Gadget struct {
 	owner   *Circuit
 	self    Circuitry
@@ -15,7 +15,7 @@ type Gadget struct {
 	outlets []*Outlet
 }
 
-// Install intialises a gadget for use inside a circuit.
+// install intialises a gadget for use inside a circuit.
 func (g *Gadget) install(self Circuitry, owner *Circuit) *Gadget {
 	g.owner = owner
 	g.self = self
@@ -49,11 +49,20 @@ func (g *Gadget) run() {
 	defer g.unlink()
 
 	g.self.Setup()
-	g.self.Loop()
+	for x := range g.feed {
+		if x.pin == nil {
+			g.self.Control(x.msg)
+		} else {
+			*x.pin = x.msg
+			if x.pin == g.inlets[0] {
+				g.self.Trigger()
+			}
+		}
+	}
 	g.self.Cleanup()
 }
 
-// Unlink from inletMap and from all outlets connected to this gadget.
+// unlink from inletMap and from all outlets connected to this gadget.
 func (g *Gadget) unlink() {
 	for _, x := range g.inlets {
 		delete(inletMap, x)
@@ -99,14 +108,9 @@ func (g *Gadget) Setup() {
 	fmt.Println("Gadget setup")
 }
 
-// Loop is called to process messages received from the inlet feed.
-func (g *Gadget) Loop() {
-	for x := range g.feed {
-		*x.pin = x.msg
-		if x.pin == g.inlets[0] {
-			g.self.Trigger()
-		}
-	}
+// Control gets called with messages sent to the special nil inlet.
+func (g *Gadget) Control(m Message) {
+	fmt.Println("Gadget control:", m)
 }
 
 // Trigger gets called when a message arrives at inlet zero.

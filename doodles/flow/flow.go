@@ -18,7 +18,7 @@ type Circuitry interface {
 	Outlet(n int) *Outlet
 
 	Setup()
-	Loop()
+	Control(m Message)
 	Trigger()
 	Cleanup()
 
