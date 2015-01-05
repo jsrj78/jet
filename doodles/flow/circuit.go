@@ -15,28 +15,8 @@ func NewCircuit() *Circuit {
 	return c
 }
 
-func (c *Circuit) request(v ...Message) {
-	c.feed <- incoming{msg: v}
-}
-
-// Add a new gadget to the circuit.
-func (c *Circuit) Add(typ string) {
-	c.request(AddSym, typ)
-}
-
-// Add a new wire connection to a circuit.
-func (c *Circuit) Connect(fidx, fpin, tidx, tpin int) {
-	c.request(ConnectSym, fidx, fpin, tidx, tpin)
-}
-
-// Remove an existing wire connection from a circuit.
-func (c *Circuit) Disconnect(fidx, fpin, tidx, tpin int) {
-	c.request(DisconnectSym, fidx, fpin, tidx, tpin)
-}
-
-// Set a pin to a specified value.
-func (c *Circuit) SendToPin(idx, pin int, m Message) {
-	c.request(SendToPinSym, idx, pin, m)
+func (c *Circuit) Request(args ...Message) {
+	c.feed <- incoming{msg: args}
 }
 
 // Terminate all the gadgets in the circuit.
@@ -56,33 +36,36 @@ var (
 )
 
 // Control gets called with messages sent to the special nil inlet.
-func (c *Circuit) Control(m Message) {
-	if v, ok := m.([]Message); ok {
-		fmt.Println("Circuit control:", v)
-		switch v[0] {
-		case AddSym:
-			typ := v[1].(string)
-			g := registry[Sym(typ)]()
-			c.gadgets = append(c.gadgets, g.install(g, c))
-		case ConnectSym:
-			fidx := v[1].(int)
-			fpin := v[2].(int)
-			tidx := v[3].(int)
-			tpin := v[4].(int)
-			c.gadgets[fidx].Outlet(fpin).Connect(c.gadgets[tidx].Inlet(tpin))
-		case DisconnectSym:
-			fidx := v[1].(int)
-			fpin := v[2].(int)
-			tidx := v[3].(int)
-			tpin := v[4].(int)
-			c.gadgets[fidx].Outlet(fpin).Disconnect(c.gadgets[tidx].Inlet(tpin))
-		case SendToPinSym:
-			idx := v[1].(int)
-			pin := v[2].(int)
-			msg := v[3].(Message)
-			sendToInlet(c.gadgets[idx].Inlet(pin), msg)
-		default:
-			c.Gadget.Control(m)
-		}
+func (c *Circuit) Control(cmd []Message) {
+	fmt.Println("Circuit control:", cmd)
+	switch cmd[0] {
+
+	case AddSym: // Add a new gadget to the circuit.
+		typ := cmd[1].(string)
+		g := registry[Sym(typ)]()
+		c.gadgets = append(c.gadgets, g.install(g, c))
+
+	case ConnectSym: // Add a new wire connection.
+		fidx := cmd[1].(int)
+		fpin := cmd[2].(int)
+		tidx := cmd[3].(int)
+		tpin := cmd[4].(int)
+		c.gadgets[fidx].Outlet(fpin).connect(c.gadgets[tidx].Inlet(tpin))
+
+	case DisconnectSym: // Remove an existing wire connection.
+		fidx := cmd[1].(int)
+		fpin := cmd[2].(int)
+		tidx := cmd[3].(int)
+		tpin := cmd[4].(int)
+		c.gadgets[fidx].Outlet(fpin).disconnect(c.gadgets[tidx].Inlet(tpin))
+
+	case SendToPinSym: // Set a pin to a specified value.
+		idx := cmd[1].(int)
+		pin := cmd[2].(int)
+		msg := cmd[3].(Message)
+		sendToInlet(c.gadgets[idx].Inlet(pin), msg)
+
+	default:
+		c.Gadget.Control(cmd)
 	}
 }

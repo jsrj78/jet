@@ -51,7 +51,7 @@ func (g *Gadget) run() {
 	g.self.Setup()
 	for x := range g.feed {
 		if x.pin == nil {
-			g.self.Control(x.msg)
+			g.self.Control(x.msg.([]Message))
 		} else {
 			*x.pin = x.msg
 			if x.pin == g.inlets[0] {
@@ -70,7 +70,7 @@ func (g *Gadget) unlink() {
 		// could set up a map with all *relevant* inlets or outlets instead
 		for _, y := range g.owner.gadgets {
 			for i := 0; i < y.NumOutlets(); i++ {
-				y.Outlet(i).Disconnect(x)
+				y.Outlet(i).disconnect(x)
 			}
 		}
 	}
@@ -109,8 +109,8 @@ func (g *Gadget) Setup() {
 }
 
 // Control gets called with messages sent to the special nil inlet.
-func (g *Gadget) Control(m Message) {
-	fmt.Println("Gadget control:", m)
+func (g *Gadget) Control(cmd []Message) {
+	fmt.Println("Gadget control:", cmd)
 }
 
 // Trigger gets called when a message arrives at inlet zero.

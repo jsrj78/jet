@@ -1,9 +1,5 @@
 package flow
 
-import (
-	"fmt"
-)
-
 // map inlets back to their owning gadgets for sending
 // TODO will need a mutex or channel, see sendToInlet()
 var inletMap = map[*Inlet]*Gadget{}
@@ -51,16 +47,16 @@ func (o *Outlet) indexOf(i *Inlet) int {
 	return -1
 }
 
-// Connect an outlet to a specified inlet.
-func (o *Outlet) Connect(i *Inlet) {
+// connect an outlet to a specified inlet.
+func (o *Outlet) connect(i *Inlet) {
 	if o.indexOf(i) >= 0 {
-		panic(fmt.Errorf("already connected"))
+		panic("already connected")
 	}
 	*o = append(*o, i)
 }
 
-// Disconnect a specified inlet from the outlet.
-func (o *Outlet) Disconnect(i *Inlet) {
+// disconnect a specified inlet from the outlet.
+func (o *Outlet) disconnect(i *Inlet) {
 	if n := o.indexOf(i); n >= 0 {
 		*o = append((*o)[:n], (*o)[n+1:]...)
 	}

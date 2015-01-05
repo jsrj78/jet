@@ -61,19 +61,17 @@ func main() {
 	fmt.Println("jetflow 0.2.4")
 
 	c := flow.NewCircuit()
-	const (
-		g1 = iota
-		g2
-		g3
-	)
-	c.Add("metro")
-	c.Add("repeat")
-	c.Add("print")
 
-	c.Connect(g1, 0, g2, 0)
-	c.Connect(g2, 0, g3, 0)
+	// TODO generate these requests from text lines with a suitable parser
 
-	c.SendToPin(g2, 1, 3)
+	c.Request(flow.AddSym, "metro")
+	c.Request(flow.AddSym, "repeat")
+	c.Request(flow.AddSym, "print")
+
+	c.Request(flow.ConnectSym, 0, 0, 1, 0)
+	c.Request(flow.ConnectSym, 1, 0, 2, 0)
+
+	c.Request(flow.SendToPinSym, 1, 1, 3)
 
 	c.Terminate()
 	fmt.Println("exit")
