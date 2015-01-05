@@ -22,7 +22,7 @@ type Circuitry interface {
 	Trigger()
 	Cleanup()
 
-	install(self Circuitry, name string, owner *Circuit) *Gadget
+	install(self Circuitry, owner *Circuit) *Gadget
 }
 
 // the empty string, i.e. SymVal zero, is special

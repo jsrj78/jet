@@ -7,7 +7,6 @@ import (
 
 // Gadget is the building block for creating circuits with.
 type Gadget struct {
-	name    string
 	owner   *Circuit
 	self    Circuitry
 	feed    chan incoming
@@ -16,14 +15,8 @@ type Gadget struct {
 	outlets []*Outlet
 }
 
-// String returns the name of this gadget.
-func (g *Gadget) String() string {
-	return g.name
-}
-
 // Install intialises a gadget for use inside a circuit.
-func (g *Gadget) install(self Circuitry, name string, owner *Circuit) *Gadget {
-	g.name = name
+func (g *Gadget) install(self Circuitry, owner *Circuit) *Gadget {
 	g.owner = owner
 	g.self = self
 	g.feed = make(chan incoming)
@@ -103,7 +96,7 @@ func (g *Gadget) Outlet(n int) *Outlet {
 
 // Setup is called just before a gadget starts normal processing.
 func (g *Gadget) Setup() {
-	fmt.Println("Gadget setup:", g.name)
+	fmt.Println("Gadget setup")
 }
 
 // Loop is called to process messages received from the inlet feed.
@@ -118,10 +111,10 @@ func (g *Gadget) Loop() {
 
 // Trigger gets called when a message arrives at inlet zero.
 func (g *Gadget) Trigger() {
-	fmt.Println("Gadget trigger:", g.name)
+	fmt.Println("Gadget trigger")
 }
 
 // Cleanup is called just after a gadget has finished normal processing.
 func (g *Gadget) Cleanup() {
-	fmt.Println("Gadget cleanup:", g.name)
+	fmt.Println("Gadget cleanup")
 }

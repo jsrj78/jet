@@ -61,14 +61,14 @@ func main() {
 	fmt.Println("jetflow 0.2.4")
 
 	c := flow.NewCircuit()
-	c.Add("g1", "metro")
-	c.Add("g2", "repeat")
-	c.Add("g3", "print")
+	g1 := c.Add("metro")
+	g2 := c.Add("repeat")
+	g3 := c.Add("print")
 
-	c.Connect("g1", 0, "g2", 0)
-	c.Connect("g2", 0, "g3", 0)
+	c.Connect(g1, 0, g2, 0)
+	c.Connect(g2, 0, g3, 0)
 
-	c.SendToPin("g2", 1, 3)
+	c.SendToPin(g2, 1, 3)
 
 	c.Terminate()
 	fmt.Println("exit")
