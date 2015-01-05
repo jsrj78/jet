@@ -6,7 +6,7 @@ import (
 
 // map inlets back to their owning gadgets for sending
 // TODO will need a mutex or channel, see sendToInlet()
-var inletMap = make(map[*Inlet]*Gadget)
+var inletMap = map[*Inlet]*Gadget{}
 
 // incoming is used to store a message which needs to be sent to an inlet.
 type incoming struct {
