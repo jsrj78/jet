@@ -48,6 +48,15 @@ func (c *Circuit) Connect(fname string, fpin int, tname string, tpin int) {
 	fg.Outlet(fpin).Connect(tg.Inlet(tpin))
 }
 
+// Remove an existing wire connection from a circuit.
+func (c *Circuit) Disconnect(fname string, fpin int, tname string, tpin int) {
+	fg := c.gadgets[fname]
+	tg := c.gadgets[tname]
+	if fg != nil && tg != nil {
+		fg.Outlet(fpin).Disconnect(tg.Inlet(tpin))
+	}
+}
+
 // Set a pin to a specified value.
 func (c *Circuit) SetPin(name string, pin int, m Message) {
 	g := c.gadgets[name]
