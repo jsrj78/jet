@@ -8,7 +8,7 @@ type Circuit struct {
 
 // Add a new gadget to the circuit.
 func (c *Circuit) Add(name, typ string) {
-	g := registry[typ]()
+	g := registry[Sym(typ)]()
 	c.gadgets[name] = g.install(g, name, c)
 }
 

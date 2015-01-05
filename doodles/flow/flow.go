@@ -4,6 +4,11 @@ package flow
 // Message is a generic data item which can be sent between gadgets.
 type Message interface{}
 
+// List constructs a slice from a list of messages.
+func List(v ...Message) []Message {
+	return v
+}
+
 // Circuitry is the collective name for gadgets and circuits.
 type Circuitry interface {
 	NumInlets() int
@@ -20,9 +25,33 @@ type Circuitry interface {
 	install(self Circuitry, name string, owner *Circuit) *Gadget
 }
 
-var registry = map[string]func() Circuitry{}
+// the empty string, i.e. SymVal zero, is special
+var symbols = map[string]SymVal{"": SymVal(0)}
+var symList = []string{""}
+
+// SymVal is a unique small number representing a symbol.
+type SymVal int
+
+// String representation of a SymVal is its original string.
+func (y SymVal) String() string {
+	return symList[y]
+}
+
+// Sym returns a SymVal for the specified string, creating a new one if needed.
+func Sym(s string) SymVal {
+	if v, ok := symbols[s]; ok {
+		return v
+	}
+	i := SymVal(len(symList))
+	symbols[s] = i
+	symList = append(symList, s)
+	return i
+}
+
+// the registry is used to map some symbols for use as gadget constructors
+var registry = map[SymVal]func() Circuitry{}
 
 // Register a constructor for a named gadget type.
 func Register(name string, f func() Circuitry) {
-	registry[name] = f
+	registry[Sym(name)] = f
 }
