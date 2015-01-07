@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"../../flow"
+	"github.com/jeelabs/jet/flow"
 )
 
 // sample gadgets for a trivial pipeline: MetroG -> RepeatG -> PrintG
