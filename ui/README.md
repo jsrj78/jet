@@ -1,4 +1,4 @@
-This is the web area for Jet. Or rather, a placeholder for things to come...
+JET/Web is the web browser stuff. Or rather, a placeholder for things to come.
 
 ### Development note
 
