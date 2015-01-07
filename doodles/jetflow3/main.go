@@ -2,9 +2,10 @@
 package main
 
 import (
-	"../flow"
 	"fmt"
 	"time"
+
+	"../../flow"
 )
 
 // sample gadgets for a trivial pipeline: MetroG -> RepeatG -> PrintG
