@@ -1,6 +1,9 @@
 #!/bin/sh
+# This "jet" script is the command-line interface to all of JET.
 
 # all variables set in the config file will be added to the environment
+# settings in the local "jet.config" will override those in "~/.jetrc"
+
 for i in $HOME/.jetrc jet.config; do
     if [ -r $i ]; then
         echo loading $i
