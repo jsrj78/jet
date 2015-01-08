@@ -1,18 +1,18 @@
-JeeLabs Embello Toolkit
-=======================
+JeeLabs JET System
+==================
 
 [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/jeelabs/jet?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 A dataflow framework and server for multi-node embedded systems.
 
-**JET** is intended to provide a simple visual way to wire pieces of software together that run on tiny embedded systems and on a back-end server, all connected through a variety of network technologies, in particular simple RF communication.
+The "**J**eelabs **E**mbello **T**oolkit" is intended to provide a simple visual way to wire pieces of software together that run on tiny embedded systems and on a back-end server, all connected through a variety of network technologies, in particular simple RF communication.
 
 At this stage JET is just being conceived, so there's nothing "ready-to-use" here yet.
 
 System components
 -----------------
 
-JET consists of a number of components. The reason for having multiple processes is two-fold: for one, it's a distributed system consisting of many embedded computers, but the other reason is to support configurations where there is a stable part of the system that may be "in production" and other parts that are in development and being restarted and broken repetitively. The parts are:
+JET consists of a number of components. The reason for having multiple processes is two-fold: for one, it's a distributed system consisting of many embedded computers, but the other reason is to support configurations where there is a stable part of the system that may be "in production" and other parts that are in development and being restarted and broken repetitively. The components are:
 
 - The **JET/Hub** process is a small always-on server and supervisor, acting as inter-connect between various communication interfaces and the rest of the system. The hub process also includes a **JET/Server** for HTTP(S) and WebSocket connections to drive web-based front ends.
 - One or more hardware **JET/Bridges** are used between network technologies to connect to the hub. Typically these bridges are JeeNodes with both an RFM12 or RFM69 RF module and a serial/USB/I2C link, an EtherCard, or a Wifi adapter.
