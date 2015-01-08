@@ -1,0 +1,14 @@
+#!/bin/sh
+
+# all variables set in the config file will be added to the environment
+for i in $HOME/.jetrc jet.config; do
+    if [ -r $i ]; then
+        echo loading $i
+        set -a -e
+        . $i
+        set +a +e
+    fi
+done
+
+# TODO dev build is called hub, goxc builds are called jethub
+exec hub "$@"
