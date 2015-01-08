@@ -14,7 +14,7 @@ System components
 
 JET consists of a number of components. The reason for having multiple processes is two-fold: for one, it's a distributed system consisting of many embedded computers, but the other reason is to support configurations where there is a stable part of the system that may be "in production" and other parts that are in development and being restarted and broken repetitively. The components are:
 
-- The **JET/Hub** process is a small always-on server and supervisor, acting as inter-connect between various communication interfaces and the rest of the system. The hub process also includes a **JET/Server** for HTTP(S) and WebSocket connections to drive web-based front ends.
+- The **JET/Hub** process is a small always-on server and supervisor, acting as inter-connect between various communication interfaces and the rest of the system. The hub process also includes a web server for HTTP(S) and WebSocket connections to drive web-based front ends.
 - One or more hardware **JET/Bridges** are used between network technologies to connect to the hub. Typically these bridges are JeeNodes with both an RFM12 or RFM69 RF module and a serial/USB/I2C link, an EtherCard, or a Wifi adapter.
 - **JET/Packs** are processes, usually running a set of "circuits". These packs communicate with the rest of the system through the hub, which they can also use to present a browser front end.
 - **JET/Web** runs in the browser. It communicates with the central web server over the network and is implemented using HTML5, CSS3, and JavaScript.

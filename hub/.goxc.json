@@ -1,12 +1,12 @@
 {
-	"AppName": "jet-server",
+	"AppName": "jethub",
 	"ArtifactsDest": "../build",
 	"TasksExclude": [
 		"rmbin",
 		"deb"
 	],
 	"BuildConstraints": "linux darwin,amd64",
-	"PackageVersion": "0.0.7",
+	"PackageVersion": "0.0.8",
 	"PrereleaseInfo": "alpha",
 	"TaskSettings": {
 		"downloads-page": {
