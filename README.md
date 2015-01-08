@@ -5,7 +5,7 @@ JeeLabs JET System
 
 A dataflow framework and server for multi-node embedded systems.
 
-The "**J**eelabs **E**mbello **T**oolkit" is intended to provide a simple visual way to wire pieces of software together that run on tiny embedded systems and on a back-end server, all connected through a variety of network technologies, in particular simple RF communication.
+The "**J**eeLabs **E**mbello **T**oolkit" is intended to provide a simple visual way to wire pieces of software together that run on tiny embedded systems and on a back-end server, all connected through a variety of network technologies, in particular simple RF communication.
 
 At this stage JET is just being conceived, so there's nothing "ready-to-use" here yet.
 
