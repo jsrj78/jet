@@ -26,3 +26,4 @@ _testmain.go
 
 # Configuration files should never be checked-in to git
 jet.config
+jet-dev.config

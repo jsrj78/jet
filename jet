@@ -4,7 +4,7 @@
 # all variables set in the config file will be added to the environment
 # settings in the local "jet.config" will override those in "~/.jetrc"
 
-for i in $HOME/.jetrc jet.config; do
+for i in $HOME/.jetrc jet.config jet-dev.config; do
     if [ -r $i ]; then
         echo loading $i
         set -a -e
