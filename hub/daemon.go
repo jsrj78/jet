@@ -9,7 +9,10 @@ import (
 	"syscall"
 )
 
-var ctx *daemon.Context
+var ctx = &daemon.Context{
+	PidFileName: "jethub.pid",
+	LogFileName: "jethub.log",
+}
 
 func daemonAndSignalSetup() {
 	var cmd string
@@ -20,11 +23,6 @@ func daemonAndSignalSetup() {
 	if cmd == "" && !daemon.WasReborn() {
 		usage(false)
 		return
-	}
-
-	ctx = &daemon.Context{
-		PidFileName: "jethub.pid",
-		LogFileName: "jethub.log",
 	}
 
 	daemon.AddCommand(daemon.StringFlag(&cmd, "quit"), syscall.SIGQUIT, onQuit)
@@ -49,8 +47,10 @@ func startDaemon() {
 		log.Fatalln(err)
 	}
 	if d == nil {
-		defer ctx.Release()
+		// FIXME ctx.Release fails on MacOSX, no /proc/ for lockfile GetFdName
+		// use explicit remove instead
 		defer os.Remove(ctx.PidFileName)
+		defer ctx.Release()
 
 		log.Println("- - - - - - - - - - - - - - -")
 		log.Println("starting", os.Args)
