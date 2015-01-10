@@ -4,10 +4,11 @@ package main
 
 import (
 	"flag"
-	"github.com/sevlyar/go-daemon"
-	"log"
 	"os"
 	"syscall"
+
+	"github.com/golang/glog"
+	"github.com/sevlyar/go-daemon"
 )
 
 var ctx = &daemon.Context{
@@ -33,7 +34,7 @@ func daemonSetup() {
 	if len(daemon.ActiveFlags()) > 0 {
 		d, err := ctx.Search()
 		if err != nil {
-			log.Fatalln(err)
+			glog.Fatal(err)
 		}
 		daemon.SendCommands(d)
 		return
@@ -45,7 +46,7 @@ func daemonSetup() {
 func daemonStart() {
 	d, err := ctx.Reborn()
 	if err != nil {
-		log.Fatalln(err)
+		glog.Fatal(err)
 	}
 	if d == nil {
 		// FIXME ctx.Release fails on MacOSX, no /proc/ for lockfile GetFdName
@@ -53,21 +54,21 @@ func daemonStart() {
 		defer os.Remove(ctx.PidFileName)
 		defer ctx.Release()
 
-		log.Println("- - - - - - - - - - - - - - -")
-		log.Println("starting", os.Args)
+		glog.Info("- - - - - - - - - - - - - - -")
+		glog.Infoln("starting", os.Args)
 
 		go worker()
 
 		err = daemon.ServeSignals()
 		if err != nil {
-			log.Println(err)
+			glog.Fatal(err)
 		}
-		log.Println("terminated")
+		glog.Info("terminated")
 	}
 }
 
 func onQuit(sig os.Signal) error {
-	log.Println("signal:", sig)
+	glog.Infoln("signal:", sig)
 	termHandler(sig == syscall.SIGTERM)
 	return daemon.ErrStop
 }

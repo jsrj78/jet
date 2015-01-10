@@ -3,9 +3,10 @@ package main
 import (
 	"flag"
 	"fmt"
-	"log"
 	"os"
 	"time"
+
+	"github.com/golang/glog"
 )
 
 var hubDefFlag = flag.String("d", "hub.def", "hub definition filename")
@@ -22,12 +23,11 @@ func printVersion() {
 func main() {
 	flag.Parse()
 
-	err := os.MkdirAll(*runDirFlag, os.ModePerm)
-	if err == nil {
-		err = os.Chdir(*runDirFlag)
+	if err := os.MkdirAll(*runDirFlag, 0755); err != nil {
+		glog.Fatal(err)
 	}
-	if err != nil {
-		log.Fatal(err)
+	if err := os.Chdir(*runDirFlag); err != nil {
+		glog.Fatal(err)
 	}
 
 	daemonSetup()
@@ -43,7 +43,7 @@ func dispatch(cmd string) {
 	case "help":
 		flag.PrintDefaults()
 	default:
-		log.Fatalln("no such command:", cmd)
+		glog.Fatalln("no such command:", cmd)
 	}
 }
 
@@ -69,5 +69,5 @@ func termHandler(wait bool) {
 }
 
 func reload() {
-	log.Println("configuration reloaded")
+	glog.Infoln("configuration reloaded")
 }

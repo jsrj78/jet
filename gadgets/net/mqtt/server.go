@@ -1,8 +1,7 @@
 package mqtt
 
 import (
-	"log"
-
+	"github.com/golang/glog"
 	"github.com/jeelabs/jet/flow"
 	"github.com/surge/surgemq/service"
 )
@@ -22,7 +21,7 @@ func (g *serverG) Setup() {
 	g.srv = &service.Server{}
 
 	if err := g.srv.ListenAndServe("tcp://:1883"); err != nil {
-		log.Fatal(err)
+		glog.Fatal(err)
 	}
 }
 

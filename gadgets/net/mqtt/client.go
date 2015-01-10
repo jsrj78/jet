@@ -1,8 +1,7 @@
 package mqtt
 
 import (
-	"log"
-
+	"github.com/golang/glog"
 	"github.com/jeelabs/jet/flow"
 	"github.com/surge/surgemq/message"
 	"github.com/surge/surgemq/service"
@@ -28,7 +27,7 @@ func (g *clientG) Setup() {
 	msg.SetKeepAlive(300)
 
 	if err := g.clt.Connect("tcp://127.0.0.1:1883", msg); err != nil {
-		log.Fatal(err)
+		glog.Fatal(err)
 	}
 }
 
