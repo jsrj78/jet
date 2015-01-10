@@ -12,7 +12,7 @@ set -e  # exit on any command failure
 #
 # the default value for $HUBRUN is
 #   $GOPATH/src/github.com/jeelabs/jet/run
-# add a HUBRUN=... line to the config file to change this
+# add a HUBRUN=... line to your config file to change this
 
 for i in .jetrc jet.config jet-dev.config; do
     c=${HUBRUN:-"$HOME"}/$i
@@ -42,7 +42,7 @@ Usage:
 Options:
 `$HUBEXE help 2>&1`
 
-Settings:
+Configuration:
   HUBEXE = $HUBEXE
   HUBRUN = $HUBRUN
   HUBDEF = $HUBDEF
@@ -53,5 +53,5 @@ EOF
 case ${1:-"help"} in
     help) usage ;;
     status) tail -1 $HUBRUN/hub.log ;;
-    *) exec $HUBEXE -d $HUBDEF -r $HUBRUN "$@" ;;
+    *) exec $HUBEXE -r $HUBRUN -d $HUBDEF "$@" ;;
 esac

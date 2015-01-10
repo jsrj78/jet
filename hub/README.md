@@ -5,7 +5,7 @@ JET/Hub is the central always-on server which supervises and interconnects all
 other parts of a JET system.
 
 Godoc documentation: <http://godoc.org/github.com/jeelabs/jet/hub>  
-MIT license, see the LICENSE file in the parent directory.
+MIT license, see the LICENSE file: <https://github.com/jeelabs/jet>
 
 Functions
 ---------
