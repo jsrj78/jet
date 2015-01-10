@@ -24,7 +24,3 @@ _testmain.go
 *.exe
 *.test
 *.prof
-
-# Configuration files should never be checked-in to git
-jet.config
-jet-dev.config
