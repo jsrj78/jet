@@ -10,7 +10,7 @@
 		"interpolate-source"
 	],
 	"BuildConstraints": "linux darwin,amd64",
-	"PackageVersion": "0.0.9",
+	"PackageVersion": "0.0.10",
 	"PrereleaseInfo": "alpha",
 	"TaskSettings": {
 		"downloads-page": {
