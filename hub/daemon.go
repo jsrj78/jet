@@ -67,6 +67,7 @@ func daemonStart() {
 }
 
 func onQuit(sig os.Signal) error {
+	log.Println("signal:", sig)
 	termHandler(sig == syscall.SIGTERM)
 	return daemon.ErrStop
 }

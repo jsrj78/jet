@@ -2,7 +2,6 @@
 	"AppName": "jethub",
 	"ArtifactsDest": "../build",
 	"TasksExclude": [
-		"rmbin",
 		"deb",
 		"deb-dev"
 	],
@@ -10,7 +9,7 @@
 		"interpolate-source"
 	],
 	"BuildConstraints": "linux darwin,amd64",
-	"PackageVersion": "0.0.10",
+	"PackageVersion": "0.0.11",
 	"PrereleaseInfo": "alpha",
 	"TaskSettings": {
 		"downloads-page": {

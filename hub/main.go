@@ -12,8 +12,8 @@ var hubDefFlag = flag.String("d", "hub.def", "hub definition filename")
 var runDirFlag = flag.String("r", ".", "run directory path")
 
 // these variables are bumped/updated by goxc when running "make dist"
-var VERSION = "0.0.10-alpha"
-var SOURCE_DATE = "2015-01-10T14:00:28+01:00"
+var VERSION = "0.0.11-alpha"
+var SOURCE_DATE = "2015-01-10T14:10:48+01:00"
 
 func printVersion() {
 	fmt.Printf("JET/Hub %s (%.10s)\n", VERSION, SOURCE_DATE)
@@ -62,7 +62,6 @@ func worker() {
 }
 
 func termHandler(wait bool) {
-	log.Println("terminating...")
 	stop <- struct{}{}
 	if wait {
 		<-done
