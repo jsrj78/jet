@@ -58,13 +58,14 @@ func worker() {
 			break
 		}
 	}
+	time.Sleep(3 * time.Second)
 	done <- struct{}{}
 }
 
-func termHandler(quit bool) {
+func termHandler(wait bool) {
 	log.Println("terminating...")
 	stop <- struct{}{}
-	if quit {
+	if wait {
 		<-done
 	}
 }
