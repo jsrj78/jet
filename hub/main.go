@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"os"
 	"time"
 )
 
@@ -20,6 +21,15 @@ func printVersion() {
 
 func main() {
 	flag.Parse()
+
+	err := os.MkdirAll(*runDirFlag, os.ModePerm)
+	if err == nil {
+		err = os.Chdir(*runDirFlag)
+	}
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	daemonSetup()
 }
 

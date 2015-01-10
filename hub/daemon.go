@@ -3,6 +3,7 @@
 package main
 
 import (
+	"flag"
 	"github.com/sevlyar/go-daemon"
 	"log"
 	"os"
@@ -16,8 +17,8 @@ var ctx = &daemon.Context{
 
 func daemonSetup() {
 	var cmd string
-	if len(os.Args) > 1 {
-		cmd = os.Args[1]
+	if flag.NArg() > 0 {
+		cmd = flag.Args()[0]
 	}
 
 	if cmd == "" && !daemon.WasReborn() {
