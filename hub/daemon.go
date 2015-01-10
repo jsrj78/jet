@@ -10,24 +10,24 @@ import (
 )
 
 var ctx = &daemon.Context{
-	PidFileName: "jethub.pid",
-	LogFileName: "jethub.log",
+	PidFileName: "hub.pid",
+	LogFileName: "hub.log",
 }
 
-func daemonAndSignalSetup() {
+func daemonSetup() {
 	var cmd string
 	if len(os.Args) > 1 {
 		cmd = os.Args[1]
 	}
 
 	if cmd == "" && !daemon.WasReborn() {
-		usage(false)
+		printVersion()
 		return
 	}
 
-	daemon.AddCommand(daemon.StringFlag(&cmd, "quit"), syscall.SIGQUIT, onQuit)
 	daemon.AddCommand(daemon.StringFlag(&cmd, "stop"), syscall.SIGTERM, onQuit)
-	daemon.AddCommand(daemon.StringFlag(&cmd, "reload"), syscall.SIGHUP, reload)
+	daemon.AddCommand(daemon.StringFlag(&cmd, "quit"), syscall.SIGQUIT, onQuit)
+	daemon.AddCommand(daemon.StringFlag(&cmd, "reload"), syscall.SIGHUP, onHup)
 
 	if len(daemon.ActiveFlags()) > 0 {
 		d, err := ctx.Search()
@@ -38,10 +38,10 @@ func daemonAndSignalSetup() {
 		return
 	}
 
-	performCmd(cmd)
+	dispatch(cmd)
 }
 
-func startDaemon() {
+func daemonStart() {
 	d, err := ctx.Reborn()
 	if err != nil {
 		log.Fatalln(err)
@@ -66,11 +66,11 @@ func startDaemon() {
 }
 
 func onQuit(sig os.Signal) error {
-	termHandler(sig == syscall.SIGQUIT)
+	termHandler(sig == syscall.SIGTERM)
 	return daemon.ErrStop
 }
 
-func reload(sig os.Signal) error {
-	reloadHandler()
+func onHup(sig os.Signal) error {
+	reload()
 	return nil
 }

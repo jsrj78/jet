@@ -1,17 +1,57 @@
 #!/bin/sh
-# This "jet" script is the command-line interface to all of JET.
+# This "jet" script is the main command-line interface of JET.
+# See https://github.com/jeelabs/jet
 
-# all variables set in the config file will be added to the environment
-# settings in the local "jet.config" will override those in "~/.jetrc"
+set -e  # exit on any command failure
 
-for i in $HOME/.jetrc jet.config jet-dev.config; do
-    if [ -r $i ]; then
-        echo loading $i
-        set -a -e
-        . $i
-        set +a +e
+# the default order and location for the configuration file is as follows:
+#   $HOME/.jetrc
+#   $HUBRUN/jet.config
+#   $HUBRUN/jet-dev.config
+# each next config file can override earlier settings
+#
+# the default value for $HUBRUN is
+#   $GOPATH/src/github.com/jeelabs/jet/run
+# add a HUBRUN=... line to the config file to change this
+
+for i in .jetrc jet.config jet-dev.config; do
+    c=${HUBRUN:-"$HOME"}/$i
+    if [ -r $c ]; then
+        echo loading $c
+        . $c
     fi
+    # this assumes that the $GOPATH variable contains a single path
+    : ${HUBRUN:="$GOPATH/src/github.com/jeelabs/jet/run"}
 done
 
-# TODO dev build is called hub, goxc builds are called jethub
-exec hub "$@"
+# additional defaults
+
+: ${HUBEXE:="`dirname $HUBRUN`/build/jethub"}
+: ${HUBDEF:="$HUBRUN/hub.def"}
+
+usage () {
+    cat <<EOF
+
+Usage:
+  jet start     - start the hub in the background, if not yet running
+  jet status    - display the last line of the log file
+  jet stop      - stop the hub server (sends it a SIGTERM signal)
+  jet quit      - abort the hub server (sends it a SIGQUIT signal)
+  jet (reload|version) ...
+
+Options:
+`$HUBEXE help 2>&1`
+
+Settings:
+  HUBEXE = $HUBEXE
+  HUBRUN = $HUBRUN
+  HUBDEF = $HUBDEF
+
+EOF
+}
+
+case ${1:-"help"} in
+    help) usage ;;
+    status) tail -1 $HUBRUN/hub.log ;;
+    *) exec $HUBEXE -d $HUBDEF -r $HUBRUN "$@" ;;
+esac

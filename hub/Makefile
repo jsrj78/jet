@@ -1,5 +1,6 @@
 default:
-	go run *.go
+	mkdir -p ../build
+	go build -o ../build/jethub .
 
 dist:
 	goxc -+tasks=bump,interpolate-source
