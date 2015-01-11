@@ -45,6 +45,7 @@ func (g *Gadget) install(self Circuitry, owner *Circuit) *Gadget {
 	return g
 }
 
+// run is called once the gadget has been installed in its parent circuit.
 func (g *Gadget) run() {
 	defer g.unlink()
 
@@ -54,7 +55,7 @@ func (g *Gadget) run() {
 			g.self.Control(x.msg.([]Message))
 		} else {
 			*x.pin = x.msg
-			if x.pin == g.inlets[0] {
+			if g.IsHot(x.pin) {
 				g.self.Trigger()
 			}
 		}
@@ -91,6 +92,11 @@ func (g *Gadget) NumInlets() int {
 // Inlet returns a pointer to the n'th inlet in this gadget.
 func (g *Gadget) Inlet(n int) *Inlet {
 	return g.inlets[n]
+}
+
+// IsHot returns true if the inlet is hot, i.e. will fire a trigger.
+func (g *Gadget) IsHot(i *Inlet) bool {
+	return i == g.inlets[0]
 }
 
 // NumOutlets returns the number of outlets in this gadget.

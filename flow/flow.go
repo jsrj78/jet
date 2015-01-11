@@ -13,6 +13,7 @@ func List(v ...Message) []Message {
 type Circuitry interface {
 	NumInlets() int
 	Inlet(n int) *Inlet
+	IsHot(i *Inlet) bool
 
 	NumOutlets() int
 	Outlet(n int) *Outlet
