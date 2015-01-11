@@ -9,8 +9,8 @@ import (
 	"github.com/golang/glog"
 )
 
-var hubDefFlag = flag.String("d", "hub.def", "hub definition filename")
-var runDirFlag = flag.String("r", ".", "run directory path")
+var defFlag = flag.String("def", "hub.def", "hub definition filename")
+var runFlag = flag.String("run", ".", "run directory path")
 
 // these variables are bumped/updated by goxc when running "make dist"
 var VERSION = "0.0.11-alpha"
@@ -23,10 +23,10 @@ func printVersion() {
 func main() {
 	flag.Parse()
 
-	if err := os.MkdirAll(*runDirFlag, 0755); err != nil {
+	if err := os.MkdirAll(*runFlag, 0755); err != nil {
 		glog.Fatal(err)
 	}
-	if err := os.Chdir(*runDirFlag); err != nil {
+	if err := os.Chdir(*runFlag); err != nil {
 		glog.Fatal(err)
 	}
 
