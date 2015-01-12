@@ -41,28 +41,33 @@ func NewConnection(name string) (*Connection, error) {
 		return nil, err
 	}
 
-	// subscribe to all topics
-	submsg := message.NewSubscribeMessage()
-	submsg.AddTopic([]byte("#"), 0)
-	c.clt.Subscribe(submsg, nil, onPublish)
-
-	// send a greeting to sign up
+	// send out a greeting to sign up
 	c.Send("hub/hello", []interface{}{protocolVersion, name, now, pid, host})
 
+	// TODO add last-will message to broadcast when the connection goes away
 	return c, nil
 }
 
-// onPublish is called whenever a new publish message comes in.
-func onPublish(msg *message.PublishMessage) error {
-	b := msg.Payload()
-	dec := codec.NewDecoderBytes(b, mh)
-	var v interface{}
-	if err := dec.Decode(&v); err != nil {
-		return fmt.Errorf("cannot decode %v (%v)", msg, err)
-	}
+// Listen to a topic (may have wildcards) and call the provided callback
+func (c *Connection) Listen(pat string, cb func(key string, val interface{})) {
+	submsg := message.NewSubscribeMessage()
+	submsg.AddTopic([]byte(pat), 0)
 
-	glog.Infof("t: %q p: %v", string(msg.Topic()), v)
-	return nil
+	// inject a function to perform the decoding before doing the callback
+	c.clt.Subscribe(submsg, nil, func(msg *message.PublishMessage) error {
+
+		// decode the payload
+		b := msg.Payload()
+		dec := codec.NewDecoderBytes(b, mh)
+		var v interface{}
+		if err := dec.Decode(&v); err != nil {
+			return fmt.Errorf("cannot decode %v (%v)", msg, err)
+		}
+
+		// launch the supplied callback function
+		cb(string(msg.Topic()), v)
+		return nil
+	})
 }
 
 // Send a key/value message to the hub.

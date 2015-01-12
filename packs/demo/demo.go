@@ -3,6 +3,7 @@ package main
 
 import (
 	"flag"
+	"time"
 
 	"github.com/dataence/glog"
 	"github.com/jeelabs/jet/hub/connect"
@@ -15,8 +16,21 @@ func main() {
 	if err != nil {
 		glog.Fatal(err)
 	}
-
 	glog.Infof("connected %q", conn)
+
+	// subscribe to all topics
+	conn.Listen("#", func(key string, val interface{}) {
+		glog.Infof("t: %q p: %v", key, val)
+	})
+
+	// send a test message after one second
+	go func() {
+		time.Sleep(time.Second)
+		conn.Send("/test/haha", []interface{}{123, nil, "abc"})
+		time.Sleep(time.Second)
+		close(conn.Done)
+	}()
+
 	<-conn.Done
 	glog.Infof("disconnected %q", conn)
 }
