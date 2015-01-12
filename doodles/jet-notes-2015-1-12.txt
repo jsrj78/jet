@@ -1,0 +1,58 @@
+tying JET/Flow and MQTT together
+
+    retain mechanism is not used on the following draft
+    no thoughts yet about how this would fit in with JeeBoot
+
+connected packs based on two gadgets, called "s" and "r":
+
+    s /foo/bar
+        publishes all incoming messages to /foo/bar
+    s /foo/%1/bar
+        2nd inlet is inserted into the topic
+        
+    r /foo/bar
+        subscribes to receive all messages published on /foo/bar
+    r /foo/+/bar
+        second outlet is extracted from the topic
+    r /foo/#
+        second outlet is the tail of the topic
+        
+    topics without trailing slash are reserved for non-flow use
+        cannot be sent or received with the s and r gadgets
+        
+    circuits may need to be able to insert/remove a layer of context,
+        by prefixing/stripping the head of the topic
+        maybe variants of s and r could be defined which do this
+        
+    diagram editor could transform some wires into s/r pairs under the hood
+        s and r stil useful to declutter and void wires (also inside circuit)
+        need a way to distinguish plain s/r vs mqtt s/r (with a "/" it's mqtt?)
+    
+remote nodes:
+
+    topics are defined by the RF layer and driver, perhaps
+        /rf69/868-212/17
+    no further nesting, nodes pack their data, recipients must unpack
+    first value in packet can identify type, if there is more than one
+    
+    outbound are sent to
+        /rf69/868-212/out/17
+    the trailing node "/17" can be omitted for broadcasts
+    packet contents starts with a value to select pin, dev, etc
+    
+    strings avoided on the node side to reduce code complexity and RAM use
+    general model is that nodes broadcast, without caring who reads the stuff
+    all exchanges in MsgPack format, as array of values, implicit array len
+
+web clients:
+
+    web apps must attach/detach (more or less subscribe/unsubscribe)
+    massive small-grained topics must be supported
+        web client should optimise and batch up topic subscriptions
+        i.e. if app attaches to /a/b/c many times, only one sub is created
+        needs to track use/ref counts and could use clever optimisations
+        
+    incoming subscriptions must be handled efficiently
+        tie into Angular's change detection loop
+        optimisation: avoid sending full prefixes all the time
+        perhaps simple stream-based tokenisation of common strings

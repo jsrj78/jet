@@ -2,6 +2,7 @@ JET heater example mapped to MQTT
 =================================
 
 Some definitions:
+-----------------
 
 - Circuit: a circuit is a collection of gadgets or mugs that all run within one execution container.
 - Execution container: runs a circuit and can be a Node (embedded system), a Pack (server-side system)
@@ -34,6 +35,7 @@ wires to be exposed easily if necessary.
 Plus, naming all wires seems like a more consistent way to go.
 
 MQTT paths:
+-----------
 
 - Each circuit is assigned a unique MQTT path subtree:
 - `<type>/<circuit_id>/`
@@ -69,6 +71,7 @@ where:
 - <gadget_id>/<input_num> is a numbering of gadgets and inputs similar to the one done for outputs
 
 Node optimizations:
+-------------------
 
 Because handling long string-form MQTT paths in nodes is awkward, as is the whole publishing and
 subscription protocol, the driver in the hub facilitates the whole process. Specifically:
@@ -97,6 +100,7 @@ of any gadget for debugging purposes. Of course, instead of making this run-time
 the circuit could be recompiled and transparently reloaded.
 
 Circuit loading:
+----------------
 
 Loading a circuit causes it to "run". In general applications consist of multiple circuits that
 are loaded, for example, a circuit in each participating node, one in a pack, and one in every
