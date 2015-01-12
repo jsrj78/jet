@@ -1,10 +1,11 @@
 package main
 
 import (
-	"github.com/ugorji/go/codec"
 	"log"
 	"net"
 	"sync"
+
+	"github.com/ugorji/go/codec"
 )
 
 func main() {

@@ -1,9 +1,10 @@
 package main
 
 import (
-	"github.com/ugorji/go/codec"
 	"log"
 	"net"
+
+	"github.com/ugorji/go/codec"
 )
 
 func main() {
