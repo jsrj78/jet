@@ -21,7 +21,7 @@ type Connection struct {
 	clt  *service.Client
 }
 
-// NewConnection connects to the hub and announces this pack to it.
+// NewConnection connects to the hub and registers this pack.
 func NewConnection(name string) (*Connection, error) {
 	c := &Connection{}
 	c.Done = make(chan struct{})
@@ -37,15 +37,39 @@ func NewConnection(name string) (*Connection, error) {
 	msg.SetVersion(4)
 	msg.SetClientId([]byte(fmt.Sprintf("%s_%d", name, now)))
 	msg.SetKeepAlive(300)
+
+	// set up a "will" which gets published on connection loss
+	msg.SetWillFlag(true)
+	msg.SetWillTopic([]byte("hub/goodbye"))
+	val, err := encode([]interface{}{protocolVersion, name, now, pid, host})
+	if err != nil {
+		return nil, err
+	}
+	msg.SetWillMessage(val)
+
 	if err := c.clt.Connect("tcp://:1883", msg); err != nil {
 		return nil, err
 	}
 
 	// send out a greeting to sign up
-	c.Send("hub/hello", []interface{}{protocolVersion, name, now, pid, host})
+	c.Send("hub/hello", val)
 
 	// TODO add last-will message to broadcast when the connection goes away
 	return c, nil
+}
+
+// encode the payload as bytes, but only if val is not yet a []byte
+func encode(val interface{}) ([]byte, error) {
+	var e error
+	v, ok := val.([]byte)
+	if !ok {
+		enc := codec.NewEncoderBytes(&v, mh)
+		e = enc.Encode(val)
+		if e != nil {
+			v = nil
+		}
+	}
+	return v, e
 }
 
 // Listen to a topic (may have wildcards) and call the provided callback
@@ -80,10 +104,8 @@ func (c *Connection) Send(key string, val interface{}) {
 		}
 	}()
 
-	// encode the payload as bytes
-	var b []byte
-	enc := codec.NewEncoderBytes(&b, mh)
-	err = enc.Encode(val)
+	// encode the payload as bytes, but only if val is not yet a []byte
+	v, err := encode(val)
 	if err != nil {
 		return
 	}
@@ -91,7 +113,7 @@ func (c *Connection) Send(key string, val interface{}) {
 	// publish the message
 	pubmsg := message.NewPublishMessage()
 	pubmsg.SetTopic([]byte(key))
-	pubmsg.SetPayload(b)
+	pubmsg.SetPayload(v)
 	err = c.clt.Publish(pubmsg, nil)
 	if err != nil {
 		return
