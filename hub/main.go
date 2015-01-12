@@ -4,17 +4,17 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"time"
 
-	"github.com/golang/glog"
+	"github.com/dataence/glog"
+	"github.com/surge/surgemq/service"
 )
 
 var defFlag = flag.String("def", "hub.def", "hub definition filename")
 var runFlag = flag.String("run", ".", "run directory path")
 
 // these variables are bumped/updated by goxc when running "make dist"
-var VERSION = "0.0.11-alpha"
-var SOURCE_DATE = "2015-01-10T14:10:48+01:00"
+var VERSION = "0.0.12-alpha"
+var SOURCE_DATE = "2015-01-12T02:01:02+01:00"
 
 func printVersion() {
 	fmt.Printf("JET/Hub %s (%.10s)\n", VERSION, SOURCE_DATE)
@@ -51,14 +51,18 @@ var stop = make(chan struct{})
 var done = make(chan struct{})
 
 func worker() {
-	for {
-		time.Sleep(time.Second)
+	srv := &service.Server{}
+
+	go func() {
 		if _, ok := <-stop; ok {
-			break
+			srv.Close()
+			done <- struct{}{}
 		}
+	}()
+
+	if err := srv.ListenAndServe("tcp://:1883"); err != nil {
+		glog.Fatal(err)
 	}
-	time.Sleep(3 * time.Second)
-	done <- struct{}{}
 }
 
 func termHandler(wait bool) {

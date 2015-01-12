@@ -7,7 +7,7 @@ import (
 	"os"
 	"syscall"
 
-	"github.com/golang/glog"
+	"github.com/dataence/glog"
 	"github.com/sevlyar/go-daemon"
 )
 

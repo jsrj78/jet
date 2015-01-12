@@ -53,5 +53,5 @@ EOF
 case ${1:-"help"} in
     help) usage ;;
     status) tail -1 $HUBRUN/hub.log ;;
-    *) exec $HUBEXE -r $HUBRUN -d $HUBDEF "$@" ;;
+    *) exec $HUBEXE -run $HUBRUN -def $HUBDEF -logtostderr "$@" ;;
 esac

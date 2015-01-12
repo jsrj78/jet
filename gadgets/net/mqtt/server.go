@@ -1,7 +1,7 @@
 package mqtt
 
 import (
-	"github.com/golang/glog"
+	"github.com/dataence/glog"
 	"github.com/jeelabs/jet/flow"
 	"github.com/surge/surgemq/service"
 )
