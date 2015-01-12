@@ -1,3 +1,4 @@
+// This package is a small demo "pack" which connects to JET/Hub.
 package main
 
 import (
@@ -6,8 +7,6 @@ import (
 	"github.com/dataence/glog"
 	"github.com/jeelabs/jet/hub/connect"
 )
-
-var done = make(chan struct{})
 
 func main() {
 	flag.Parse()
@@ -18,6 +17,6 @@ func main() {
 	}
 
 	glog.Infof("connected %q", conn)
-	<-done
+	<-conn.Done
 	glog.Infof("disconnected %q", conn)
 }

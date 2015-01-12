@@ -15,12 +15,16 @@ const protocolVersion = 1
 
 var mh = &codec.MsgpackHandle{RawToString: true}
 
+// Connection represents an open connection to the hub.
 type Connection struct {
-	clt *service.Client
+	Done chan struct{}
+	clt  *service.Client
 }
 
+// NewConnection connects to the hub and announces this pack to it.
 func NewConnection(name string) (*Connection, error) {
 	c := &Connection{}
+	c.Done = make(chan struct{})
 	c.clt = &service.Client{}
 
 	// collect some information
@@ -48,6 +52,7 @@ func NewConnection(name string) (*Connection, error) {
 	return c, nil
 }
 
+// onPublish is called whenever a new publish message comes in.
 func onPublish(msg *message.PublishMessage) error {
 	b := msg.Payload()
 	dec := codec.NewDecoderBytes(b, mh)
@@ -60,6 +65,7 @@ func onPublish(msg *message.PublishMessage) error {
 	return nil
 }
 
+// Send a key/value message to the hub.
 func (c *Connection) Send(key string, val interface{}) {
 	// don't return errors, only report them
 	var err error
