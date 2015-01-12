@@ -7,16 +7,17 @@ import (
 	"github.com/jeelabs/jet/hub/connect"
 )
 
+var done = make(chan struct{})
+
 func main() {
 	flag.Parse()
 
-	conn, err := connect.NewConnection("ha")
+	conn, err := connect.NewConnection("demo")
 	if err != nil {
 		glog.Fatal(err)
 	}
 
-	glog.Infof("conn %v", conn)
-
-	done := make(chan struct{})
+	glog.Infof("connected %q", conn)
 	<-done
+	glog.Infof("disconnected %q", conn)
 }

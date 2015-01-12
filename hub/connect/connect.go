@@ -2,6 +2,7 @@ package connect
 
 import (
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/dataence/glog"
@@ -10,20 +11,27 @@ import (
 	"github.com/ugorji/go/codec"
 )
 
+const protocolVersion = 1
+
 var mh = &codec.MsgpackHandle{RawToString: true}
 
 type Connection struct {
 	clt *service.Client
 }
 
-func NewConnection(ha string) (*Connection, error) {
+func NewConnection(name string) (*Connection, error) {
 	c := &Connection{}
 	c.clt = &service.Client{}
+
+	// collect some information
+	now := time.Now().Unix()
+	pid := os.Getpid()
+	host, _ := os.Hostname()
 
 	// connect to the remote server
 	msg := message.NewConnectMessage()
 	msg.SetVersion(4)
-	msg.SetClientId([]byte(fmt.Sprintf("hubclient%d", time.Now().Unix())))
+	msg.SetClientId([]byte(fmt.Sprintf("%s_%d", name, now)))
 	msg.SetKeepAlive(300)
 	if err := c.clt.Connect("tcp://:1883", msg); err != nil {
 		return nil, err
@@ -34,8 +42,8 @@ func NewConnection(ha string) (*Connection, error) {
 	submsg.AddTopic([]byte("#"), 0)
 	c.clt.Subscribe(submsg, nil, onPublish)
 
-	// send a test data structure
-	c.Send("/test", []interface{}{"hello", 123, nil, 45.67})
+	// send a greeting to sign up
+	c.Send("hub/hello", []interface{}{protocolVersion, name, now, pid, host})
 
 	return c, nil
 }
@@ -74,4 +82,7 @@ func (c *Connection) Send(key string, val interface{}) {
 	pubmsg.SetTopic([]byte(key))
 	pubmsg.SetPayload(b)
 	err = c.clt.Publish(pubmsg, nil)
+	if err != nil {
+		return
+	}
 }
