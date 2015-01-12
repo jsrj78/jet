@@ -47,28 +47,17 @@ func dispatch(cmd string) {
 	}
 }
 
-var stop = make(chan struct{})
-var done = make(chan struct{})
+var srv = &service.Server{}
 
 func worker() {
-	srv := &service.Server{}
-
-	go func() {
-		if _, ok := <-stop; ok {
-			srv.Close()
-			done <- struct{}{}
-		}
-	}()
-
 	if err := srv.ListenAndServe("tcp://:1883"); err != nil {
 		glog.Fatal(err)
 	}
 }
 
-func termHandler(wait bool) {
-	stop <- struct{}{}
+func terminate(wait bool) {
 	if wait {
-		<-done
+		srv.Close()
 	}
 }
 
