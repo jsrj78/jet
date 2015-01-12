@@ -7,6 +7,17 @@ other parts of a JET system.
 Godoc documentation: <http://godoc.org/github.com/jeelabs/jet/hub>  
 MIT license, see the LICENSE file: <https://github.com/jeelabs/jet>
 
+Running JET/Hub
+---------------
+
+* do `cd .../jet/hub && make` to build the executable (jet/build/jethub)
+* put the `.../jet/jet` script in your path (or better: a symlink to it)
+* to start the hub as background process: `jet start`
+* the logs get appended to `.../jet/run/hub.log`
+* last line of the log is shown with: `jet status`
+* stop the hub again with: `jet stop`
+* wanna know more? `jet help`
+
 Functions
 ---------
 
