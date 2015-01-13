@@ -9,10 +9,17 @@
   msgpack = require('msgpack');
 
   client = mqtt.connect('localhost', {
-    keepalive: 0
+    keepalive: 300
   });
 
-  client.subscribe('#');
+  client.on('error', function(e) {
+    return console.log('error:', e);
+  });
+
+  client.on('connect', function() {
+    console.log('connect:', Date());
+    return client.subscribe('#');
+  });
 
   client.on('message', function(topic, payload) {
     return console.log(topic, JSON.stringify(msgpack.unpack(payload)));

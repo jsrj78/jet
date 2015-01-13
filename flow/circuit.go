@@ -40,7 +40,7 @@ var (
 // Control gets called with messages sent to the special nil inlet.
 func (c *Circuit) Control(cmd Vec) {
 	fmt.Println("Circuit control:", cmd)
-	switch cmd[0] {
+	switch cmd.Tag() {
 
 	case addSym: // Add a new gadget to the circuit.
 		typ := cmd[1].(string)
