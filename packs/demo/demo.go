@@ -16,7 +16,7 @@ func main() {
 	if err != nil {
 		glog.Fatal(err)
 	}
-	glog.Infof("connected %q", conn)
+	glog.Infof("connected %v", conn)
 
 	// subscribe to all topics
 	conn.Listen("#", func(key string, val interface{}) {
@@ -32,5 +32,5 @@ func main() {
 	}()
 
 	<-conn.Done
-	glog.Infof("disconnected %q", conn)
+	glog.Infof("disconnected %v", conn)
 }
