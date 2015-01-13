@@ -15,6 +15,7 @@ func NewCircuit() *Circuit {
 	return c
 }
 
+// Request an action from the Circuit. The first array item is sent as symbol.
 func (c *Circuit) Request(req string, args ...Message) {
 	cmd := append([]Message{Sym(req)}, args...)
 	c.feed <- incoming{msg: cmd}

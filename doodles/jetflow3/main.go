@@ -22,6 +22,7 @@ type MetroG struct {
 	Out flow.Outlet
 }
 
+// Setup is called when a gadget starts running.
 func (g *MetroG) Setup() {
 	// TODO this is test code, needs a real implementation
 	fmt.Println("MetroG setup")
@@ -42,6 +43,7 @@ type RepeatG struct {
 	Out flow.Outlet
 }
 
+// Trigger is called when a message arrives on a hot inlet.
 func (g *RepeatG) Trigger() {
 	for i := 0; i < g.Num.(int); i++ {
 		g.Out.Send(g.In)
@@ -54,6 +56,7 @@ type PrintG struct {
 	In flow.Inlet
 }
 
+// Trigger is called when a message arrives on a hot inlet.
 func (g *PrintG) Trigger() {
 	fmt.Println(g.In)
 }
