@@ -4,10 +4,38 @@ package flow
 // Message is a generic data item which can be sent between gadgets.
 type Message interface{}
 
-// List constructs a slice from a list of messages.
-func List(v ...Message) []Message {
+// Vec is a slice of messages (and is also a message).
+type Vec []Message
+
+// NewVec constructs a Vec from a list of messages.
+func NewVec(v ...Message) Vec {
 	return v
 }
+
+// Nth returns the n'th item of a vec, or NoSym if it doesn't exist.
+func (v *Vec) Nth(index int) Message {
+	if index >= len(*v) {
+		return nil
+	}
+	return (*v)[index]
+}
+
+// Tag returns the first item of a Vec as SymVal, or NoSym if it can't.
+func (v *Vec) Tag() SymVal {
+	if len(*v) > 0 {
+		switch x := (*v)[0].(type) {
+		// TODO maybe also int?
+		case SymVal:
+			return x
+		case string:
+			return Sym(x)
+		}
+	}
+	return NoSym
+}
+
+// Map is a hash of messages with string keys (and is also a message).
+type Map map[string]Message
 
 // Circuitry is the collective name for gadgets and circuits.
 type Circuitry interface {
@@ -19,7 +47,7 @@ type Circuitry interface {
 	Outlet(n int) *Outlet
 
 	Setup()
-	Control(cmd []Message)
+	Control(Vec)
 	Trigger()
 	Cleanup()
 
@@ -27,7 +55,9 @@ type Circuitry interface {
 }
 
 // the empty string, i.e. SymVal zero, is special
-var symbols = map[string]SymVal{"": SymVal(0)}
+const NoSym = SymVal(0)
+
+var symbols = map[string]SymVal{"": NoSym}
 var symList = []string{""}
 
 // SymVal is a unique small number representing a symbol.

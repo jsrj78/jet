@@ -52,7 +52,7 @@ func (g *Gadget) run() {
 	g.self.Setup()
 	for x := range g.feed {
 		if x.pin == nil {
-			g.self.Control(x.msg.([]Message))
+			g.self.Control(x.msg.(Vec))
 		} else {
 			*x.pin = x.msg
 			if g.IsHot(x.pin) {
@@ -115,7 +115,7 @@ func (g *Gadget) Setup() {
 }
 
 // Control gets called with messages sent to the special nil inlet.
-func (g *Gadget) Control(cmd []Message) {
+func (g *Gadget) Control(cmd Vec) {
 	fmt.Println("Gadget control:", cmd)
 }
 

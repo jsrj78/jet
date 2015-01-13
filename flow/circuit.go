@@ -17,7 +17,7 @@ func NewCircuit() *Circuit {
 
 // Request an action from the Circuit. The first array item is sent as symbol.
 func (c *Circuit) Request(req string, args ...Message) {
-	cmd := append([]Message{Sym(req)}, args...)
+	cmd := append(Vec{Sym(req)}, args...)
 	c.feed <- incoming{msg: cmd}
 }
 
@@ -38,7 +38,7 @@ var (
 )
 
 // Control gets called with messages sent to the special nil inlet.
-func (c *Circuit) Control(cmd []Message) {
+func (c *Circuit) Control(cmd Vec) {
 	fmt.Println("Circuit control:", cmd)
 	switch cmd[0] {
 
