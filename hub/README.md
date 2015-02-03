@@ -10,12 +10,12 @@ MIT license, see the LICENSE file: <https://github.com/jeelabs/jet>
 Running JET/Hub
 ---------------
 
-* do `cd .../jet/hub && make` to build the executable (jet/build/jethub)
-* put the `.../jet/jet` script in your path (or better: a symlink to it)
+* do `cd jet/hub && make` to build the executable (jet/build/jethub)
+* put a symlink to the `jet/jet` script somewhere in your executable PATH
 * to start the hub as background process: `jet start`
-* the logs get appended to `.../jet/run/hub.log`
-* last line of the log is shown with: `jet status`
+* to see the last line of the log: `jet status`
 * stop the hub again with: `jet stop`
+* unless configured otherwise, logs are appended to `jet/run/hub.log`
 * wanna know more? `jet help`
 
 Functions
