@@ -5,7 +5,7 @@ import (
 	"flag"
 	"time"
 
-	"github.com/dataence/glog"
+	"github.com/surge/glog"
 	"github.com/jeelabs/jet/hub/connect"
 )
 

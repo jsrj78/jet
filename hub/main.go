@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/dataence/glog"
-	"github.com/surge/surgemq/service"
+	"github.com/surge/glog"
+	"github.com/surgemq/surgemq/service"
 )
 
 var defFlag = flag.String("def", "hub.def", "hub definition filename")

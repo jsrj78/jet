@@ -7,8 +7,8 @@ import (
 	"os"
 	"syscall"
 
-	"github.com/dataence/glog"
 	"github.com/sevlyar/go-daemon"
+	"github.com/surge/glog"
 )
 
 var ctx = &daemon.Context{

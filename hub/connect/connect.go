@@ -5,9 +5,9 @@ import (
 	"os"
 	"time"
 
-	"github.com/dataence/glog"
-	"github.com/surge/surgemq/message"
-	"github.com/surge/surgemq/service"
+	"github.com/surge/glog"
+	"github.com/surgemq/surgemq/message"
+	"github.com/surgemq/surgemq/service"
 	"github.com/ugorji/go/codec"
 )
 
