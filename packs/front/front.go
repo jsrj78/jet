@@ -9,13 +9,20 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"strings"
+	"sync"
 
 	"github.com/jeelabs/jet/hub/connect"
 	"github.com/surge/glog"
 	"golang.org/x/net/websocket"
 )
 
-var conn *connect.Connection
+var (
+	conn *connect.Connection
+
+	muSess sync.RWMutex
+	sess   = map[string]*websocket.Conn{}
+)
 
 func main() {
 	flag.Parse()
@@ -26,6 +33,24 @@ func main() {
 		glog.Fatal(err)
 	}
 	glog.Infof("connected %v", conn)
+
+	// subscribe to all topics
+	conn.Listen("#", func(key string, val interface{}) {
+		// create a string + JSON message to send out
+		data, err := json.Marshal(val)
+		if err != nil {
+			glog.Errorln(err)
+			return
+		}
+		msg := append([]byte(key+" "), data...)
+
+		// send the message to all web sockets
+		muSess.RLock()
+		defer muSess.RUnlock()
+		for _, ws := range sess {
+			ws.Write(msg)
+		}
+	})
 
 	// set up static web server and websocket handler
 	http.Handle("/", http.FileServer(http.Dir("../../web")))
@@ -44,6 +69,10 @@ func wsHandler(ws *websocket.Conn) {
 
 	conn.Send("hub/connect", remote)
 	defer conn.Send("hub/disconnect", remote)
+
+	muSess.Lock()
+	sess[remote] = ws
+	muSess.Unlock()
 
 	buf := bufio.NewReader(ws)
 	pendingPrefix := ""
@@ -76,6 +105,11 @@ func wsHandler(ws *websocket.Conn) {
 			break
 		}
 		pendingPrefix = string(all)
+
+		// FIXME what do do if the readahead consumed more than a topic prefix?
+		if strings.IndexByte(pendingPrefix, ' ') >= 0 {
+			glog.Fatal("JSON decoding was too greedy:", pendingPrefix)
+		}
 
 		// publish the topic/payload we got
 		conn.Send(topic, payload)
