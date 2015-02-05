@@ -1,0 +1,2 @@
+default:
+	node dump.js
