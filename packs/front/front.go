@@ -106,7 +106,7 @@ func wsHandler(ws *websocket.Conn) {
 		}
 		pendingPrefix = string(all)
 
-		// FIXME what do do if the readahead consumed more than a topic prefix?
+		// FIXME what to do if read-ahead consumed more than the topic prefix?
 		if strings.IndexByte(pendingPrefix, ' ') >= 0 {
 			glog.Fatal("JSON decoding was too greedy:", pendingPrefix)
 		}
@@ -115,6 +115,6 @@ func wsHandler(ws *websocket.Conn) {
 		conn.Send(topic, payload)
 	}
 
-	// can only exit the above loop if something went wrong
+	// this is only reached if something went wrong
 	glog.Errorln(remote, err)
 }
