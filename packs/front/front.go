@@ -2,7 +2,6 @@
 package main
 
 import (
-	"bytes"
 	"encoding/json"
 	"flag"
 	"io"
@@ -98,29 +97,37 @@ func wsHandler(ws *websocket.Conn) {
 	wsSessions[remote] = ws
 	muSess.Unlock()
 
-	buf := make([]byte, 1024)
+	var err error
+
 	for {
-		n, err := ws.Read(buf)
-		if err != nil {
-			if err == io.EOF {
-				return // websocket was closed
+		// grab until next space as topic name
+		var token []byte
+		buf := make([]byte, 1)
+		for {
+			_, err = ws.Read(buf)
+			if err != nil {
+				if err == io.EOF && len(token) == 0 {
+					return // websocket was closed
+				}
+				glog.Errorln(remote, err)
+				break
 			}
-			glog.Errorln(remote, err)
-			break
+			if buf[0] == ' ' {
+				break
+			}
+			token = append(token, buf[0])
 		}
+		topic := string(token)
+		glog.Infoln("topic", topic)
 
-		sep := bytes.IndexByte(buf[:n], ' ')
-		if sep < 0 {
-			glog.Fatal("no separator:", buf[:n])
-		}
-		topic := string(buf[:sep])
-
+		// then decode one JSON object
+		decoder := json.NewDecoder(ws)
 		var payload interface{}
-		err = json.Unmarshal(buf[sep+1:n], &payload)
+		err = decoder.Decode(&payload)
 		if err != nil {
-			glog.Error(remote, err)
 			break
 		}
+		glog.Infoln("payload", payload)
 
 		// publish the topic/payload we got
 		mqttConn.Send(topic, payload)
