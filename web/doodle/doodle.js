@@ -6,20 +6,67 @@
 
   app.value('wsPort', 1111);
 
-  app.controller('DoodleCtrl', function($scope, $timeout, $websocket, wsPort) {
+  app.controller('DoodleCtrl', function($scope, $timeout, $websocket, wsPort, fileReader) {
     var ws, wsProto;
     wsProto = "https:" === document.location.protocol ? "wss" : "ws";
     ws = $websocket.connect("" + wsProto + "://" + location.hostname + ":" + wsPort + "/ws");
     ws.register('', function(topic, body) {
       return console.log('mqtt:', topic, body);
     });
-    ws.emit('/doodle/dah', [7, 8, 9]);
+    ws.emit('/doodle', [1, 2, 3]);
     $timeout(function() {
-      return ws.emit('/doodle', [1, 2, 3]);
-    }, 1000);
-    return $timeout(function() {
       return ws.emit('/doodledah', [4, 5, 6]);
+    }, 1000);
+    $timeout(function() {
+      return ws.emit('/doodle/dah', [7, 8, 9]);
     }, 2000);
+    $scope.connect = function() {
+      return console.log('CONNECT');
+    };
+    $scope.disconnect = function() {
+      return console.log('DISCONNECT');
+    };
+    return $scope.upload = function() {
+      return fileReader($scope, $scope.file).then(function(data) {
+        console.log('UPLOADED', data.length);
+        return ws.emit("serial/" + $scope.tty + "/upload", data);
+      });
+    };
+  });
+
+  app.directive('fileModel', function($parse) {
+    return {
+      retrict: 'A',
+      link: function(scope, elem, attrs) {
+        var model;
+        model = $parse(attrs.fileModel);
+        return elem.bind('change', function() {
+          return scope.$apply(function() {
+            return model.assign(scope, elem[0].files[0]);
+          });
+        });
+      }
+    };
+  });
+
+  app.factory('fileReader', function($q) {
+    return function(scope, file) {
+      var deferred, reader;
+      deferred = $q.defer();
+      reader = new FileReader();
+      reader.onload = function() {
+        return scope.$apply(function() {
+          return deferred.resolve(reader.result);
+        });
+      };
+      reader.onerror = function() {
+        return scope.$apply(function() {
+          return deferred.reject(reader.result);
+        });
+      };
+      reader.readAsBinaryString(file);
+      return deferred.promise;
+    };
   });
 
 }).call(this);

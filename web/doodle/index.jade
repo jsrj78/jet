@@ -20,8 +20,26 @@ html(lang='en', ng-app='DoodleApp' ng-controller='DoodleCtrl')
         .content
           form.pure-form
             fieldset
-              legend Upload
-              input(type="text" placeholder="/dev/tty...")
+              legend Serial port
+              input(type="text" placeholder="/dev/tty..." ng-model="tty")
+              button.pure-button.pure-button-primary(ng-click="connect()").
+                Connect
+              button.pure-button(ng-click="disconnect()").
+                Disconnect
+            fieldset
+              legend Firmware (.bin)
+              input(type="file" file-model="file")
+              button.pure-button.pure-button-primary(ng-click="upload()").
+                Upload
+            fieldset
+              legend Output
+              .pure-g
+                .pure-u-1
+                  textarea(style="width:100%" rows=10 readonly wrap="off")
+
+          pre.
+            tty = {{tty}}
+            file = {{file}}
 
     script(src="bower_components/angular/angular.min.js")
     script(src="bower_components/angular-websocket-service/websocket.js")

@@ -17,10 +17,28 @@
         <div class="content">
           <form class="pure-form">
             <fieldset>
-              <legend>Upload</legend>
-              <input type="text" placeholder="/dev/tty...">
+              <legend>Serial port</legend>
+              <input type="text" placeholder="/dev/tty..." ng-model="tty">
+              <button ng-click="connect()" class="pure-button pure-button-primary">Connect</button>
+              <button ng-click="disconnect()" class="pure-button">Disconnect</button>
+            </fieldset>
+            <fieldset>
+              <legend>Firmware (.bin)</legend>
+              <input type="file" file-model="file">
+              <button ng-click="upload()" class="pure-button pure-button-primary">Upload</button>
+            </fieldset>
+            <fieldset>
+              <legend>Output</legend>
+              <div class="pure-g">
+                <div class="pure-u-1">
+                  <textarea style="width:100%" rows="10" readonly wrap="off"></textarea>
+                </div>
+              </div>
             </fieldset>
           </form>
+          <pre>tty = {{tty}}
+file = {{file}}
+</pre>
         </div>
       </div>
     </div>
