@@ -31,7 +31,7 @@ app.controller 'DoodleCtrl', ($scope, $timeout, $websocket, wsPort, fileReader) 
 # see https://github.com/ghostbar/angular-file-model/blob/master/angular-file-model.js
 # fill in the file-model attribute when an upload file has been selected
 app.directive 'fileModel', ($parse) -> {
-  retrict: 'A'
+  restrict: 'A'
   link: (scope, elem, attrs) ->
     model = $parse attrs.fileModel
     elem.bind 'change', ->

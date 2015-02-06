@@ -2,11 +2,10 @@
 package main
 
 import (
-	"bufio"
+	"bytes"
 	"encoding/json"
 	"flag"
 	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"strings"
@@ -99,47 +98,31 @@ func wsHandler(ws *websocket.Conn) {
 	wsSessions[remote] = ws
 	muSess.Unlock()
 
-	buf := bufio.NewReader(ws)
-	pendingPrefix := ""
-	var err error
-
+	buf := make([]byte, 1024)
 	for {
-		// grab until next space as topic name
-		var suffix string
-		suffix, err = buf.ReadString(' ')
+		n, err := ws.Read(buf)
 		if err != nil {
 			if err == io.EOF {
 				return // websocket was closed
 			}
+			glog.Errorln(remote, err)
 			break
 		}
-		topic := pendingPrefix + suffix[:len(suffix)-1]
 
-		// then decode one JSON object
-		decoder := json.NewDecoder(buf)
+		sep := bytes.IndexByte(buf[:n], ' ')
+		if sep < 0 {
+			glog.Fatal("no separator:", buf[:n])
+		}
+		topic := string(buf[:sep])
+
 		var payload interface{}
-		err = decoder.Decode(&payload)
+		err = json.Unmarshal(buf[sep+1:n], &payload)
 		if err != nil {
+			glog.Error(remote, err)
 			break
-		}
-
-		// everything we read too far ends up as prefix for the next topic
-		var all []byte
-		all, err = ioutil.ReadAll(decoder.Buffered())
-		if err != nil {
-			break
-		}
-		pendingPrefix = string(all)
-
-		// FIXME what to do if read-ahead consumed more than the topic prefix?
-		if strings.IndexByte(pendingPrefix, ' ') >= 0 {
-			glog.Fatal("JSON decoding was too greedy:", pendingPrefix)
 		}
 
 		// publish the topic/payload we got
 		mqttConn.Send(topic, payload)
 	}
-
-	// this is only reached if something went wrong
-	glog.Errorln(remote, err)
 }
