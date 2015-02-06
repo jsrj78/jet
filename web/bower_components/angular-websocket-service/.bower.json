@@ -25,6 +25,5 @@
   },
   "_source": "git://github.com/azurestandard/angular-websocket-service.git",
   "_target": "~0.2.0",
-  "_originalSource": "angular-websocket-service",
-  "_direct": true
+  "_originalSource": "angular-websocket-service"
 }
