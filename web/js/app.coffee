@@ -1,9 +1,9 @@
-ng = angular.module 'MyApp', ['websocket']
+app = angular.module 'MyApp', ['websocket']
 
-ng.run ($rootScope) ->
+app.run ($rootScope) ->
   $rootScope.dummyMsg = 'JET says hello...'
 
-ng.controller 'MainCtrl', ($scope, $timeout, $websocket) ->
+app.controller 'MainCtrl', ($scope, $timeout, $websocket) ->
   wsProto = if "https:" is document.location.protocol then "wss" else "ws"
   ws = $websocket.connect "#{wsProto}://#{location.hostname}:1111/ws", ["jet"]
 
