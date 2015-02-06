@@ -47,7 +47,8 @@ func dispatch(cmd string) {
 	}
 }
 
-var srv = &service.Server{}
+// FIXME long keepalive avoids issue #5
+var srv = &service.Server{KeepAlive: 3600}
 
 func worker() {
 	if err := srv.ListenAndServe("tcp://:1883"); err != nil {
