@@ -21,7 +21,7 @@ html(lang='en', ng-app='DoodleApp' ng-controller='DoodleCtrl')
           form.pure-form
             fieldset
               legend Serial port
-              input(type="text" placeholder="/dev/tty..." ng-model="tty")
+              input(type="text" placeholder="tty..." ng-model="tty")
               button.pure-button.pure-button-primary(ng-click="connect()").
                 Connect
               button.pure-button(ng-click="disconnect()").

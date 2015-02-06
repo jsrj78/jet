@@ -127,7 +127,6 @@ func wsHandler(ws *websocket.Conn) {
 		if err != nil {
 			break
 		}
-		glog.Infoln("payload", payload)
 
 		// publish the topic/payload we got
 		mqttConn.Send(topic, payload)

@@ -17,8 +17,10 @@ app.controller 'DoodleCtrl', ($scope, $timeout, $websocket, wsPort, fileReader) 
     ws.emit '/doodledah', [4, 5, 6]
   , 1000
   $timeout ->
-    ws.emit '/doodle/dah', [7, 8, 9]
+    ws.emit '/doodle/dadah', [7, 8, 9]
   , 2000
+
+  $scope.tty = ""
 
   $scope.connect = -> console.log 'CONNECT'
 

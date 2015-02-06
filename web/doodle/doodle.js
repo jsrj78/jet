@@ -23,8 +23,9 @@
       return ws.emit('/doodledah', [4, 5, 6]);
     }, 1000);
     $timeout(function() {
-      return ws.emit('/doodle/dah', [7, 8, 9]);
+      return ws.emit('/doodle/dadah', [7, 8, 9]);
     }, 2000);
+    $scope.tty = "";
     $scope.connect = function() {
       return console.log('CONNECT');
     };
