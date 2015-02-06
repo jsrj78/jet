@@ -3,6 +3,7 @@ package connect
 import (
 	"fmt"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/surge/glog"
@@ -36,7 +37,7 @@ func NewConnection(name string) (*Connection, error) {
 	msg := message.NewConnectMessage()
 	msg.SetVersion(4)
 	msg.SetClientId([]byte(fmt.Sprintf("%s_%d", name, now)))
-	msg.SetKeepAlive(300)
+	msg.SetKeepAlive(3600)
 
 	// set up a "will" which gets published on connection loss
 	msg.SetWillFlag(true)
@@ -114,6 +115,7 @@ func (c *Connection) Send(key string, val interface{}) {
 	pubmsg := message.NewPublishMessage()
 	pubmsg.SetTopic([]byte(key))
 	pubmsg.SetPayload(v)
+	pubmsg.SetRetain(strings.HasPrefix(key, "/"))
 	err = c.clt.Publish(pubmsg, nil)
 	if err != nil {
 		return
