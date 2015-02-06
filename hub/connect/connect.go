@@ -55,7 +55,6 @@ func NewConnection(name string) (*Connection, error) {
 	// send out a greeting to sign up
 	c.Send("hub/hello", val)
 
-	// TODO add last-will message to broadcast when the connection goes away
 	return c, nil
 }
 
@@ -115,7 +114,7 @@ func (c *Connection) Send(key string, val interface{}) {
 	pubmsg := message.NewPublishMessage()
 	pubmsg.SetTopic([]byte(key))
 	pubmsg.SetPayload(v)
-	pubmsg.SetRetain(strings.HasPrefix(key, "/"))
+	pubmsg.SetRetain(strings.HasPrefix(key, "/") && val != nil)
 	err = c.clt.Publish(pubmsg, nil)
 	if err != nil {
 		return

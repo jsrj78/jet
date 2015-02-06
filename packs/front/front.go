@@ -34,7 +34,7 @@ func main() {
 	if err != nil {
 		glog.Fatal(err)
 	}
-	glog.Infof("connected %v", mqttConn)
+	glog.Infoln("connected", mqttConn)
 
 	// subscribe to all topics
 	mqttConn.Listen("#", func(key string, val interface{}) {
@@ -65,7 +65,7 @@ func main() {
 
 	// never reached
 	//<-mqttConn.Done
-	//glog.Infof("disconnected %v", mqttConn)
+	//glog.Infoln("disconnected", mqttConn)
 }
 
 func updatePersistentTopics(key string, val interface{}) {
