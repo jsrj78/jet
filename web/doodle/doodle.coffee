@@ -7,7 +7,9 @@ app.controller 'DoodleCtrl', ($scope, $timeout, $websocket, wsPort, fileReader) 
   ws = $websocket.connect "#{wsProto}://#{location.hostname}:#{wsPort}/ws"
 
   ws.register '', (topic, body) ->
-    console.log 'mqtt:', topic, body
+    s = body
+    s = body.substr(0, 30) + "..."  if s.length > 30
+    console.log 'mqtt:', topic, s
 
   ws.emit '/doodle', [1, 2, 3]
 

@@ -11,7 +11,12 @@
     wsProto = "https:" === document.location.protocol ? "wss" : "ws";
     ws = $websocket.connect("" + wsProto + "://" + location.hostname + ":" + wsPort + "/ws");
     ws.register('', function(topic, body) {
-      return console.log('mqtt:', topic, body);
+      var s;
+      s = body;
+      if (s.length > 30) {
+        s = body.substr(0, 30) + "...";
+      }
+      return console.log('mqtt:', topic, s);
     });
     ws.emit('/doodle', [1, 2, 3]);
     $timeout(function() {

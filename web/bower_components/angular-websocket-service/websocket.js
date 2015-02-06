@@ -10,7 +10,8 @@ var websocketModule = angular
     .module('websocket', [])
     .factory('$websocket', ['$rootScope', function($rootScope) {
         var make_message = function (topic, body) {
-            return topic + " " + JSON.stringify(body);
+            //jcw return topic + " " + JSON.stringify(body);
+            return topic + " " + JSON.stringify(body) + "\n";
         };
 
         var parse_message = function (msg) {
