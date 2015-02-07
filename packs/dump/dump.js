@@ -21,8 +21,23 @@
     return client.subscribe('#');
   });
 
-  client.on('message', function(topic, payload) {
-    return console.log(topic, JSON.stringify(msgpack.unpack(payload)));
+  client.on('message', function(topic, payload, packet) {
+    var limit, s;
+    if (packet.retain) {
+      topic = 'R: ' + topic;
+    }
+    s = JSON.stringify(msgpack.unpack(payload));
+    limit = 78 - topic.length;
+    if (limit < 20) {
+      limit = 20;
+    }
+    if (s.length > limit) {
+      s = s.substr(0, limit - 3) + '...';
+    } else {
+      s = s.substr(0, limit);
+    }
+    s = s.replace(/[\x00-\x1F\x7F-\xFF]/g, '?');
+    return console.log(topic, s);
   });
 
 }).call(this);
