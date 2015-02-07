@@ -29,8 +29,8 @@ app.controller 'DoodleCtrl', ($scope, $timeout, $websocket, wsPort, fileReader) 
   $scope.upload = ->
     fileReader $scope, $scope.file
       .then (data) ->
-        console.log 'UPLOADED', data.length
-        ws.emit "serial/#{$scope.tty}/upload", data
+        console.log 'UPLOADED', data.length, 'bytes'
+        ws.emit "serial/#{$scope.tty}/upload", { data: data }
 
 # see https://github.com/ghostbar/angular-file-model/blob/master/angular-file-model.js
 # fill in the file-model attribute when an upload file has been selected

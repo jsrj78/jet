@@ -27,7 +27,7 @@
 		"enableSmartyPants": 1,
 		"expandTabs": 1,
 		"fileType": 4096,
-		"ignore": 0,
+		"ignore": 1,
 		"ignoreWasSetByUser": 0,
 		"inputAbbreviatedPath": "\/bower_components\/angular-websocket-service\/README.md",
 		"outputAbbreviatedPath": "\/bower_components\/angular-websocket-service\/README.html",
@@ -81,7 +81,7 @@
 		"enableSmartyPants": 1,
 		"expandTabs": 1,
 		"fileType": 4096,
-		"ignore": 0,
+		"ignore": 1,
 		"ignoreWasSetByUser": 0,
 		"inputAbbreviatedPath": "\/bower_components\/angular\/README.md",
 		"outputAbbreviatedPath": "\/bower_components\/angular\/README.html",
@@ -152,6 +152,15 @@
 		"outputPathIsSetByUser": 0,
 		"processed": 1
 		},
+	"\/index.html": {
+		"fileType": 8192,
+		"ignore": 1,
+		"ignoreWasSetByUser": 0,
+		"inputAbbreviatedPath": "\/index.html",
+		"outputAbbreviatedPath": "No Output Path",
+		"outputPathIsOutsideProject": 0,
+		"outputPathIsSetByUser": 0
+		},
 	"\/index.jade": {
 		"compileDebug": 1,
 		"fileType": 512,
@@ -204,7 +213,7 @@
 		"expandTabs": 1,
 		"fileType": 4096,
 		"ignore": 1,
-		"ignoreWasSetByUser": 1,
+		"ignoreWasSetByUser": 0,
 		"inputAbbreviatedPath": "\/README.md",
 		"outputAbbreviatedPath": "\/README.html",
 		"outputPathIsOutsideProject": 0,
@@ -235,7 +244,7 @@
 	"coffeeAutoOutputPathReplace1": "",
 	"coffeeAutoOutputPathReplace2": "",
 	"coffeeAutoOutputPathStyle": 0,
-	"coffeeCreateSourceMap": 0,
+	"coffeeCreateSourceMap": 1,
 	"coffeeLintFlags2": {
 		"arrow_spacing": {
 			"active": 0,
@@ -362,7 +371,7 @@
 			"flagValue": -1
 			}
 		},
-	"coffeeMinifyOutput": 1,
+	"coffeeMinifyOutput": 0,
 	"coffeeOutputStyle": 0,
 	"coffeeSyntaxCheckerStyle": 1,
 	"externalServerAddress": "http:\/\/localhost:8888",
@@ -816,7 +825,7 @@
 	"lessStrictImports": 0,
 	"lessStrictMath": 0,
 	"lessStrictUnits": 0,
-	"markdownAutoOutputPathEnabled": 1,
+	"markdownAutoOutputPathEnabled": 0,
 	"markdownAutoOutputPathFilenamePattern": "*.html",
 	"markdownAutoOutputPathRelativePath": "",
 	"markdownAutoOutputPathReplace1": "",

@@ -34,8 +34,10 @@
     };
     return $scope.upload = function() {
       return fileReader($scope, $scope.file).then(function(data) {
-        console.log('UPLOADED', data.length);
-        return ws.emit("serial/" + $scope.tty + "/upload", data);
+        console.log('UPLOADED', data.length, 'bytes');
+        return ws.emit("serial/" + $scope.tty + "/upload", {
+          data: data
+        });
       });
     };
   });
