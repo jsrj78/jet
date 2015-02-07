@@ -3,6 +3,7 @@ package connect
 import (
 	"fmt"
 	"os"
+	"reflect"
 	"strings"
 	"time"
 
@@ -15,6 +16,10 @@ import (
 const protocolVersion = 1
 
 var mh = &codec.MsgpackHandle{RawToString: true}
+
+func init() {
+	mh.MapType = reflect.TypeOf(map[string]interface{}(nil))
+}
 
 // Connection represents an open connection to the hub.
 type Connection struct {

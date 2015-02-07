@@ -5,7 +5,7 @@ console.log 'Dump of all hub messages:'
 mqtt = require 'mqtt'
 msgpack = require 'msgpack'
 
-client = mqtt.connect 'localhost', { keepalive: 300 }
+client = mqtt.connect 'localhost', { keepalive: 3600 }
 
 client.on 'error', (e) -> console.log 'error:', e
 
@@ -23,7 +23,6 @@ client.on 'message', (topic, payload, packet) ->
   s = JSON.stringify(msgpack.unpack(payload))
 
   # sanitise the output so binary data doesn't pass through unescaped
-  #
   limit = 78 - topic.length
   limit = 20  if limit < 20
   if s.length > limit
