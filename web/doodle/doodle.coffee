@@ -26,6 +26,8 @@ app.controller 'DoodleCtrl', ($scope, $timeout, $websocket, wsPort, fileReader) 
 
   $scope.disconnect = -> console.log 'DISCONNECT'
 
+  $scope.reset = -> console.log 'RESET'
+
   $scope.upload = ->
     fileReader $scope, $scope.file
       .then (data) ->

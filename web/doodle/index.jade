@@ -26,6 +26,8 @@ html(lang='en', ng-app='DoodleApp' ng-controller='DoodleCtrl')
                 Connect
               button.pure-button(ng-click="disconnect()").
                 Disconnect
+              button.pure-button(ng-click="reset()").
+                Reset
             fieldset
               legend Firmware (.bin)
               input(type="file" file-model="file")

@@ -32,6 +32,9 @@
     $scope.disconnect = function() {
       return console.log('DISCONNECT');
     };
+    $scope.reset = function() {
+      return console.log('RESET');
+    };
     return $scope.upload = function() {
       return fileReader($scope, $scope.file).then(function(data) {
         console.log('UPLOADED', data.length, 'bytes');
