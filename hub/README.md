@@ -29,7 +29,7 @@ create a config file called "hubtab.toml" in the `run/` directory. Example:
 
     [packs]
     test = "echo TEST && sleep 10"
-    front = "cd $HUBRUN/packs/front && go run front.go -logstderr"
+    front = "cd $HUBRUN/../packs/front && go run front.go -logstderr"
 
 Each pack name must be unique. You can edit this file and trigger a reload
 using `jet reload`, and the hub will do the right thing, i.e. restart changed
