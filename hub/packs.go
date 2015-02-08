@@ -11,7 +11,7 @@ import (
 	"github.com/surge/glog"
 )
 
-var configChan = make(chan interface{})
+var configChan = make(chan configEvent)
 
 // hubConfig represents the configuration file settings of the hub.
 type hubConfig struct {
@@ -34,24 +34,23 @@ func reload() {
 		return
 	}
 
-	configEvent("", newConf)
+	configChan <- configEvent{"", newConf}
 }
 
-// configEvent sends out config file events and pack process state changes.
-func configEvent(name, arg interface{}) {
-	configChan <- name
-	configChan <- arg
+// configEvent represents changes to the configuration and pack state changes
+type configEvent struct {
+	name string
+	arg  interface{}
 }
 
 // processEvents is called as goroutine from launchAllPacks.
 func (h *hubConfig) processEvents() {
 	processes := make(map[string]*os.Process)
 
-	for {
-		name := (<-configChan).(string)
-		arg := <-configChan
+	for event := range configChan {
+		name := event.name
 
-		switch argVal := arg.(type) {
+		switch argVal := event.arg.(type) {
 
 		case *hubConfig:
 			// only act on what has changed
@@ -89,7 +88,7 @@ func (h *hubConfig) processEvents() {
 			processes[name] = argVal
 
 		default:
-			glog.Infoln("ended:", name, "status:", arg)
+			glog.Infoln("ended:", name, "status:", event.arg)
 			delete(processes, name)
 
 			time.Sleep(3 * time.Second)
@@ -126,10 +125,10 @@ func (h *hubConfig) launch(name, command string) {
 			return
 		}
 
-		configEvent(name, cmd.Process) // lift-off!
+		configChan <- configEvent{name, cmd.Process} // lift-off!
 
 		err := cmd.Wait()
 
-		configEvent(name, err) // touch-down!
+		configChan <- configEvent{name, err} // touch-down!
 	}()
 }
