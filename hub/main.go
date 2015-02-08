@@ -47,10 +47,11 @@ func dispatch(cmd string) {
 	}
 }
 
-// FIXME long keepalive avoids issue #5
-var srv = &service.Server{KeepAlive: 3600}
+var srv = &service.Server{}
 
 func worker() {
+	launchAllPacks()
+
 	if err := srv.ListenAndServe("tcp://:1883"); err != nil {
 		glog.Fatal(err)
 	}
@@ -60,8 +61,4 @@ func terminate(wait bool) {
 	if wait {
 		srv.Close()
 	}
-}
-
-func reload() {
-	glog.Infoln("configuration reloaded")
 }
