@@ -21,6 +21,7 @@ app.controller 'DoodleCtrl', ($scope, $timeout, $websocket, wsPort, fileReader) 
   , 2000
 
   $scope.tty = ""
+  $scope.telnet = true
 
   $scope.connect = -> console.log 'CONNECT'
 
@@ -32,7 +33,10 @@ app.controller 'DoodleCtrl', ($scope, $timeout, $websocket, wsPort, fileReader) 
     fileReader $scope, $scope.file
       .then (data) ->
         console.log 'UPLOADED', data.length, 'bytes'
-        ws.emit "serial/#{$scope.tty}/upload", { data: data }
+        ws.emit "serial/#{$scope.tty}/upload", {
+          data: data
+          telnet: $scope.telnet
+        }
 
 # see https://github.com/ghostbar/angular-file-model/blob/master/angular-file-model.js
 # fill in the file-model attribute when an upload file has been selected

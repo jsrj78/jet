@@ -26,6 +26,9 @@
             <fieldset>
               <legend>Firmware (.bin)</legend>
               <input type="file" file-model="file">
+              <label for="telnet">
+                <input id="telnet" type="checkbox" ng-model="telnet">&nbsp;Telnet &nbsp;
+              </label>
               <button ng-click="upload()" class="pure-button pure-button-primary">Upload</button>
             </fieldset>
             <fieldset>
@@ -39,6 +42,7 @@
           </form>
           <pre>tty = {{tty}}
 file = {{file}}
+telnet = {{telnet}}
 </pre>
         </div>
       </div>

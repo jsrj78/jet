@@ -26,6 +26,7 @@
       return ws.emit('/doodle/dadah', [7, 8, 9]);
     }, 2000);
     $scope.tty = "";
+    $scope.telnet = true;
     $scope.connect = function() {
       return console.log('CONNECT');
     };
@@ -39,7 +40,8 @@
       return fileReader($scope, $scope.file).then(function(data) {
         console.log('UPLOADED', data.length, 'bytes');
         return ws.emit("serial/" + $scope.tty + "/upload", {
-          data: data
+          data: data,
+          telnet: $scope.telnet
         });
       });
     };
