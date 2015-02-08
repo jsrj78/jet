@@ -36,6 +36,18 @@ using `jet reload`, and the hub will do the right thing, i.e. restart changed
 entries and stop entries which no longer exist (or have been commented out).
 Unchanged pack entries will not not be affected by a reload.
 
+Web browser interface
+---------------------
+
+The "front" pack serves static files from ../web, and has a websocket open on
+port 1111. The websocket acts as bridge between the web browser and MQTT, and
+currently converts all packets between the browser's JSON and the hub's MsgPack
+protocol formats (this is for the payload, the topic is a plain text string).
+
+Include the above line in "hubtab.toml" to automatically keep "front" running.
+
+----
+
 Functions
 ---------
 
