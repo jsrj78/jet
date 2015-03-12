@@ -5,7 +5,7 @@ console.log 'Dump of all hub messages:'
 mqtt = require 'mqtt'
 msgpack = require 'msgpack'
 
-client = mqtt.connect 'localhost', { keepalive: 3600 }
+client = mqtt.connect 'mqtt://localhost', { keepalive: 3600 }
 
 client.on 'error', (e) -> console.log 'error:', e
 

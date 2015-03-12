@@ -8,7 +8,7 @@
 
   msgpack = require('msgpack');
 
-  client = mqtt.connect('localhost', {
+  client = mqtt.connect('mqtt://localhost', {
     keepalive: 3600
   });
 
