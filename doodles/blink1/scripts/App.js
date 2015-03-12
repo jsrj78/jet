@@ -3,8 +3,10 @@ import React from 'react';
 class OnOff extends React.Component {
   render() {
     return (
-      <input type="checkbox" id="onoff" />
-      <label for="onoff">Enable</label>
+      <div>
+        <input type="checkbox" id="onoff" />
+        <label htmlFor="onoff">Enable</label>
+      </div>
     );
   }
 }
@@ -12,8 +14,10 @@ class OnOff extends React.Component {
 export default class App extends React.Component {
   render() {
     return (
-      <h1>Hello, world.</h1>
-      <OnOff />
+      <div>
+        <h1>JET Blink 1</h1>
+        <OnOff />
+      </div>
     );
   }
 }
