@@ -2,10 +2,6 @@ The JET/blink demo in React, with all the code running in the browser.
 
 (based on Dan Abramov's [react-hot-boilerplate][RHBP] live reload example)
 
-**Status**
-
-https://github.com/gaearon/react-hot-boilerplate/issues/16
-
 **Usage**
 
 ```
