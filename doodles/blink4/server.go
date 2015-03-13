@@ -20,6 +20,9 @@ func main() {
 }
 
 func wsHandler(ws *websocket.Conn) {
+	log.Println("connect")
+	defer log.Println("disconnect")
+
 	dec := json.NewDecoder(ws)
 	enc := json.NewEncoder(ws)
 
@@ -28,22 +31,31 @@ func wsHandler(ws *websocket.Conn) {
 		Enabled bool `json:"enabled"`
 	}
 
-	var ticker = time.NewTicker(500 * time.Millisecond)
-	defer ticker.Stop()
+	done := make(chan struct{})
+	defer close(done)
 
 	go func() {
+		defer log.Println("bye")
+
 		var out struct {
 			Blink bool `json:"blink"`
 		}
 
-		for range ticker.C {
-			if in.Enabled {
-				out.Blink = !out.Blink
+		ticker := time.Tick(500 * time.Millisecond)
 
-				err := enc.Encode(&out)
-				if err != nil {
-					log.Fatal(err)
+		for {
+			select {
+			case <-ticker:
+				if in.Enabled {
+					out.Blink = !out.Blink
+
+					err := enc.Encode(&out)
+					if err != nil {
+						log.Fatal(err)
+					}
 				}
+			case <-done:
+				return
 			}
 		}
 	}()
