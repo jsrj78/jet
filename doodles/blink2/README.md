@@ -2,9 +2,7 @@ The JET/blink demo in React, with all the code running in the browser.
 
 (based on this [examples/basic-jsx-external][BJE] sample code from React)
 
-**Status**
-
-Working as intended.
+**Status** - Working as intended.
 
 **Usage**
 
