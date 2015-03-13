@@ -1,35 +1,47 @@
-var start = new Date().getTime();
-
 var OnOff = React.createClass({
   render: function() {
+    var onClick = this.props.onClick;
+    var value = this.props.value;
     return (
-        <input type="checkbox" />
-    )
+      <div>
+        <input type="checkbox" id="onoff" checked={value} onClick={onClick} />
+        <label htmlFor="onoff">Enable</label>
+      </div>
+    );
   }
 });
-  
-var Elapsed = React.createClass({
-  render: function() {
-    var elapsed = Math.round(this.props.elapsed  / 100);
-    var seconds = elapsed / 10 + (elapsed % 10 ? '' : '.0' );
-    var message =
-      'React has been running for ' + seconds + ' seconds.';
 
-    return <p>{message}</p>;
+var Indicator = React.createClass({
+  render: function() {
+    var style = {
+      width: 20,
+      height: 20,
+      border: "1px solid black",
+      background: this.props.on ? "red" : "white"
+    };
+    return (
+      <div style={style} />
+    );
   }
 });
 
 var App = React.createClass({
+  getInitialState: function () {
+    return { enabled: false };
+  },
+  handleClick: function (event) {
+    this.setState({enabled: !this.state.enabled});
+  },
   render: function() {
     return (
-      <OnOff />
-      <Elapsed elapsed={new Date().getTime() - start} />
-    )
+      <div>
+        <p><OnOff value={this.state.enabled} onClick={this.handleClick} /></p>
+        <p><Indicator on={this.state.enabled} /></p>
+      </div>
+    );
   }
 });
 
-setInterval(function() {
-  React.render(<App/>, document.getElementById('app'));
-}, 50);
+React.render(<App/>, document.getElementById('app'));
 
 // vim: sw=2 ts=2 sts=2

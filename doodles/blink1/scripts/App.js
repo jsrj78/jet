@@ -2,21 +2,23 @@ import React from 'react';
 
 class OnOff extends React.Component {
   render() {
-    return
+    return (
       <div>
         <input type="checkbox" id="onoff" />
         <label htmlFor="onoff">Enable</label>
-      </div>;
+      </div>
+    );
   }
 }
 
 export default class App extends React.Component {
   render() {
-    return
+    return (
       <div>
         <h1>JET Blink 1</h1>
         <OnOff />
-      </div>;
+      </div>
+    );
   }
 }
 
