@@ -2,7 +2,7 @@ The JET/blink demo using a host-side only setup in Go, based on MQTT.
 
 The input is an MQTT topic called "enabled", accepting a boolean as JSON.
 The output is an MQTT topic called "blink", sending out booleans as JSON.
-The ticker logic is included in the server and is controller via pubsub.
+The ticker logic is included in the server and is controlled via pubsub.
 
 **Status** - Working as intended.
 
@@ -14,7 +14,7 @@ Launch the server in a separate terminal window:
 
 Now launch a client which displays all data going through MQTT:
 
-    go run sumper.go
+    go run dumper.go
 
 Finally, in a third terminal window, send enable/disable events:
 
