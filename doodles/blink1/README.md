@@ -6,10 +6,8 @@ The JET/blink demo in React, with all the code running in the browser.
 
 **Usage**
 
-```
-npm install
-npm start
-open http://localhost:3000
-```
+  npm install
+  npm start
+  open http://localhost:3000
 
 [RHBP]: https://github.com/gaearon/react-hot-boilerplate

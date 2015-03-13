@@ -6,10 +6,8 @@ The JET/blink demo in React, with all the code running in the browser.
 
 ### Usage
 
-```
-go run server.go
-open http://localhost:8000
-```
+    go run server.go
+    open http://localhost:8000
 
 Press refresh to see changes, JSX gets compiled on-the-fly in the browser.
 
@@ -19,6 +17,6 @@ This is what will show up in the browser:
 
 ![](jet-blink2.png)
 
-The little square indicator blinks when the checkbox is enabled. 
+The little square indicator blinks when the checkbox is enabled.
 
 [BJE]: https://github.com/facebook/react/tree/master/examples/basic-jsx-external

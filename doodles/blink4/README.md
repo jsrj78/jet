@@ -10,9 +10,7 @@ So the input and output are in the browser, but the ticker logic is on the host.
 
 ### Usage
 
-```
-go run server.go
-open http://localhost:8000
-```
+    go run server.go
+    open http://localhost:8000
 
 Press refresh to see changes, JSX gets compiled on-the-fly in the browser.
