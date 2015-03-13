@@ -34,13 +34,12 @@ var App = React.createClass({
   },
 
   componentWillUnmount: function() {
-    clearInterval(this.interval);
     this.ws.close();
   },
 
   handleClick: function(event) {
     var enabled = !this.state.enabled;
-    this.ws.send(JSON.stringify({blink: this.state.enabled}));
+    this.ws.send(JSON.stringify({enabled: enabled}));
     this.setState({enabled: enabled});
   },
 

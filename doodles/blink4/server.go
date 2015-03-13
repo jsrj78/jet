@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"io"
 	"log"
 	"net/http"
@@ -17,5 +18,32 @@ func main() {
 }
 
 func wsHandler(ws *websocket.Conn) {
-	io.Copy(ws, ws)
+	dec := json.NewDecoder(ws)
+	enc := json.NewEncoder(ws)
+
+	var in struct {
+		Enabled bool `json:"enabled"`
+	}
+
+	var out struct {
+		Blink bool `json:"blink"`
+	}
+
+	for {
+		err := dec.Decode(&in)
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			log.Fatal(err)
+		}
+		log.Println("got", in)
+
+		out.Blink = in.Enabled
+
+		err = enc.Encode(&out)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
 }
