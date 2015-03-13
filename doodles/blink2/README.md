@@ -4,7 +4,7 @@ The JET/blink demo in React, with all the code running in the browser.
 
 **Status**
 
-...
+Working as intended.
 
 **Usage**
 
