@@ -7,7 +7,7 @@ The JET/blink demo in React, with all the code running in the browser.
 ### Usage
 
 ```
-python -m SimpleHTTPServer
+go run server.go
 open http://localhost:8000
 ```
 
