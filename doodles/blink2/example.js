@@ -22,19 +22,23 @@ var Indicator = React.createClass({
 });
 
 var App = React.createClass({
-  getInitialState: function () {
+  getInitialState: function() {
     return { enabled: false, blink: false };
   },
 
-  componentWillMount: function () {
-    setInterval(function () {
+  componentWillMount: function() {
+    this.interval = setInterval(function() {
       if (this.state.enabled) {
         this.setState({blink: !this.state.blink});
       }
     }.bind(this), 500);
   },
 
-  handleClick: function (event) {
+  componentWillUnmount: function() {
+    clearInterval(this.interval);
+  },
+
+  handleClick: function(event) {
     this.setState({enabled: !this.state.enabled});
   },
 
