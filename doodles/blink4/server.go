@@ -5,6 +5,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"time"
 
 	"golang.org/x/net/websocket"
 )
@@ -15,19 +16,37 @@ func main() {
 
 	log.Println("listening on port 8000")
 	log.Fatal(http.ListenAndServe(":8000", nil))
+
 }
 
 func wsHandler(ws *websocket.Conn) {
 	dec := json.NewDecoder(ws)
 	enc := json.NewEncoder(ws)
 
+	// TODO: needs to be mutex-protected
 	var in struct {
 		Enabled bool `json:"enabled"`
 	}
 
-	var out struct {
-		Blink bool `json:"blink"`
-	}
+	var ticker = time.NewTicker(500 * time.Millisecond)
+	defer ticker.Stop()
+
+	go func() {
+		var out struct {
+			Blink bool `json:"blink"`
+		}
+
+		for range ticker.C {
+			if in.Enabled {
+				out.Blink = !out.Blink
+
+				err := enc.Encode(&out)
+				if err != nil {
+					log.Fatal(err)
+				}
+			}
+		}
+	}()
 
 	for {
 		err := dec.Decode(&in)
@@ -38,12 +57,5 @@ func wsHandler(ws *websocket.Conn) {
 			log.Fatal(err)
 		}
 		log.Println("got", in)
-
-		out.Blink = in.Enabled
-
-		err = enc.Encode(&out)
-		if err != nil {
-			log.Fatal(err)
-		}
 	}
 }
