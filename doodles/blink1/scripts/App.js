@@ -21,5 +21,3 @@ export default class App extends React.Component {
     );
   }
 }
-
-// vim: sw=2 ts=2 sts=2
