@@ -77,7 +77,7 @@ func updatePersistentTopics(key string, val interface{}) {
 
 			// deleting ".../" deletes all child entries as well
 			if strings.HasSuffix(key, "/") {
-				for k, _ := range persistentTopics {
+				for k := range persistentTopics {
 					if strings.HasPrefix(k, key) {
 						delete(persistentTopics, k)
 					}
