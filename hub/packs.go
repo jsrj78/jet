@@ -79,8 +79,8 @@ func (h *hubConfig) processEvents() {
 					h.launch(name, vNew)
 				}
 			}
-			for kNew, vNew := range argVal.Packs {
-				h.launch(kNew, vNew)
+			for key, val := range argVal.Packs {
+				h.launch(key, val)
 			}
 
 		case *os.Process:

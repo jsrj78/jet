@@ -3,7 +3,7 @@ package mqtt
 import (
 	"github.com/dataence/glog"
 	"github.com/jeelabs/jet/flow"
-	"github.com/surge/surgemq/service"
+	"github.com/surgemq/surgemq/service"
 )
 
 func init() {

@@ -12,8 +12,10 @@ import (
 var defFlag = flag.String("def", "hub.def", "hub definition filename")
 var runFlag = flag.String("run", ".", "run directory path")
 
-// these variables are bumped/updated by goxc when running "make dist"
+// VERSION is bumped/updated by goxc when running "make dist"
 var VERSION = "0.0.12-alpha"
+
+// SOURCE_DATE is bumped/updated by goxc when running "make dist"
 var SOURCE_DATE = "2015-01-12T02:01:02+01:00"
 
 func printVersion() {

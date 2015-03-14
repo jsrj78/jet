@@ -1,4 +1,4 @@
-// Flow implements a Pure-data like dataflow mechanism.
+// Package flow implements a Pure-data like dataflow mechanism.
 package flow
 
 // Message is a generic data item which can be sent between gadgets.

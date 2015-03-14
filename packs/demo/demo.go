@@ -5,8 +5,8 @@ import (
 	"flag"
 	"time"
 
-	"github.com/surge/glog"
 	"github.com/jeelabs/jet/hub/connect"
+	"github.com/surge/glog"
 )
 
 func main() {

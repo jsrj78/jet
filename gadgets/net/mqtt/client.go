@@ -3,8 +3,8 @@ package mqtt
 import (
 	"github.com/dataence/glog"
 	"github.com/jeelabs/jet/flow"
-	"github.com/surge/surgemq/message"
-	"github.com/surge/surgemq/service"
+	"github.com/surgemq/surgemq/message"
+	"github.com/surgemq/surgemq/service"
 )
 
 func init() {
