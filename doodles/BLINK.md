@@ -9,24 +9,24 @@ In other words: _think of a blinking light, controlled by a switch._
 But the key point here is that each of these "gadgets" can exist in different
 contexts: in the browser, in a host server, or in an embedded microcontroller.
 
-### Blink 1
+**Blink 1**
 
 First attempt to implement an all-in-the-browser version, based on React.
 
-### Blink 2
+**Blink 2**
 
 Simple all-in-the-browser version, based on React. In JavaScript ES5, not ES6.
 
-### Blink 3
+**Blink 3:**
 
 Early attempt to implement the same again using ClosureScript. Abandoned.
 
-### Blink 4
+**Blink 4:**
 
 This is _Blink 2_, but with the periodic task running on the host, implemented
 in Go and connected to the browser via a websocket. Uses JSON as protocol.
 
-### Blink 5
+**Blink 5:**
 
 An all-on-the-host implementation, using Go and MQTT (in Go). The "input" and
 "output" are now MQTT topics.
