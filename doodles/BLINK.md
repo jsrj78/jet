@@ -9,11 +9,11 @@ In other words: _think of a blinking light, controlled by a switch._
 But the key point here is that each of these "gadgets" can exist in different
 contexts: in the browser, in a host server, or in an embedded microcontroller.
 
-**Blink 1**
+**Blink 1:**
 
 First attempt to implement an all-in-the-browser version, based on React.
 
-**Blink 2**
+**Blink 2:**
 
 Simple all-in-the-browser version, based on React. In JavaScript ES5, not ES6.
 
