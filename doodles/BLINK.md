@@ -30,3 +30,7 @@ in Go and connected to the browser via a websocket. Uses JSON as protocol.
 
 An all-on-the-host implementation, using Go and MQTT (in Go). The "input" and
 "output" are now MQTT topics.
+
+**Blink 6:**
+
+A Mac/Windows/Linux implementation in [Pure Data](http://puredata.info).

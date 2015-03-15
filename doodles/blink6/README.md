@@ -1,4 +1,4 @@
-The JET/blink demo, implemented using Pure Data:
+The JET/blink demo, implemented as a Pure Data patch:
 
 ![](blink6.png)
 
