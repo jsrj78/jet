@@ -1,0 +1,20 @@
+{
+  "name": "jet-hub",
+  "description": "JeeLabs Embello Toolkit Hub",
+  "version": "0.2.0",
+  "license": "Unlicense",
+  "main": "server.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jeelabs/jet"
+  },
+  "engines": {
+    "node": "0.12.x"
+  },
+  "dependencies": {
+  },
+  "devDependencies": {
+    "source-map-support": "0.2.8",
+    "ws": "0.7.1"
+  }
+}
