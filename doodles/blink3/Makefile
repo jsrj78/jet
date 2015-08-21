@@ -1,2 +1,0 @@
-default:
-	lein repl

@@ -1,1 +1,0 @@
-web: java $JVM_OPTS -cp target/blink3.jar clojure.main -m blink3.server
