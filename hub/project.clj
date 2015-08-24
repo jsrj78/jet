@@ -8,8 +8,14 @@
                  [org.clojure/clojurescript "1.7.107"]
                  [figwheel "0.3.7"]]
 
+  ;; :npm {:dependencies [[source-map-support "*"]]
+  ;;       :root "out.dev"}
+
   :plugins [[lein-cljsbuild "1.0.6"]
+            [lein-npm "0.6.1"]
             [lein-figwheel "0.3.7"]]
+
+  :hooks [leiningen.cljsbuild]
 
   :source-paths ["src"]
 
@@ -17,19 +23,19 @@
                   "out.prod"
                   "server.js"]
 
-  :cljsbuild {
-    :builds [{:id "dev"
-              :source-paths ["src" "src.dev"]
-              :compiler {
-                :output-to "out.dev/hub.js"
-                :output-dir "out.dev"
-                :target :nodejs
-                :optimizations :none
-                :source-map true}}
-             {:id "prod"
-              :source-paths ["src"]
-              :compiler {
-                :output-to "server.js"
-                :output-dir "out.prod"
-                :target :nodejs
-                :optimizations :simple}}]})
+  :cljsbuild
+  {:builds [{:id "dev"
+             :source-paths ["src" "src.dev"]
+             :compiler {
+                        :output-to "out.dev/hub.js"
+                        :output-dir "out.dev"
+                        :target :nodejs
+                        :optimizations :none
+                        :source-map true}}
+            {:id "prod"
+             :source-paths ["src"]
+             :compiler {
+                        :output-to "server.js"
+                        :output-dir "out.prod"
+                        :target :nodejs
+                        :optimizations :simple}}]})
