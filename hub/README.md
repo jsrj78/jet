@@ -1,4 +1,4 @@
-Jet/Hub
+JET/Hub
 =======
 
 This is the central command centre for Jet. It must always be running.  

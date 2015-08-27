@@ -14,8 +14,9 @@
   (let [server (.createServer restify)
         static-server (.serveStatic restify #js {:directory "./bootimages"})]
     (.use server rest-logger)
+    (.use server (.CORS restify))
     (.get server "/index.txt" static-server)
-    (.get server (js/RegExp. "^/.*\\.bin$") static-server)
+    (.get server #"^/.*\.bin$" static-server)
     server))
 
 (defn -main []
