@@ -1,15 +1,15 @@
 (defproject hub "0.2.0-SNAPSHOT"
   :description "JeeLabs Embello Toolkit Hub"
   :url "https://github.com/jeelabs/jet"
-  :license {:name "The Unlicense"
-            :url "http://unlicense.org"}
+  :license {:name "The Unlicense" :url "http://unlicense.org"}
 
   :dependencies [[org.clojure/clojure "1.7.0"]
                  [org.clojure/clojurescript "1.7.107"]
                  [figwheel "0.3.7"]]
 
-  ;; :npm {:dependencies [[source-map-support "*"]]
-  ;;       :root "out.dev"}
+  :npm {:dependencies [[source-map-support "*"]
+                       [restify "*"]]
+        :root "out.dev"}
 
   :plugins [[lein-cljsbuild "1.0.6"]
             [lein-npm "0.6.1"]

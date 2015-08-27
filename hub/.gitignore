@@ -4,6 +4,7 @@
 /out.dev/
 /out.prod/
 /target/
+/bootimages/
 *.jar
 .lein-deps-sum
 .lein-repl-history
