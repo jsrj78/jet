@@ -1,6 +1,8 @@
 (ns hub.core
   (:require [cljs.nodejs :as node]))
 
+(def restify (node/require "restify"))
+
 (node/enable-util-print!)
 (println "[hub.core]")
 
@@ -9,8 +11,7 @@
   (next))
 
 (defn create-server []
-  (let [restify (node/require "restify")
-        server (.createServer restify)
+  (let [server (.createServer restify)
         static-server (.serveStatic restify #js {:directory "./bootimages"})]
     (.use server rest-logger)
     (.get server "/index.txt" static-server)
