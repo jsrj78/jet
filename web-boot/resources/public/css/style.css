@@ -3,3 +3,11 @@
 body {
     margin: 50px;
 }
+
+#drop {
+    width: 40ex;
+    border: 2px dotted blue;
+    background: #eef;
+    margin: 10px;
+    padding: 20px;
+}

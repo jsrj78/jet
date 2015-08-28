@@ -38,7 +38,6 @@
 
 (defn files-row [x]
   ;; TODO should change string keys to keywords during get-files reception
-  (println x)
   [:tr [:td [:code (x "name")]] [:td (x "size")] [:td (x "date")]])
 
 (defn files-table []
@@ -46,8 +45,14 @@
    [:thead
     [:tr [:th "Filename"] [:th "Size"] [:th "Date"]]]
    [:tbody
-    (for [x (:files @app-state)]
+    (for [x (:files @app-state) :when (not= (x "name") "index.txt")]
       ^{:key x} [files-row x])]])
+
+(defn drop-handler [evt]
+  (.preventDefault evt)
+  (let [files (.. evt -dataTransfer -files)]
+    (dotimes [i (.-length files)]
+      (.log js/console i (.item files i)))))
 
 (defn hello-world []
   [:div
@@ -58,7 +63,10 @@
    [:div
     [:h3 "Files"]
     [files-table]]
-   [:p (:text @app-state)]])
+   [:p (:text @app-state)]
+   [:div {:id "drop" :on-drop drop-handler
+          :on-drag-over #(.preventDefault %)}
+    "Drop new firmware files here ..."]])
 
 (defn on-js-reload []
   ;; optionally touch app-state to force rerendering depending on the app
@@ -68,4 +76,7 @@
 (get-index "http://localhost:3000/index.txt")
 (get-files "http://localhost:3000/")
 
-(reagent/render-component [hello-world] (. js/document (getElementById "app")))
+(defn get-by-id [id]
+  (. js/document (getElementById id)))
+
+(reagent/render-component [hello-world] (get-by-id "app"))

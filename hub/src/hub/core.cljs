@@ -6,7 +6,7 @@
 (def bootdir "./bootimages")
 
 (node/enable-util-print!)
-(println "[hub.core]")
+(println "[hub.core]" bootdir)
 
 (defn rest-logger [req res next]
   (println (.path req))
