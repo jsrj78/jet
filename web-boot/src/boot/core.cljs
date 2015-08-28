@@ -9,9 +9,9 @@
 (defonce app-state (reagent/atom {:text "Hello world!"}))
 
 (defn parse-one [line]
-  (let [[_ hwid swid] (re-find #"^([0-9A-F]{32})\s*=\s*(\d+)$" line)]
-    (if hwid
-      [hwid swid])))
+  (let [[_ hw sw nm] (re-find #"^([0-9A-F]{32})\s*=\s*(\d+)\s*(\S+)?" line)]
+    (if (and hw sw)
+      [hw sw nm])))
 
 (defn parse-index [text]
   (->> text
@@ -24,17 +24,16 @@
                  (fn [res]
                    (swap! app-state assoc :index (parse-index res)))}))
 
-(defn index-entry [x]
-  [:tr [:td [:code
-             (x 0)]] [:td (x 1)]])
+(defn index-item [x]
+  [:tr [:td [:code (x 0)]] [:td (x 1)] [:td (x 2)]])
 
 (defn index-list []
   [:table
    [:thead
-    [:tr [:th "Hardware ID"] [:th "S/W ID"]]]
+    [:tr [:th "Hardware ID"] [:th "S/W ID"] [:th "Filename"]]]
    [:tbody
     (for [x (:index @app-state)]
-      ^{:key x} [index-entry x])]])
+      ^{:key x} [index-item x])]])
 
 (defn hello-world []
   [:div
