@@ -2,6 +2,7 @@
   (:require [cljs.nodejs :as node]))
 
 (def restify (node/require "restify"))
+(def fs (node/require "fs"))
 
 (node/enable-util-print!)
 (println "[hub.core]")
@@ -10,11 +11,20 @@
   (println (.path req))
   (next))
 
+(defn file-details [name]
+  (let [stat (.statSync fs (str "./bootimages/" name))]
+    #js {:name name :size (.-size stat) :date (.-mtime stat)}))
+
+(defn list-files [req res next]
+  (let [dirlist (.readdirSync fs "./bootimages")]
+    (.send res #js {:files (clj->js (map file-details dirlist))})))
+
 (defn create-server []
   (let [server (.createServer restify)
         static-server (.serveStatic restify #js {:directory "./bootimages"})]
     (.use server rest-logger)
     (.use server (.CORS restify))
+    (.get server "/" list-files)
     (.get server "/index.txt" static-server)
     (.get server #"^/.*\.bin$" static-server)
     server))
