@@ -48,11 +48,21 @@
     (for [x (:files @app-state) :when (not= (x "name") "index.txt")]
       ^{:key x} [files-row x])]])
 
+(defn process-drop [file]
+  (let [name (.-name file)
+        size (.-size file)
+        date (.-lastModifiedDate file)
+        reader (js/FileReader.)]
+    (.log js/console name size date file)
+    (set! (.-onloadend reader)
+          #(.log js/console 123 (count (.-result reader))))
+    (.readAsBinaryString reader file)))
+
 (defn drop-handler [evt]
   (.preventDefault evt)
   (let [files (.. evt -dataTransfer -files)]
     (dotimes [i (.-length files)]
-      (.log js/console i (.item files i)))))
+      (process-drop (.item files i)))))
 
 (defn hello-world []
   [:div
