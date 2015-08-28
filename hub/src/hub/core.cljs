@@ -3,6 +3,7 @@
 
 (def restify (node/require "restify"))
 (def fs (node/require "fs"))
+(def bootdir "./bootimages")
 
 (node/enable-util-print!)
 (println "[hub.core]")
@@ -12,16 +13,16 @@
   (next))
 
 (defn file-details [name]
-  (let [stat (.statSync fs (str "./bootimages/" name))]
-    #js {:name name :size (.-size stat) :date (.-mtime stat)}))
+  (let [stat (.statSync fs (str bootdir "/" name))]
+    {:name name :size (.-size stat) :date (.-mtime stat)}))
 
 (defn list-files [req res next]
-  (let [dirlist (.readdirSync fs "./bootimages")]
-    (.send res #js {:files (clj->js (map file-details dirlist))})))
+  (let [dirlist (.readdirSync fs bootdir)]
+    (.send res (clj->js (map file-details dirlist)))))
 
 (defn create-server []
   (let [server (.createServer restify)
-        static-server (.serveStatic restify #js {:directory "./bootimages"})]
+        static-server (.serveStatic restify #js {:directory bootdir})]
     (.use server rest-logger)
     (.use server (.CORS restify))
     (.get server "/" list-files)
