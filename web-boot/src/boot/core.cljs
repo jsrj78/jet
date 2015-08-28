@@ -6,6 +6,8 @@
 (enable-console-print!)
 (println "[jet/boot]")
 
+(def server-url "http://localhost:3000/")
+
 (defonce app-state (reagent/atom {:text "Hello world!"}))
 
 (defn parse-one [line]
@@ -19,11 +21,12 @@
        (map parse-one)
        (filter identity)))
 
-(defn get-index [url]
-  (ajax/GET url {:handler #(swap! app-state assoc :index (parse-index %))}))
+(defn get-index []
+  (let [url (str server-url "index.txt")]
+    (ajax/GET url {:handler #(swap! app-state assoc :index (parse-index %))})))
 
-(defn get-files [url]
-  (ajax/GET url {:handler #(swap! app-state assoc :files %)}))
+(defn get-files []
+  (ajax/GET server-url {:handler #(swap! app-state assoc :files %)}))
 
 (defn index-row [x]
   [:tr [:td [:code (x 0)]] [:td (x 1)] [:td (x 2)]])
@@ -48,21 +51,29 @@
     (for [x (:files @app-state) :when (not= (x "name") "index.txt")]
       ^{:key x} [files-row x])]])
 
-(defn process-drop [file]
+(defn post-file [data]
+  (let [url (str server-url (:name data))
+        fake "{\"a\":\"b\"}"]
+    (.log js/console 654 fake (clj->js data))
+    (ajax/POST url {:format :json :body fake #_(clj->js data)})))
+
+(defn upload-file [file]
   (let [name (.-name file)
-        size (.-size file)
-        date (.-lastModifiedDate file)
+        date (.-lastModified file)
         reader (js/FileReader.)]
-    (.log js/console name size date file)
+    (.log js/console name date file)
     (set! (.-onloadend reader)
-          #(.log js/console 123 (count (.-result reader))))
+          (fn []
+            (let [bytes (.-result reader)]
+              (.log js/console 123 (count bytes))
+              (post-file {:name name :date date :bytes (js/btoa bytes)}))))
     (.readAsBinaryString reader file)))
 
 (defn drop-handler [evt]
   (.preventDefault evt)
   (let [files (.. evt -dataTransfer -files)]
     (dotimes [i (.-length files)]
-      (process-drop (.item files i)))))
+      (upload-file (.item files i)))))
 
 (defn hello-world []
   [:div
@@ -83,8 +94,8 @@
   ;; (swap! app-state update-in [:__figwheel_counter] inc)
   )
 
-(get-index "http://localhost:3000/index.txt")
-(get-files "http://localhost:3000/")
+(get-index)
+(get-files)
 
 (defn get-by-id [id]
   (. js/document (getElementById id)))
