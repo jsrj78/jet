@@ -21,8 +21,8 @@
                      {:name name :size (.-size stat) :date (.-mtime stat)}))]
     (.send res (clj->js (map withinfo (list-files))))))
 
-(defn parse-leading-int [str]
-  (let [digits (re-find  #"\d+" str)]
+(defn parse-leading-int [s]
+  (let [digits (re-find  #"\d+" s)]
     (if digits (js/parseInt digits 10))))
 
 (defn highest-seqnum []

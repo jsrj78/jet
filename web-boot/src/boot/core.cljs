@@ -8,7 +8,7 @@
 
 (def server-url "http://localhost:3000/")
 
-(defonce app-state (reagent/atom {:text "Hello world!"}))
+(defonce app-state (reagent/atom {}))
 
 (defn parse-one [line]
   (let [[_ hw sw nm] (re-find #"^([0-9A-F]{32})\s*=\s*(\d+)\s*(\S+)?" line)]
@@ -34,7 +34,7 @@
 (defn index-table []
   [:table
    [:thead
-    [:tr [:th "Hardware ID"] [:th "S/W ID"] [:th "Filename"]]]
+    [:tr [:th "Hardware ID"] [:th "ID"] [:th "Previous"]]]
    [:tbody
     (for [x (:index @app-state)]
       ^{:key x} [index-row x])]])
@@ -45,15 +45,16 @@
 (defn files-row [x]
   ;; TODO should change string keys to keywords during get-files reception
   [:tr
-   [:td [:code (x "date")]]
-   [:td (x "size")]
+   [:td (x "date")]
    [:td (x "name")]
+   [:td (x "size")]
+   [:td (re-find #"\d+" (x "name"))]
    [:td [:button {:on-click #(delete-file! (x "name"))} "delete"]]])
 
 (defn files-table []
   [:table
    [:thead
-    [:tr [:th "Date"] [:th "Size"] [:th "Filename"]]]
+    [:tr [:th "Date"] [:th "Filename"] [:th "Size"] [:th "ID"]]]
    [:tbody
     (for [x (sort #(compare (%2 "date") (%1 "date")) (:files @app-state))]
       ^{:key x} [files-row x])]])
@@ -89,8 +90,7 @@
     [:div {:id "drop" :on-drop drop-handler
            :on-drag-over #(.preventDefault %)}
      "Drop new files here ... (only *.bin accepted)"]
-    [files-table]]
-   [:p (:text @app-state)]])
+    [files-table]]])
 
 (defn on-js-reload []
   ;; optionally touch app-state to force rerendering depending on the app
