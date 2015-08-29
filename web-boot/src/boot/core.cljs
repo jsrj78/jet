@@ -56,17 +56,15 @@
 
 (defn post-file [desc]
   (let [url (str server-url (:name desc))]
-    (ajax/POST url {:format :json :params desc})))
+    (ajax/POST url {:format :json :params desc :handler get-files})))
 
 (defn upload-file [file]
   (let [name (.-name file)
         date (.-lastModified file)
         reader (js/FileReader.)]
-    (.log js/console name date file)
     (set! (.-onloadend reader)
           (fn []
             (let [bytes (.-result reader)]
-              (.log js/console 123 (count bytes))
               (post-file {:name name :date date :bytes (js/btoa bytes)}))))
     (.readAsBinaryString reader file)))
 

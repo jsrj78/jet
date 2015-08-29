@@ -9,7 +9,7 @@
 (println "[hub.core]" bootdir)
 
 (defn rest-logger [req res next]
-  (println (.path req))
+  (println (.-method req) (.path req))
   (next))
 
 (defn list-files []
@@ -28,15 +28,13 @@
 (defn highest-seqnum []
   (apply max 999 (map parse-leading-int (list-files))))
 
-(println (highest-seqnum))
-
 (defn add-file [req res next]
   (let [id (inc (highest-seqnum))
         params (.-params req)
-        bytes (.-bytes params)]
-    (.log js/console 333 id params (identity bytes))
-    (.writeFileSync fs (str bootdir "/" id ".bin") (identity bytes))
-    (.send res 200)))
+        name (.-name params)
+        bytes (js/Buffer. (.-bytes params) "base64")]
+    (.writeFileSync fs (str bootdir "/" id "-" name) bytes)
+    (.send res 200 #js {:id id})))
 
 (defn create-server []
   (let [static-server (.serveStatic restify #js {:directory bootdir})]
