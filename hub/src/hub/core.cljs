@@ -12,17 +12,31 @@
   (println (.path req))
   (next))
 
-(defn file-details [name]
-  (let [stat (.statSync fs (str bootdir "/" name))]
-    {:name name :size (.-size stat) :date (.-mtime stat)}))
+(defn list-files []
+  (filter #(not= % "index.txt") (.readdirSync fs bootdir)))
 
-(defn list-files [req res next]
-  (let [dirlist (.readdirSync fs bootdir)]
-    (.send res (clj->js (map file-details dirlist)))))
+(defn send-file-list [req res next]
+  (let [withinfo (fn [name]
+                   (let [stat (.statSync fs (str bootdir "/" name))]
+                     {:name name :size (.-size stat) :date (.-mtime stat)}))]
+    (.send res (clj->js (map withinfo (list-files))))))
+
+(defn parse-leading-int [str]
+  (let [digits (re-find  #"\d+" str)]
+    (if digits (js/parseInt digits 10))))
+
+(defn highest-seqnum []
+  (apply max 999 (map parse-leading-int (list-files))))
+
+(println (highest-seqnum))
 
 (defn add-file [req res next]
-  (.log js/console 333 (.-params req))
-  (.send res 200))
+  (let [id (inc (highest-seqnum))
+        params (.-params req)
+        bytes (.-bytes params)]
+    (.log js/console 333 id params (identity bytes))
+    (.writeFileSync fs (str bootdir "/" id ".bin") (identity bytes))
+    (.send res 200)))
 
 (defn create-server []
   (let [static-server (.serveStatic restify #js {:directory bootdir})]
@@ -30,7 +44,7 @@
       (.use (.CORS restify))
       (.use (.bodyParser restify))
       (.use rest-logger)
-      (.get "/" list-files)
+      (.get "/" send-file-list)
       (.get "/index.txt" static-server)
       (.get #"^/.+\.bin$" static-server)
       (.post #"^/.+\.bin$" add-file))))

@@ -43,12 +43,15 @@
   ;; TODO should change string keys to keywords during get-files reception
   [:tr [:td [:code (x "name")]] [:td (x "size")] [:td (x "date")]])
 
+(defn newest-file-first []
+  (sort #(compare (%2 "date") (%1 "date")) (:files @app-state)))
+
 (defn files-table []
   [:table
    [:thead
     [:tr [:th "Filename"] [:th "Size"] [:th "Date"]]]
    [:tbody
-    (for [x (:files @app-state) :when (not= (x "name") "index.txt")]
+    (for [x (newest-file-first) :when (not= (x "name") "index.txt")]
       ^{:key x} [files-row x])]])
 
 (defn post-file [desc]
@@ -80,12 +83,12 @@
     [:h3 "Node map"]
     [index-table]]
    [:div
-    [:h3 "Files"]
+    [:h3 "Firmware images"]
+    [:div {:id "drop" :on-drop drop-handler
+           :on-drag-over #(.preventDefault %)}
+     "Drop new files here ... (only *.bin accepted)"]
     [files-table]]
-   [:p (:text @app-state)]
-   [:div {:id "drop" :on-drop drop-handler
-          :on-drag-over #(.preventDefault %)}
-    "Drop new firmware files here ..."]])
+   [:p (:text @app-state)]])
 
 (defn on-js-reload []
   ;; optionally touch app-state to force rerendering depending on the app
