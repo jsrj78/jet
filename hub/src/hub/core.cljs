@@ -28,13 +28,17 @@
 (defn highest-seqnum []
   (apply max 999 (map parse-leading-int (list-files))))
 
-(defn add-file [req res next]
+(defn add-file! [req res next]
   (let [id (inc (highest-seqnum))
         params (.-params req)
         name (.-name params)
         bytes (js/Buffer. (.-bytes params) "base64")]
     (.writeFileSync fs (str bootdir "/" id "-" name) bytes)
     (.send res 200 #js {:id id})))
+
+(defn delete-file! [req res next]
+  (.unlinkSync fs (str bootdir (.-url req)))
+  (.send res 200))
 
 (defn create-server []
   (let [static-server (.serveStatic restify #js {:directory bootdir})]
@@ -45,10 +49,11 @@
       (.get "/" send-file-list)
       (.get "/index.txt" static-server)
       (.get #"^/.+\.bin$" static-server)
-      (.post #"^/.+\.bin$" add-file))))
+      (.post #"^/.+\.bin$" add-file!)
+      (.del #"^/.+\.bin$" delete-file!))))
 
 (defn -main []
-  (println "Hello world!")
+  (println "server starting on http://localhost:3000/ ...")
   (let [server (create-server)]
     (.listen server 3000)))
 

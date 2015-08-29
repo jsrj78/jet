@@ -39,9 +39,16 @@
     (for [x (:index @app-state)]
       ^{:key x} [index-row x])]])
 
+(defn delete-file! [file]
+  (ajax/DELETE (str server-url file) {:handler get-files}))
+
 (defn files-row [x]
   ;; TODO should change string keys to keywords during get-files reception
-  [:tr [:td [:code (x "date")]] [:td (x "size")] [:td (x "name")]])
+  [:tr
+   [:td [:code (x "date")]]
+   [:td (x "size")]
+   [:td (x "name")]
+   [:td [:button {:on-click #(delete-file! (x "name"))} "delete"]]])
 
 (defn files-table []
   [:table
@@ -51,25 +58,25 @@
     (for [x (sort #(compare (%2 "date") (%1 "date")) (:files @app-state))]
       ^{:key x} [files-row x])]])
 
-(defn upload-file [file]
+(defn upload-file! [file]
   (let [name (.-name file)
         date (.-lastModified file)
-        reader (js/FileReader.)]
-    (set! (.-onloadend reader)
-          (fn []
-            (let [bytes (.-result reader)
-                  desc {:name name :date date :bytes (js/btoa bytes)}
-                  url (str server-url name)]
-              (ajax/POST url {:format :json
-                              :params desc
-                              :handler get-files}))))
+        reader (js/FileReader.)
+        on-done (fn []
+                  (let [bytes (.-result reader)
+                        desc {:name name :date date :bytes (js/btoa bytes)}
+                        url (str server-url name)]
+                    (ajax/POST url {:format :json
+                                    :params desc
+                                    :handler get-files})))]
+    (set! (.-onloadend reader) on-done)
     (.readAsBinaryString reader file)))
 
 (defn drop-handler [evt]
   (.preventDefault evt)
   (let [files (.. evt -dataTransfer -files)]
     (dotimes [i (.-length files)]
-      (upload-file (.item files i)))))
+      (upload-file! (.item files i)))))
 
 (defn hello-world []
   [:div
