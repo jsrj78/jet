@@ -11,15 +11,15 @@
 (defonce app-state (reagent/atom {}))
 
 (defn parse-one [line]
-  (let [[_ hw sw nm] (re-find #"^([0-9A-F]{32})\s*=\s*(\d+)\s*(\S+)?" line)]
-    (if (and hw sw)
-      [hw sw nm])))
+  (let [[_ hwid id prev] (re-find #"^([0-9A-F]{32}) = (\d*) ?(\d*)$" line)]
+    (if hwid [hwid false id prev])))
 
 (defn parse-index [text]
   (->> text
        str/split-lines
        (map parse-one)
-       (filter identity)))
+       (filter identity)
+       vec))
 
 (defn get-index []
   (let [url (str server-url "index.txt")]
@@ -28,13 +28,26 @@
 (defn get-files []
   (ajax/GET server-url {:handler #(swap! app-state assoc :files %)}))
 
+(defn toggle-use [hwid]
+  (let [toggler (fn [item]
+                  (if (= (item 0) hwid)
+                    (assoc item 1 (not (item 1)))
+                    item))]
+    (swap! app-state assoc :index (map toggler (:index @app-state)))))
+
 (defn index-row [x]
-  [:tr [:td [:code (x 0)]] [:td (x 1)] [:td (x 2)]])
+  [:tr
+   [:td [:code (x 0)]]
+   [:td [:input {:type "checkbox"
+                 :checked (if (x 1) "checked")
+                 :on-change #(toggle-use (x 0))}]]
+   [:td (x 2)]
+   [:td (x 3)]])
 
 (defn index-table []
   [:table
    [:thead
-    [:tr [:th "Hardware ID"] [:th "ID"] [:th "Previous"]]]
+    [:tr [:th "Hardware ID"] [:th "Use"] [:th "ID"] [:th "Previous"]]]
    [:tbody
     (for [x (:index @app-state)]
       ^{:key x} [index-row x])]])
@@ -59,6 +72,14 @@
     (for [x (sort #(compare (%2 "date") (%1 "date")) (:files @app-state))]
       ^{:key x} [files-row x])]])
 
+(defn update-index! [req res next]
+  (get-files)
+  (let [shift-ids (fn [[hwid use id prev]]
+                    (if use
+                      [hwid use (req "id") id]
+                      [hwid use id prev]))]
+    (swap! app-state assoc :index (mapv shift-ids (:index @app-state)))))
+
 (defn upload-file! [file]
   (let [name (.-name file)
         date (.-lastModified file)
@@ -69,7 +90,7 @@
                         url (str server-url name)]
                     (ajax/POST url {:format :json
                                     :params desc
-                                    :handler get-files})))]
+                                    :handler update-index!})))]
     (set! (.-onloadend reader) on-done)
     (.readAsBinaryString reader file)))
 

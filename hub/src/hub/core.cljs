@@ -25,6 +25,11 @@
   (let [digits (re-find  #"\d+" s)]
     (if digits (js/parseInt digits 10))))
 
+(defn update-index! [req res next]
+  (println 432 (.. req .-params .-data))
+  #_(.writeFileSync fs (str bootdir "/index.txt") (.. req .-params .-data))
+  (.send res 200))
+
 (defn highest-seqnum []
   (apply max 999 (map parse-leading-int (list-files))))
 
@@ -48,6 +53,7 @@
       (.use rest-logger)
       (.get "/" send-file-list)
       (.get "/index.txt" static-server)
+      (.post "/index.txt" update-index!)
       (.get #"^/.+\.bin$" static-server)
       (.post #"^/.+\.bin$" add-file!)
       (.del #"^/.+\.bin$" delete-file!))))
