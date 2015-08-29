@@ -21,9 +21,6 @@
     (.send res (clj->js (map file-details dirlist)))))
 
 (defn add-file [req res next]
-  (.log js/console 111 (.keys js/Object req))
-  (.log js/console (.-headers req))
-  (.log js/console 222 (.-body req))
   (.log js/console 333 (.-params req))
   (.send res 200))
 
@@ -36,7 +33,7 @@
       (.get "/" list-files)
       (.get "/index.txt" static-server)
       (.get #"^/.+\.bin$" static-server)
-      (.post #"^/.+" add-file))))
+      (.post #"^/.+\.bin$" add-file))))
 
 (defn -main []
   (println "Hello world!")

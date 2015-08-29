@@ -51,11 +51,9 @@
     (for [x (:files @app-state) :when (not= (x "name") "index.txt")]
       ^{:key x} [files-row x])]])
 
-(defn post-file [data]
-  (let [url (str server-url (:name data))
-        fake "{\"a\":\"b\"}"]
-    (.log js/console 654 fake (clj->js data))
-    (ajax/POST url {:format :json :body fake #_(clj->js data)})))
+(defn post-file [desc]
+  (let [url (str server-url (:name desc))]
+    (ajax/POST url {:format :json :params desc})))
 
 (defn upload-file [file]
   (let [name (.-name file)
