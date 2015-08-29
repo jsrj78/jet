@@ -41,22 +41,15 @@
 
 (defn files-row [x]
   ;; TODO should change string keys to keywords during get-files reception
-  [:tr [:td [:code (x "name")]] [:td (x "size")] [:td (x "date")]])
-
-(defn newest-file-first []
-  (sort #(compare (%2 "date") (%1 "date")) (:files @app-state)))
+  [:tr [:td [:code (x "date")]] [:td (x "size")] [:td (x "name")]])
 
 (defn files-table []
   [:table
    [:thead
-    [:tr [:th "Filename"] [:th "Size"] [:th "Date"]]]
+    [:tr [:th "Date"] [:th "Size"] [:th "Filename"]]]
    [:tbody
-    (for [x (newest-file-first) :when (not= (x "name") "index.txt")]
+    (for [x (sort #(compare (%2 "date") (%1 "date")) (:files @app-state))]
       ^{:key x} [files-row x])]])
-
-(defn post-file [desc]
-  (let [url (str server-url (:name desc))]
-    (ajax/POST url {:format :json :params desc :handler get-files})))
 
 (defn upload-file [file]
   (let [name (.-name file)
@@ -64,8 +57,12 @@
         reader (js/FileReader.)]
     (set! (.-onloadend reader)
           (fn []
-            (let [bytes (.-result reader)]
-              (post-file {:name name :date date :bytes (js/btoa bytes)}))))
+            (let [bytes (.-result reader)
+                  desc {:name name :date date :bytes (js/btoa bytes)}
+                  url (str server-url name)]
+              (ajax/POST url {:format :json
+                              :params desc
+                              :handler get-files}))))
     (.readAsBinaryString reader file)))
 
 (defn drop-handler [evt]
