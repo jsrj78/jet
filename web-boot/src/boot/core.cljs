@@ -37,9 +37,8 @@
   (let [as-text (fn [[hwid new id prev]]
                   (str hwid (if new " + " " - ") id " " prev "\n"))
         newtext (str/join (map as-text newindex))]
-    (ajax/POST (str server-url "index.txt") {:format :json
-                                             :params {:text newtext}
-                                             :handler get-index})))
+    (ajax/POST (str server-url "index.txt")
+               {:format :json :params {:text newtext} :handler get-index})))
 
 (defn toggle-new! [hwid]
   (change-index! (mapv (fn [item]
@@ -99,11 +98,10 @@
 
 (defn upload-file! [file]
   (let [name (.-name file)
-        date (.-lastModified file)
         reader (js/FileReader.)
         on-done (fn []
                   (let [bytes (.-result reader)
-                        desc {:name name :date date :bytes (js/btoa bytes)}
+                        desc {:name name :bytes (js/btoa bytes)}
                         url (str server-url name)]
                     (ajax/POST url {:format :json
                                     :params desc
@@ -120,6 +118,7 @@
 (defn hello-world []
   [:div
    [:h1 "JeeBoot Configuration"]
+   [:p "Tip: select the node(s), then upload new firmware via drag and drop."]
    [:div
     [:h3 "Node map"]
     [index-table]]
