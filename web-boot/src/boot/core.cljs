@@ -11,8 +11,9 @@
 (defonce app-state (reagent/atom {}))
 
 (defn parse-one [line]
-  (let [[_ hwid id prev] (re-find #"^([0-9A-F]{32}) = (\d*) ?(\d*)$" line)]
-    (if hwid [hwid false id prev])))
+  (let [re #"^([0-9A-F]{32}) ([-+]) (\d*) ?(\d*)$"
+        [_ hwid new id prev] (re-find re line)]
+    (if hwid [hwid (= new "+") id prev])))
 
 (defn parse-index [text]
   (->> text
@@ -28,32 +29,41 @@
 (defn get-files []
   (ajax/GET server-url {:handler #(swap! app-state assoc :files %)}))
 
-(defn toggle-use [hwid]
-  (let [toggler (fn [item]
-                  (if (= (item 0) hwid)
-                    (assoc item 1 (not (item 1)))
-                    item))]
-    (swap! app-state assoc :index (map toggler (:index @app-state)))))
+(defn delete-file! [file]
+  (ajax/DELETE (str server-url file) {:handler get-files}))
+
+(defn change-index! [newindex]
+  (swap! app-state assoc :index newindex)
+  (let [as-text (fn [[hwid new id prev]]
+                  (str hwid (if new " + " " - ") id " " prev "\n"))
+        newtext (str/join (map as-text newindex))]
+    (ajax/POST (str server-url "index.txt") {:format :json
+                                             :params {:text newtext}
+                                             :handler get-index})))
+
+(defn toggle-new! [hwid]
+  (change-index! (mapv (fn [item]
+                         (if (= (item 0) hwid)
+                           (assoc item 1 (not (item 1)))
+                           item))
+                       (:index @app-state))))
 
 (defn index-row [x]
   [:tr
    [:td [:code (x 0)]]
    [:td [:input {:type "checkbox"
                  :checked (if (x 1) "checked")
-                 :on-change #(toggle-use (x 0))}]]
+                 :on-change #(toggle-new! (x 0))}]]
    [:td (x 2)]
    [:td (x 3)]])
 
 (defn index-table []
   [:table
    [:thead
-    [:tr [:th "Hardware ID"] [:th "Use"] [:th "ID"] [:th "Previous"]]]
+    [:tr [:th "Hardware ID"] [:th "New"] [:th "ID"] [:th "Previous"]]]
    [:tbody
     (for [x (:index @app-state)]
       ^{:key x} [index-row x])]])
-
-(defn delete-file! [file]
-  (ajax/DELETE (str server-url file) {:handler get-files}))
 
 (defn files-row [x]
   ;; TODO should change string keys to keywords during get-files reception
@@ -74,11 +84,11 @@
 
 (defn update-index! [req res next]
   (get-files)
-  (let [shift-ids (fn [[hwid use id prev]]
-                    (if use
-                      [hwid use (req "id") id]
-                      [hwid use id prev]))]
-    (swap! app-state assoc :index (mapv shift-ids (:index @app-state)))))
+  (change-index! (mapv (fn [[hwid new id prev]]
+                         (if new
+                           [hwid new (req "id") id]
+                           [hwid new id prev]))
+                       (:index @app-state))))
 
 (defn upload-file! [file]
   (let [name (.-name file)

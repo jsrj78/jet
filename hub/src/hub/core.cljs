@@ -26,8 +26,7 @@
     (if digits (js/parseInt digits 10))))
 
 (defn update-index! [req res next]
-  (println 432 (.. req .-params .-data))
-  #_(.writeFileSync fs (str bootdir "/index.txt") (.. req .-params .-data))
+  (.writeFileSync fs (str bootdir "/index.txt") (.. req -params -text))
   (.send res 200))
 
 (defn highest-seqnum []
