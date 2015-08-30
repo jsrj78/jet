@@ -8,6 +8,7 @@
                  [figwheel "0.3.7"]]
 
   :npm {:dependencies [[source-map-support "*"]
+                       [ws "*"]
                        [restify "*"]]
         :root "out.dev"}
 

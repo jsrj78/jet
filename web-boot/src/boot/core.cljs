@@ -65,19 +65,26 @@
     (for [x (:index @app-state)]
       ^{:key x} [index-row x])]])
 
+(defn id-unused? [id]
+  (= 0 (count (filter #(or (= id (% 2)) (= id (% 3))) (:index @app-state)))))
+
 (defn files-row [x]
   ;; TODO should change string keys to keywords during get-files reception
-  [:tr
-   [:td (x "date")]
-   [:td (x "name")]
-   [:td (x "size")]
-   [:td (re-find #"\d+" (x "name"))]
-   [:td [:button {:on-click #(delete-file! (x "name"))} "delete"]]])
+  (let [name (x "name")
+        size (x "size")
+        date (x "date")
+        id (re-find #"\d+" name)]
+    [:tr
+     [:td date]
+     [:td size]
+     [:td id]
+     [:td (if (id-unused? id)
+            [:button {:on-click #(delete-file! (x "name"))} "delete"])]]))
 
 (defn files-table []
   [:table
    [:thead
-    [:tr [:th "Date"] [:th "Filename"] [:th "Size"] [:th "ID"]]]
+    [:tr [:th "Date"] [:th "Size"] [:th "ID"]]]
    [:tbody
     (for [x (sort #(compare (%2 "date") (%1 "date")) (:files @app-state))]
       ^{:key x} [files-row x])]])

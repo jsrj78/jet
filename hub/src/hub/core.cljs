@@ -37,7 +37,7 @@
         params (.-params req)
         name (.-name params)
         bytes (js/Buffer. (.-bytes params) "base64")]
-    (.writeFileSync fs (str bootdir "/" id "-" name) bytes)
+    (.writeFileSync fs (str bootdir "/" id ".bin") bytes)
     (.send res 200 #js {:id id})))
 
 (defn delete-file! [req res next]
