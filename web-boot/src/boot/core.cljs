@@ -6,7 +6,7 @@
 (enable-console-print!)
 (println "[jet/boot]")
 
-(def server-url "http://localhost:3000/")
+(def server-url "http://localhost:9000/")
 
 (defonce app-state (reagent/atom {}))
 

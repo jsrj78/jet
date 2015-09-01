@@ -58,8 +58,8 @@
       (.del #"^/.+\.bin$" delete-file!))))
 
 (defn -main []
-  (println "server starting on http://localhost:3000/ ...")
+  (println "server starting on http://localhost:9000/ ...")
   (let [server (create-server)]
-    (.listen server 3000)))
+    (.listen server 9000)))
 
 (set! *main-cli-fn* -main)
