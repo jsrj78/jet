@@ -1,18 +1,19 @@
 #pragma once
 
 class Slot {
-  uint16_t value;
+  uintptr_t value;
 
  public:
-  Slot () : value (0) {}
-  uint16_t Value () const { return value; }
+  Slot (uintptr_t v =0) : value (v) {}
+  uintptr_t Value () const { return value; }
 };
 
 class MugBase {
 protected:
   virtual ~MugBase () {}
-  virtual int Inputs() const =0;
-  virtual int Outputs() const =0;
+  virtual int Inputs () const =0;
+  virtual int Outputs () const =0;
+  virtual void Trigger (int /*idx*/, const Slot& /*slt*/) {}
 };
 
 template < int I =0, int O =0 >
