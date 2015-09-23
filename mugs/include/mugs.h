@@ -31,7 +31,7 @@ public:
 
   Value& operator<< (const Value& newVal) {
     Value* vecp = (Value*) value;
-    int newLen = isNil() ? 1 : vecp[0] + 1;
+    int newLen = len() + 1;
     vecp = (Value*) realloc(vecp, ((unsigned) newLen + 1) * sizeof (Value));
     vecp[0] = newLen;
     vecp[newLen] = newVal;
