@@ -4,18 +4,46 @@ class Value {
   uintptr_t value;
 
 public:
-  typedef enum { STR, INT } Types;
+  typedef enum { VEC, STR, INT } Types;
 
-  Value () : value (STR) {}
+  Value () : value (VEC) {}
   Value (int v) : value (((uintptr_t) v << 2) | INT) {}
   Value (const char* s) : value (((uintptr_t) s << 2) | STR) {}
 
-  uintptr_t Raw () const { return value; }
-  Types Type () const { return (Types) (value & 3); }
+  ~Value () {
+    if (type() == VEC)
+      free((void*) value);
+  }
+
+  //uintptr_t Raw () const { return value; }
+  Types type () const { return (Types) (value & 3); }
   bool isNil () const { return value == 0; }
+
+  int len () const {
+    return !isNil() && type() == VEC ? (int) (((const Value*) value)[0]) : 0;
+  }
 
   operator int () const { return (int) value >> 2; }
   operator const char* () const { return (const char*) (value >> 2); }
+
+  Value& operator[] (int i) { return ((Value*) value)[i]; }
+
+  Value& operator<< (int v) { return *this << Value (v); }
+  Value& operator<< (const char* s) { return *this << Value (s); }
+
+  Value& operator<< (const Value& newVal) {
+    Value* v = (Value*) value;
+    if (isNil()) {
+      v = (Value*) malloc(sizeof (Value));
+      v[0] = 0;
+    }
+    int n = v[0];
+    v = (Value*) realloc(v, ((unsigned) n + 2) * sizeof (Value));
+    v[0] = ++n;
+    v[n] = newVal;
+    value = (uintptr_t) v;
+    return *this;
+  }
 };
 
 class MugBase {
