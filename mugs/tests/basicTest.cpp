@@ -13,15 +13,9 @@ TEST(Basic, TrivialEquality)
   CHECK_EQUAL(3, 1+2); // expected 1st, actual 2nd
 }
 
-TEST(Basic, SlotSize)
+TEST(Basic, ValueSize)
 {
-  CHECK_EQUAL(sizeof (void*), sizeof (Slot));
-}
-
-TEST(Basic, EmptySlot)
-{
-  Slot s;
-  CHECK_EQUAL(0, s.Value());
+  CHECK_EQUAL(sizeof (void*), sizeof (Value));
 }
 
 TEST(Basic, EmptyMugSize)
@@ -40,17 +34,17 @@ TEST(Basic, MugsHaveInputsAndOutputs)
 TEST(Basic, DerivedMug)
 {
   static int lastIndex = 0;
-  static Slot lastSlot;
+  static Value lastValue;
 
   class MyMug : Mug<1> {
   public:
-    void Trigger (int idx, const Slot& slt) {
+    void Trigger (int idx, const Value& slt) {
       lastIndex = idx;
-      lastSlot = slt;
+      lastValue = slt;
     }
   } m;
 
   m.Trigger(1, 2);
   CHECK_EQUAL(1, lastIndex);
-  CHECK_EQUAL(2, lastSlot.Value());
+  CHECK_EQUAL(2, (int) lastValue);
 }
