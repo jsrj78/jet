@@ -10,10 +10,8 @@ public:
   Value (int v) : value (((uintptr_t) v << 2) | INT) {}
   Value (const char* s) : value (((uintptr_t) s << 2) | STR) {}
 
-  ~Value () {
-    if (type() == VEC)
-      free((void*) value);
-  }
+  // FIXME need to recursively release the vector's items as well
+  ~Value () { if (type() == VEC) free((void*) value); }
 
   //uintptr_t Raw () const { return value; }
   Types type () const { return (Types) (value & 3); }
@@ -32,16 +30,12 @@ public:
   Value& operator<< (const char* s) { return *this << Value (s); }
 
   Value& operator<< (const Value& newVal) {
-    Value* v = (Value*) value;
-    if (isNil()) {
-      v = (Value*) malloc(sizeof (Value));
-      v[0] = 0;
-    }
-    int n = v[0];
-    v = (Value*) realloc(v, ((unsigned) n + 2) * sizeof (Value));
-    v[0] = ++n;
-    v[n] = newVal;
-    value = (uintptr_t) v;
+    Value* vecp = (Value*) value;
+    int newLen = isNil() ? 1 : vecp[0] + 1;
+    vecp = (Value*) realloc(vecp, ((unsigned) newLen + 1) * sizeof (Value));
+    vecp[0] = newLen;
+    vecp[newLen] = newVal;
+    value = (uintptr_t) vecp;
     return *this;
   }
 };

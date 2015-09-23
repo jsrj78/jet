@@ -42,3 +42,15 @@ TEST(Value, VecType)
   CHECK_EQUAL(-123, (int) v[1]);
   STRCMP_EQUAL("abc", v[2]);
 }
+
+TEST(Value, ChangeVec)
+{
+  Value v;
+  v << -123 << "abc";
+  CHECK_EQUAL(-123, (int) v[1]);
+  STRCMP_EQUAL("abc", v[2]);
+  v[1] = "defg";
+  v[2] = 456;
+  STRCMP_EQUAL("defg", v[1]);
+  CHECK_EQUAL(456, (int) v[2]);
+}
