@@ -27,8 +27,8 @@ TEST(Basic, EmptyMugSize)
 TEST(Basic, MugsHaveInputsAndOutputs)
 {
   Mug<1,2> m;
-  CHECK_EQUAL(1, m.Inputs());
-  CHECK_EQUAL(2, m.Outputs());
+  CHECK_EQUAL(1, m.inputs());
+  CHECK_EQUAL(2, m.outputs());
 }
 
 TEST(Basic, DerivedMug)
@@ -38,13 +38,13 @@ TEST(Basic, DerivedMug)
 
   class MyMug : Mug<1> {
   public:
-    void Trigger (int idx, const Value& slt) {
+    void trigger (int idx, const Value& slt) {
       lastIndex = idx;
       lastValue = slt;
     }
   } m;
 
-  m.Trigger(1, 2);
+  m.trigger(1, 2);
   CHECK_EQUAL(1, lastIndex);
   CHECK_EQUAL(2, (int) lastValue);
 }
