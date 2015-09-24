@@ -1,5 +1,4 @@
 #include "mugs.h"
-
 #include "CppUTest/TestHarness.h"
 
 TEST_GROUP(Value)

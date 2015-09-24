@@ -1,10 +1,22 @@
 #include "mugs.h"
-
 #include "CppUTest/TestHarness.h"
+
+static int lastIndex;
+static Value lastValue;
 
 TEST_GROUP(Basic)
 {
-  //TEST_SETUP() {}
+  class BasicMug : public Mug<1,0> {
+    void trigger (int idx, const Value& val) {
+      lastIndex = idx;
+      lastValue = val;
+    }
+  };
+
+  TEST_SETUP() {
+    lastIndex = 0;
+    lastValue = 0;
+  }
   //TEST_TEARDOWN() {}
 };
 
@@ -20,7 +32,7 @@ TEST(Basic, ValueSize)
 
 TEST(Basic, EmptyMugSize)
 {
-  Mug<> m;
+  Mug<0,0> m;
   CHECK_EQUAL(sizeof (void*), sizeof m);
 }
 
@@ -31,20 +43,10 @@ TEST(Basic, MugsHaveInputsAndOutputs)
   CHECK_EQUAL(2, m.outputs());
 }
 
-TEST(Basic, DerivedMug)
+TEST(Basic, BasicMug)
 {
-  static int lastIndex = 0;
-  static Value lastValue;
-
-  class MyMug : Mug<1> {
-  public:
-    void trigger (int idx, const Value& slt) {
-      lastIndex = idx;
-      lastValue = slt;
-    }
-  } m;
-
-  m.trigger(1, 2);
+  BasicMug m;
+  m.feed(1, 2);
   CHECK_EQUAL(1, lastIndex);
   CHECK_EQUAL(2, (int) lastValue);
 }
