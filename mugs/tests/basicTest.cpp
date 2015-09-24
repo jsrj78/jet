@@ -33,7 +33,7 @@ TEST(Basic, ValueSize)
 TEST(Basic, EmptyMugSize)
 {
   Mug<0,0> m;
-  CHECK_EQUAL(sizeof (void*), sizeof m);
+  CHECK_EQUAL(2 * sizeof (void*), sizeof m);
 }
 
 TEST(Basic, MugsHaveInputsAndOutputs)

@@ -1,4 +1,5 @@
 #pragma once
+#include <assert.h>
 
 class Value {
   uintptr_t value;
@@ -42,13 +43,36 @@ class Value {
   }
 };
 
+class MugBase;
+extern MugBase* const mugs [];
+extern const uint8_t flows [];
+
 class MugBase {
+  uint16_t offset;
+
+  void initOffsets () {
+    const uint8_t* p = flows;
+    int mugCnt = *p++;
+    for (int mugIdx = 0; mugIdx < mugCnt; ++mugIdx) {
+      mugs[mugIdx]->offset = (uint16_t) (p - flows);
+    }
+  }
+
  protected:
+  MugBase () : offset (0) {}
   virtual ~MugBase () {}
 
   virtual int inputs () const =0;
   virtual int outputs () const =0;
   virtual void trigger (int /*idx*/, const Value& /*val*/) {}
+
+  void send (int idx, const Value& val) {
+    if (offset == 0)
+      initOffsets();
+    // FIXME hardcoded i.s.o. using flow connections
+    assert(offset == 1);
+    mugs[1]->feed(idx, val);
+  }
 
  public:
   void feed (int idx, const Value& val) { trigger(idx, val); }
