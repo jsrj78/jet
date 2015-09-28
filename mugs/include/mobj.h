@@ -19,7 +19,7 @@ struct Chunk {
   int len () const { return hdr[0] >> 3; }
 
   void mark () { hdr[0] |= 4; }
-  void unmark () { hdr[0] &= ~4; }
+  void unmark () { hdr[0] &= (uint16_t) ~4; }
 };
 
 extern Chunk pool [];
@@ -30,7 +30,7 @@ class Pool {
   static void init(size_t bytes) {
     poolSize = (int) (bytes / sizeof (Chunk));
     for (int i = 0; i < poolSize; ++i)
-      pool[i].chn = (uint16_t) i + 1;
+      pool[i].chn = (uint16_t) (i+1);
     pool[poolSize-1].chn = 0; // last chunk is end of free chain
   }
   static Chunk* alloc (int cnt =1) {
@@ -57,7 +57,7 @@ class Val {
 
   bool isNil () const { return v == 0; }
   Typ type () const { return (Typ) (v & 7); }
-  uint16_t chunk () const { return v >> 3; }
+  uint16_t chunk () const { return (uint16_t) (v >> 3); }
 
   operator int () const { return (int16_t) v >> 3; }
   operator const char* () const { return "abc"; }
