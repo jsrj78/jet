@@ -13,7 +13,7 @@ TEST(Object, ValueSize) {
 TEST(Object, DefaultIsNil) {
   Val v;
   CHECK_TRUE(v.isNil());
-  CHECK_EQUAL(Val::PTR, v.type());
+  CHECK_EQUAL(Val::REF, v.type());
 }
 
 TEST(Object, IntVal) {
@@ -26,6 +26,6 @@ TEST(Object, IntVal) {
 TEST(Object, StrVal) {
   Val v = "abc";
   CHECK_FALSE(v.isNil());
-  CHECK_EQUAL(Val::PTR, v.type());
+  CHECK_EQUAL(Val::REF, v.type());
   STRCMP_EQUAL("abc", v);
 }

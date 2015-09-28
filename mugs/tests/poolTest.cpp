@@ -15,7 +15,7 @@ TEST(Pool, ChunkPoolSize) {
 TEST(Pool, ChunkAlignment) {
   Chunk c;
   // chn should be in the last two bytes, i.e. at offset 6 or 14
-  CHECK_EQUAL(sizeof c - 2, (uint8_t*) &c.chn - (uint8_t*) &c);
+  CHECK_EQUAL(sizeof c - 2, (uint8_t*) &c.nxt - (uint8_t*) &c);
 }
 
 TEST(Pool, Alloc) {
