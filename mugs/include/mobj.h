@@ -11,15 +11,25 @@ struct Chunk {
 };
 
 extern Chunk pool [];
-static unsigned poolSize;
+static int poolSize;
 
 class Pool {
  public:
   static void init(size_t bytes) {
-    poolSize = (unsigned) (bytes / sizeof (Chunk));
-    for (unsigned i = 0; i < poolSize; ++i)
+    poolSize = (int) (bytes / sizeof (Chunk));
+    for (int i = 0; i < poolSize; ++i)
       pool[i].h = (uint16_t) ((i+1) << 3);
     pool[poolSize-1].h = 0; // last chunk is end of free chain
+  }
+  static Chunk* alloc (int cnt =1) {
+    int free = pool[0].h >> 3;
+    while (--cnt >= 0) {
+      int next = pool[0].h >> 3;
+      pool[0].h = pool[next].h;
+      if (cnt == 0)
+        pool[next].h = 0; // terminate the returned chain
+    }
+    return pool + free;
   }
 };
 
