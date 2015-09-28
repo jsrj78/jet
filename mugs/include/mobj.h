@@ -10,6 +10,19 @@ struct Chunk {
   } v;
 };
 
+extern Chunk pool [];
+static unsigned poolSize;
+
+class Pool {
+ public:
+  static void init(size_t bytes) {
+    poolSize = (unsigned) (bytes / sizeof (Chunk));
+    for (unsigned i = 0; i < poolSize; ++i)
+      pool[i].h = (uint16_t) ((i+1) << 3);
+    pool[poolSize-1].h = 0; // last chunk is end of free chain
+  }
+};
+
 class Val {
  public:
   uint16_t v;
