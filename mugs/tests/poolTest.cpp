@@ -31,7 +31,7 @@ TEST(Pool, Alloc) {
 }
 
 TEST(Pool, RefCounts) {
-  Chunk c;
+  static Chunk c;
   CHECK_EQUAL(0, c.refs());
   c.incRef();
   CHECK_EQUAL(1, c.refs());
