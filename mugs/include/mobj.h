@@ -1,6 +1,7 @@
 // Micro objects.
 #pragma once
 #include <assert.h>
+#include <string.h>
 
 class Chunk {
  public:
