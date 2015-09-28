@@ -1,3 +1,4 @@
+// Micro gadgets.
 #pragma once
 #include <assert.h>
 
