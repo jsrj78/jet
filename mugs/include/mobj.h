@@ -7,9 +7,9 @@ class Chunk {
  public:
   enum { SLACK = sizeof (void*) / 2 - 1, MAXDATA = 2 * sizeof (void*) - 2 };
   typedef enum {
-    ANY, INT, FLT,           // scalar values, might also use chains
-    TXT, BYT, VEC, MAP, SET, // chained collections
-    PAD0, PAD1, PAD2, PAD3,  // number of pad items at the end of tuples
+    ANY, INT, FLT, CHN, // scalar values, might also use chains
+    TXT, BYT, VEC, MAP, SET, // all the chained collection types
+    PAD0, PAD1, PAD2, PAD3, PAD4, PAD5, PAD6 // tuple padding
   } SubTyp;
 
   union {
