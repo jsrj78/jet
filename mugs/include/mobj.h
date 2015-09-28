@@ -21,24 +21,34 @@ class Chunk {
     uint32_t    q [1];
     float       f [1];
   }        val;
-  uint16_t aux [SLACK];
+  int16_t  aux [SLACK];
   uint16_t nxt;
 
   SubTyp type () const { return (SubTyp) (aux[SLACK-1] & 15); }
   int refs () const { return aux[SLACK-1] >> 4; }
+#if 0
+  void incRef () {
+    aux[SLACK-1] = aux[SLACK-1] + (1<<4);
+    assert(refs() != 0);
+  }
+  void decRef () {
+    assert(refs() != 0);
+    aux[SLACK-1] = aux[SLACK-1] - (1U<<4);
+  }
+#endif
   void incRef () { aux[SLACK-1] += 1<<4; assert(refs() != 0); }
   void decRef () { assert(refs() != 0); aux[SLACK-1] -= 1<<4; }
 
-  void init (SubTyp t) { aux[SLACK-1] = (uint16_t) t; }
+  void init (SubTyp t) { aux[SLACK-1] = (int16_t) t; }
 };
 
 class Pool {
  public:
   static Chunk mem [];
-  static uint16_t& size () { return mem[0].aux[Chunk::SLACK-1]; }
+  static int16_t& size () { return mem[0].aux[Chunk::SLACK-1]; }
 
   static void init(size_t bytes) {
-    size() = (uint16_t) (bytes / sizeof (Chunk));
+    size() = (int16_t) (bytes / sizeof (Chunk));
     for (int i = 0; i < size(); ++i)
       mem[i].nxt = (uint16_t) (i+1);
     mem[size()-1].nxt = 0; // last chunk is end of free chain
