@@ -49,12 +49,12 @@ class Pool {
 
   static void init(size_t bytes) {
     size() = (uint16_t) (bytes / sizeof (Chunk));
-    for (int i = 0; i < size(); ++i)
+    for (int i = 0; i < size() - 1; ++i)
       mem[i].nxt = (uint16_t) (i+1);
-    mem[size()-1].nxt = 0; // last chunk is end of free chain
+    // this code assumes that the memory pool starts out as all zeroes
   }
 
-  static Chunk* alloc (int cnt =1) {
+  static Chunk* allocate (int cnt =1) {
     int free = mem[0].nxt;
     while (--cnt >= 0) {
       int next = mem[0].nxt;
@@ -63,6 +63,20 @@ class Pool {
         mem[next].nxt = 0; // terminate the returned chain
     }
     return mem + free;
+  }
+
+  static void release (Chunk* p) {
+    Chunk* head = p;
+    while (true) {
+      memset(p, 0, Chunk::MAXDATA);
+      int next = p->nxt;
+      if (next == 0) {
+        p->nxt = mem[0].nxt;
+        mem[0].nxt = (uint16_t) (head - mem);
+        return;
+      }
+      p = mem + next;
+    }
   }
 };
 

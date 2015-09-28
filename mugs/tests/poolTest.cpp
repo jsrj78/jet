@@ -4,7 +4,10 @@
 Chunk Pool::mem [100];
 
 TEST_GROUP(Pool) {
-  TEST_SETUP() { Pool::init(sizeof Pool::mem); }
+  TEST_SETUP() {
+    memset(Pool::mem, 0, sizeof Pool::mem);
+    Pool::init(sizeof Pool::mem);
+  }
 };
 
 TEST(Pool, ChunkPoolSize) {
@@ -20,24 +23,46 @@ TEST(Pool, ChunkAlignment) {
 }
 
 TEST(Pool, Alloc) {
-  Chunk* p = Pool::alloc();
+  Chunk* p = Pool::allocate();
   CHECK_EQUAL(&Pool::mem[1], p);
-  Chunk* q = Pool::alloc(2);
+  Chunk* q = Pool::allocate(2);
   CHECK_EQUAL(&Pool::mem[2], q);
-  Chunk* r = Pool::alloc();
+  Chunk* r = Pool::allocate();
   CHECK_EQUAL(&Pool::mem[4], r);
-  CHECK_EQUAL(&Pool::mem[5], Pool::alloc(0));
-  CHECK_EQUAL(&Pool::mem[5], Pool::alloc(0));
+  CHECK_EQUAL(&Pool::mem[5], Pool::allocate(0));
+  CHECK_EQUAL(&Pool::mem[5], Pool::allocate(0));
 }
 
 TEST(Pool, RefCounts) {
-  static Chunk c;
-  CHECK_EQUAL(0, c.refs());
-  c.incRef();
-  CHECK_EQUAL(1, c.refs());
-  c.incRef();
-  CHECK_EQUAL(2, c.refs());
-  c.decRef();
-  c.decRef();
-  CHECK_EQUAL(0, c.refs());
+  Chunk* p = Pool::allocate();
+  CHECK_EQUAL(0, p->refs());
+  p->incRef();
+  CHECK_EQUAL(1, p->refs());
+  p->incRef();
+  CHECK_EQUAL(2, p->refs());
+  p->decRef();
+  p->decRef();
+  CHECK_EQUAL(0, p->refs());
+}
+
+TEST(Pool, FreeInReverseOrder) {
+  Chunk* p = Pool::allocate(2); // 1 2
+  Chunk* q = Pool::allocate(3); // 3 4 5
+  Pool::release(q);
+  CHECK_EQUAL(&Pool::mem[3], Pool::allocate(0));
+  Pool::release(p);
+  Chunk* r = Pool::allocate(6); // 1 2 3 4 5 6
+  CHECK_EQUAL(&Pool::mem[1], r);
+  CHECK_EQUAL(&Pool::mem[7], Pool::allocate(0));
+}
+
+TEST(Pool, FreeInSameOrder) {
+  Chunk* p = Pool::allocate(2); // 1 2
+  Chunk* q = Pool::allocate(3); // 3 4 5
+  Pool::release(p);
+  CHECK_EQUAL(&Pool::mem[1], Pool::allocate(0));
+  Pool::release(q);
+  Chunk* r = Pool::allocate(6); // 3 4 5 1 2 6
+  CHECK_EQUAL(&Pool::mem[3], r);
+  CHECK_EQUAL(&Pool::mem[7], Pool::allocate(0));
 }
