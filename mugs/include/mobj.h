@@ -28,28 +28,31 @@ class Chunk {
   int refs () const { return aux[SLACK-1] >> 4; }
   void incRef () { aux[SLACK-1] += 1<<4; assert(refs() != 0); }
   void decRef () { assert(refs() != 0); aux[SLACK-1] -= 1<<4; }
-};
 
-extern Chunk pool [];
-static int poolSize;
+  void init (SubTyp t) { aux[SLACK-1] = (uint16_t) t; }
+};
 
 class Pool {
  public:
+  static Chunk mem [];
+  static uint16_t& size () { return mem[0].aux[Chunk::SLACK-1]; }
+
   static void init(size_t bytes) {
-    poolSize = (int) (bytes / sizeof (Chunk));
-    for (int i = 0; i < poolSize; ++i)
-      pool[i].nxt = (uint16_t) (i+1);
-    pool[poolSize-1].nxt = 0; // last chunk is end of free chain
+    size() = (uint16_t) (bytes / sizeof (Chunk));
+    for (int i = 0; i < size(); ++i)
+      mem[i].nxt = (uint16_t) (i+1);
+    mem[size()-1].nxt = 0; // last chunk is end of free chain
   }
+
   static Chunk* alloc (int cnt =1) {
-    int free = pool[0].nxt;
+    int free = mem[0].nxt;
     while (--cnt >= 0) {
-      int next = pool[0].nxt;
-      pool[0].nxt = pool[next].nxt;
+      int next = mem[0].nxt;
+      mem[0].nxt = mem[next].nxt;
       if (cnt == 0)
-        pool[next].nxt = 0; // terminate the returned chain
+        mem[next].nxt = 0; // terminate the returned chain
     }
-    return pool + free;
+    return mem + free;
   }
 };
 

@@ -1,14 +1,14 @@
 #include "mobj.h"
 #include "CppUTest/TestHarness.h"
 
-Chunk pool [100];
+Chunk Pool::mem [100];
 
 TEST_GROUP(Pool) {
-  TEST_SETUP() { Pool::init(sizeof pool); }
+  TEST_SETUP() { Pool::init(sizeof Pool::mem); }
 };
 
 TEST(Pool, ChunkPoolSize) {
-  CHECK_EQUAL(100, poolSize);
+  CHECK_EQUAL(100, Pool::size());
   CHECK_EQUAL(2 * sizeof (void*), sizeof (Chunk));
   CHECK_EQUAL(sizeof (Chunk) - 2, Chunk::MAXDATA);
 }
@@ -21,13 +21,13 @@ TEST(Pool, ChunkAlignment) {
 
 TEST(Pool, Alloc) {
   Chunk* p = Pool::alloc();
-  CHECK_EQUAL(&pool[1], p);
+  CHECK_EQUAL(&Pool::mem[1], p);
   Chunk* q = Pool::alloc(2);
-  CHECK_EQUAL(&pool[2], q);
+  CHECK_EQUAL(&Pool::mem[2], q);
   Chunk* r = Pool::alloc();
-  CHECK_EQUAL(&pool[4], r);
-  CHECK_EQUAL(&pool[5], Pool::alloc(0));
-  CHECK_EQUAL(&pool[5], Pool::alloc(0));
+  CHECK_EQUAL(&Pool::mem[4], r);
+  CHECK_EQUAL(&Pool::mem[5], Pool::alloc(0));
+  CHECK_EQUAL(&Pool::mem[5], Pool::alloc(0));
 }
 
 TEST(Pool, RefCounts) {
