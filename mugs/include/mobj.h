@@ -7,36 +7,28 @@ class Chunk {
  public:
   enum { SLACK = sizeof (void*) / 2 - 1, MAXDATA = 2 * sizeof (void*) - 2 };
   typedef enum {
-    STRING, INTEGER,
+    ANY, INT, FLT,           // scalar values, might also use chains
+    TXT, BYT, VEC, MAP, SET, // chained collections
+    PAD0, PAD1, PAD2, PAD3,  // number of pad items at the end of tuples
   } SubTyp;
 
   union {
-    int         i;
-    void*       p;
-    const char* s;
-    int8_t      c [4];
-    uint8_t     b [4];
-    int16_t     h [2];
-    uint16_t    w [2];
-    int32_t     l [1];
-    uint32_t    q [1];
-    float       f [1];
+    int         num;
+    void*       ptr;
+    const char* str;
+    int8_t      i1 [4];
+    uint8_t     u1 [4];
+    int16_t     i2 [2];
+    uint16_t    u2 [2];
+    int32_t     i4 [1];
+    uint32_t    u4 [1];
+    float       f4 [1];
   }        val;
   uint16_t aux [SLACK];
   uint16_t nxt;
 
   SubTyp type () const { return (SubTyp) (aux[SLACK-1] & 15); }
   int refs () const { return aux[SLACK-1] >> 4; }
-#if 0
-  void incRef () {
-    aux[SLACK-1] = aux[SLACK-1] + (1<<4);
-    assert(refs() != 0);
-  }
-  void decRef () {
-    assert(refs() != 0);
-    aux[SLACK-1] = aux[SLACK-1] - (1U<<4);
-  }
-#endif
   void incRef () { aux[SLACK-1] += 1<<4; assert(refs() != 0); }
   void decRef () { assert(refs() != 0); aux[SLACK-1] -= 1<<4; }
 
@@ -47,6 +39,7 @@ class Pool {
  public:
   static Chunk mem [];
   static uint16_t& size () { return mem[0].aux[Chunk::SLACK-1]; }
+  static int numAllocs () { return mem[0].val.num; }
 
   static void init(size_t bytes) {
     size() = (uint16_t) (bytes / sizeof (Chunk));
@@ -54,8 +47,8 @@ class Pool {
       mem[i].nxt = (uint16_t) (i+1);
     // this code assumes that the memory pool starts out as all zeroes
   }
-
   static Chunk* allocate (int cnt =1) {
+    ++mem[0].val.num; // count the number of times we've been called
     int free = mem[0].nxt;
     while (--cnt >= 0) {
       int next = mem[0].nxt;
@@ -65,7 +58,6 @@ class Pool {
     }
     return mem + free;
   }
-
   static void release (Chunk* p) {
     Chunk* head = p;
     while (true) {

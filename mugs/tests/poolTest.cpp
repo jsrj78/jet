@@ -24,13 +24,14 @@ TEST(Pool, ChunkAlignment) {
 
 TEST(Pool, Alloc) {
   Chunk* p = Pool::allocate();
-  CHECK_EQUAL(&Pool::mem[1], p);
+  CHECK_EQUAL(Pool::mem + 1, p);
   Chunk* q = Pool::allocate(2);
-  CHECK_EQUAL(&Pool::mem[2], q);
+  CHECK_EQUAL(Pool::mem + 2, q);
   Chunk* r = Pool::allocate();
-  CHECK_EQUAL(&Pool::mem[4], r);
-  CHECK_EQUAL(&Pool::mem[5], Pool::allocate(0));
-  CHECK_EQUAL(&Pool::mem[5], Pool::allocate(0));
+  CHECK_EQUAL(Pool::mem + 4, r);
+  CHECK_EQUAL(Pool::mem + 5, Pool::allocate(0));
+  CHECK_EQUAL(Pool::mem + 5, Pool::allocate(0));
+  CHECK_EQUAL(5, Pool::numAllocs());
 }
 
 TEST(Pool, RefCounts) {
@@ -49,20 +50,22 @@ TEST(Pool, FreeInReverseOrder) {
   Chunk* p = Pool::allocate(2); // 1 2
   Chunk* q = Pool::allocate(3); // 3 4 5
   Pool::release(q);
-  CHECK_EQUAL(&Pool::mem[3], Pool::allocate(0));
+  CHECK_EQUAL(Pool::mem + 3, Pool::allocate(0));
   Pool::release(p);
   Chunk* r = Pool::allocate(6); // 1 2 3 4 5 6
-  CHECK_EQUAL(&Pool::mem[1], r);
-  CHECK_EQUAL(&Pool::mem[7], Pool::allocate(0));
+  CHECK_EQUAL(Pool::mem + 1, r);
+  CHECK_EQUAL(Pool::mem + 7, Pool::allocate(0));
+  CHECK_EQUAL(5, Pool::numAllocs());
 }
 
 TEST(Pool, FreeInSameOrder) {
   Chunk* p = Pool::allocate(2); // 1 2
   Chunk* q = Pool::allocate(3); // 3 4 5
   Pool::release(p);
-  CHECK_EQUAL(&Pool::mem[1], Pool::allocate(0));
+  CHECK_EQUAL(Pool::mem + 1, Pool::allocate(0));
   Pool::release(q);
   Chunk* r = Pool::allocate(6); // 3 4 5 1 2 6
-  CHECK_EQUAL(&Pool::mem[3], r);
-  CHECK_EQUAL(&Pool::mem[7], Pool::allocate(0));
+  CHECK_EQUAL(Pool::mem + 3, r);
+  CHECK_EQUAL(Pool::mem + 7, Pool::allocate(0));
+  CHECK_EQUAL(5, Pool::numAllocs());
 }
