@@ -10,6 +10,7 @@ TEST_GROUP(Pool) {
 TEST(Pool, ChunkPoolSize) {
   CHECK_EQUAL(100, poolSize);
   CHECK_EQUAL(2 * sizeof (void*), sizeof (Chunk));
+  CHECK_EQUAL(sizeof (Chunk) - 2, Chunk::MAXDATA);
 }
 
 TEST(Pool, ChunkAlignment) {
@@ -27,4 +28,16 @@ TEST(Pool, Alloc) {
   CHECK_EQUAL(&pool[4], r);
   CHECK_EQUAL(&pool[5], Pool::alloc(0));
   CHECK_EQUAL(&pool[5], Pool::alloc(0));
+}
+
+TEST(Pool, RefCounts) {
+  Chunk c;
+  CHECK_EQUAL(0, c.refs());
+  c.incRef();
+  CHECK_EQUAL(1, c.refs());
+  c.incRef();
+  CHECK_EQUAL(2, c.refs());
+  c.decRef();
+  c.decRef();
+  CHECK_EQUAL(0, c.refs());
 }
