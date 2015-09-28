@@ -9,7 +9,13 @@ TEST_GROUP(Pool) {
 
 TEST(Pool, ChunkPoolSize) {
   CHECK_EQUAL(100, poolSize);
-  CHECK_EQUAL(sizeof (void*) == 4 ? 8 : 16, sizeof (Chunk));
+  CHECK_EQUAL(2 * sizeof (void*), sizeof (Chunk));
+}
+
+TEST(Pool, ChunkAlignment) {
+  Chunk c;
+  // chn should be in the last two bytes, i.e. at offset 6 or 14
+  CHECK_EQUAL(sizeof c - 2, (uint8_t*) &c.chn - (uint8_t*) &c);
 }
 
 TEST(Pool, Alloc) {

@@ -2,24 +2,25 @@
 #pragma once
 
 struct Chunk {
-  uint16_t chn;
-  uint16_t hdr[sizeof (void*) == 4 ? 1 : 3];
   union {
     int i;
     long l;
     float f;
     void* p;
     const char* s;
+    uint16_t u[2];
   } val;
+  uint16_t aux[sizeof (void*) == 4 ? 1 : 3];
+  uint16_t chn;
 
   typedef enum { STRING, ARRAY, OBJECT, BYTECODE } CTyp;
 
-  CTyp ctype () const { return (CTyp) (hdr[0] & 3); }
-  bool isMarked () const { return (hdr[0] & 4) != 0; }
-  int len () const { return hdr[0] >> 3; }
+  CTyp ctype () const { return (CTyp) (aux[0] & 3); }
+  bool isMarked () const { return (aux[0] & 4) != 0; }
+  int len () const { return aux[0] >> 3; }
 
-  void mark () { hdr[0] |= 4; }
-  void unmark () { hdr[0] &= (uint16_t) ~4; }
+  void mark () { aux[0] |= 4; }
+  void unmark () { aux[0] &= (uint16_t) ~4; }
 };
 
 extern Chunk pool [];
