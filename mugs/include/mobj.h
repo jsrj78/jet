@@ -3,11 +3,13 @@
 
 struct Chunk {
   uint16_t h;
-  uint16_t d[sizeof (void*) == 4 ? 1 : 3];
+  uint16_t e[sizeof (void*) == 4 ? 1 : 3];
   union {
     int i;
     void* p;
   } v;
+
+  typedef enum { INDIR, STRING, ARRAY, OBJECT, BYTECODE } VTyp;
 };
 
 extern Chunk pool [];
@@ -36,7 +38,8 @@ class Pool {
 class Val {
  public:
   uint16_t v;
-  typedef enum { PTR, INT } Typ;
+
+  typedef enum { PTR, SYM, FUNC, LONG, INT, TRUE, FALSE, UNDEF } Typ;
 
   Val () : v (0) {}
   Val (int i) : v ((uint16_t) (i << 3) | INT) {}
