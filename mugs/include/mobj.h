@@ -81,12 +81,43 @@ class Val {
 
   Val () : v (0) {}
   Val (int i) : v ((uint16_t) (i << 2) | INT) {}
-  Val (const char* s) : v (1 << 2) { (void) s; }
+
+  Val (const char* s) {
+    size_t len = strlen(s);
+    int cnt = (int) len / Chunk::MAXDATA + 2;
+    Chunk* p = Pool::allocate(cnt);
+    v = (uint16_t) ((p - Pool::mem) << 2) | REF;
+    p->val.u2[0] = (uint16_t) len;
+    while (true) {
+      p = Pool::mem + p->nxt;
+      if (len < Chunk::MAXDATA) {
+        memcpy(p, s, len);
+        p->val.u1[len] = 0;
+        return;
+      }
+      printf("hhh\n");
+      memcpy(p, s, Chunk::MAXDATA);
+      s += Chunk::MAXDATA;
+      len -= Chunk::MAXDATA;
+    }
+  }
 
   bool isNil () const { return v == 0; }
   Typ type () const { return (Typ) (v & 3); }
   unsigned chunk () const { return (unsigned) (v >> 2); }
 
+  int size () const {
+    if (type() != REF)
+      return 0;
+    Chunk* p = Pool::mem + chunk();
+    return p->val.u2[0];
+  }
+
   operator int () const { return (int16_t) v >> 2; }
-  operator const char* () const { return "abc"; }
+  operator const char* () const {
+    if (type() != REF)
+      return 0;
+    Chunk* p = Pool::mem + chunk();
+    return (const char*) (Pool::mem + p->nxt);
+  }
 };

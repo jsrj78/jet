@@ -2,8 +2,12 @@
 #include "CppUTest/TestHarness.h"
 
 TEST_GROUP(Object) {
-  //TEST_SETUP() {}
-  //TEST_TEARDOWN() {}
+  TEST_SETUP() {
+    // see poolTest.cpp
+    const int n = 100;
+    memset(Pool::mem, 0, n * sizeof Pool::mem[0]);
+    Pool::init(n);
+  }
 };
 
 TEST(Object, ValueSize) {
@@ -27,5 +31,6 @@ TEST(Object, StrVal) {
   Val v = "abc";
   CHECK_FALSE(v.isNil());
   CHECK_EQUAL(Val::REF, v.type());
+  CHECK_EQUAL(3, v.size());
   STRCMP_EQUAL("abc", v);
 }
