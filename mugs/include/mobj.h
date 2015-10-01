@@ -80,7 +80,16 @@ class Val {
   typedef enum { REF, TUP, INT, FIX } Typ;
 
   Val () : v (0) {}
-  Val (int i) : v ((uint16_t) (i << 2) | INT) {}
+
+  Val (int i) {
+    if (-8192 <= i && i < 8192)
+        v = (uint16_t) (i << 2) | INT;
+    else {
+      Chunk* p = Pool::allocate();
+      v = (uint16_t) ((p - Pool::mem) << 2) | REF;
+      p->val.num = i;
+    }
+  }
 
   Val (const char* s) {
     size_t len = strlen(s);
@@ -113,7 +122,13 @@ class Val {
     return p->val.u2[0];
   }
 
-  operator int () const { return (int16_t) v >> 2; }
+  operator int () const {
+    if (type() != REF)
+        return (int16_t) v >> 2;
+    Chunk* p = Pool::mem + chunk();
+    return p->val.num;
+  }
+
   operator const char* () const {
     if (type() != REF)
       return 0;

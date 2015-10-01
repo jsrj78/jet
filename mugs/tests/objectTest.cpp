@@ -27,6 +27,13 @@ TEST(Object, IntVal) {
   CHECK_EQUAL(-123, (int) v);
 }
 
+TEST(Object, BigIntVal) {
+  Val v = -12345;
+  CHECK_FALSE(v.isNil());
+  CHECK_EQUAL(Val::REF, v.type());
+  CHECK_EQUAL(-12345, (int) v);
+}
+
 TEST(Object, StrVal) {
   Val v = "abc";
   CHECK_FALSE(v.isNil());
