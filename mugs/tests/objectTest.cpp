@@ -39,5 +39,15 @@ TEST(Object, StrVal) {
   CHECK_FALSE(v.isNil());
   CHECK_EQUAL(Val::REF, v.type());
   CHECK_EQUAL(3, v.size());
+  CHECK_EQUAL(0, v.cmp("abc"));
   STRCMP_EQUAL("abc", v);
+}
+
+TEST(Object, BigStrVal) {
+  Val v = "abcdefghijklmnopqrstuvwxyz";
+  CHECK_FALSE(v.isNil());
+  CHECK_EQUAL(Val::REF, v.type());
+  CHECK_EQUAL(26, v.size());
+  CHECK_EQUAL(0, v.cmp("abcdefghijklmnopqrstuvwxyz"));
+  //STRCMP_EQUAL("abcdefghijklmnopqrstuvwxyz", v);
 }

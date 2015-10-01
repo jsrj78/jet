@@ -104,7 +104,6 @@ class Val {
         p->val.u1[len] = 0;
         return;
       }
-      printf("hhh\n");
       memcpy(p, s, Chunk::MAXDATA);
       s += Chunk::MAXDATA;
       len -= Chunk::MAXDATA;
@@ -134,5 +133,20 @@ class Val {
       return 0;
     Chunk* p = Pool::mem + chunk();
     return (const char*) (Pool::mem + p->nxt);
+  }
+
+  int cmp (const char* s) const {
+    if (type() != REF)
+      return 0;
+    Chunk* p = Pool::mem + chunk();
+    uint16_t len = p->val.u2[0];
+    while (true) {
+      p = Pool::mem + p->nxt;
+      int diff = strncmp((const char*) p, s, Chunk::MAXDATA);
+      if (diff != 0 || len < Chunk::MAXDATA)
+        return diff;
+      s += Chunk::MAXDATA;
+      len -= Chunk::MAXDATA;
+    }
   }
 };
