@@ -77,7 +77,7 @@ class Val {
  public:
   uint16_t v;
 
-  typedef enum { REF, TUP, INT, FIX } Typ;
+  typedef enum { REF, INT } Typ;
 
   Val () : v (0) {}
 
