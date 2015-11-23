@@ -17,7 +17,6 @@ union Td_Chunk {
     uint32_t q[TdCHUNKSIZE/4];
      int64_t w[TdCHUNKSIZE/8];
     uint64_t h[TdCHUNKSIZE/8];
-      Td_Tag t[TdCHUNKSIZE/2];
 };
 
 extern Td_Chunk tdChunks [];
@@ -26,6 +25,7 @@ extern   Td_Tag tdTags [];
 extern    void tdInitPool ();
 extern Td_Tag* tdFreeP ();
 extern int16_t tdAlloc ();
+extern    void tdDelRef (Td_Val v);
 extern  Td_Val tdNewInt (int32_t v);
 extern int32_t tdAsInt (Td_Val v);
 
@@ -57,6 +57,14 @@ int16_t tdAlloc () {
     int16_t cid = tdFreeP()->_;
     tdFreeP()->_ = tdTagP(cid)->_;
     return cid;
+}
+
+void tdDelRef (Td_Val v) {
+    if ((v._ & 1) == 0) {
+        int16_t cid = v._;
+        tdTagP(cid)->_ = tdFreeP()->_;
+        tdFreeP()->_ = cid;
+    }
 }
 
 Td_Val tdNewInt (int32_t n) {
