@@ -9,3 +9,5 @@ extern int16_t tdAlloc (void);
 extern    void tdDelRef (Td_Val v);
 extern  Td_Val tdNewInt (int32_t v);
 extern int32_t tdAsInt (Td_Val v);
+extern  Td_Val tdNewStr (const char* s);
+extern int16_t tdSize (Td_Val v);

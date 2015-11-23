@@ -1,6 +1,7 @@
 // Tight Data structures, implementation
 
 #include "data.h"
+#include <string.h>
 
 #define TdCHUNKSIZE 8
 #define TdPOOLSIZE  1000
@@ -16,6 +17,7 @@ typedef union {
     uint32_t q[TdCHUNKSIZE/4];
      int64_t w[TdCHUNKSIZE/8];
     uint64_t h[TdCHUNKSIZE/8];
+       void* p[TdCHUNKSIZE/sizeof(void*)];
 } Td_Chunk;
 
 static Td_Chunk tdChunks [TdPOOLSIZE];
@@ -67,4 +69,17 @@ int32_t tdAsInt (Td_Val v) {
         return v._ >> 2;
     int16_t cid = v._;
     return tdChunkP(cid)->l[0];
+}
+
+extern  Td_Val tdNewStr (const char* s) {
+    int16_t cid = tdAlloc();
+    // avoid compiler warnings about casts and consts
+    tdChunkP(cid)->p[0] = (void*)(intptr_t) s;
+    return (Td_Val) {cid};
+}
+
+extern int16_t tdSize (Td_Val v) {
+    if (v._ & 1)
+        return 0;
+    return (int16_t) strlen(tdChunkP(v._)->p[0]);
 }
