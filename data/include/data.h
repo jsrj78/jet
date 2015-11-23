@@ -1,9 +1,6 @@
 // Tight Data structures, public interface
 #pragma once
 
-#define TdCHUNKSIZE 8
-#define TdPOOLSIZE  1000
-
 typedef struct { int16_t _; } Td_Val;
 
 extern    void tdInitPool (void);

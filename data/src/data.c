@@ -2,6 +2,9 @@
 
 #include "data.h"
 
+#define TdCHUNKSIZE 8
+#define TdPOOLSIZE  1000
+
 typedef int16_t Td_Tag;
 
 typedef union {
