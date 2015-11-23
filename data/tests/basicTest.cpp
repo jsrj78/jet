@@ -40,7 +40,7 @@ TEST_GROUP(ChunkPool)
 
 TEST(ChunkPool, HasFree)
 {
-    CHECK(*tdFreeP() != 0);
+    CHECK(tdFreeP()->_ != 0);
 }
 
 TEST(ChunkPool, SmallInt)
@@ -53,8 +53,8 @@ TEST(ChunkPool, SmallInt)
 
 TEST(ChunkPool, LargeInt)
 {
-    uint16_t oldFree = *tdFreeP();
+    int oldFree = tdFreeP()->_;
     Td_Val v = tdNewInt(123456789);
     CHECK_EQUAL(123456789, tdAsInt(v));
-    CHECK(*tdFreeP() != oldFree);
+    CHECK(tdFreeP()->_ != oldFree);
 }

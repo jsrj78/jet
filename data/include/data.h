@@ -4,30 +4,9 @@
 #define TdCHUNKSIZE 8
 #define TdPOOLSIZE  1000
 
-union Td_Val {
-    struct {
-        uint16_t x :1;
-         int16_t v :14;
-        uint16_t y :1;
-    } _;
+struct Td_Val { int16_t _; };
 
-     int16_t s;
-    uint16_t u;
-};
-
-union Td_Tag {
-    struct {
-        uint16_t x :1;
-        uint16_t r :6;
-        uint16_t l :1;
-        uint16_t f :4;
-        uint16_t d :1;
-        uint16_t t :3;
-    } _;
-
-     int16_t s;
-    uint16_t u;
-};
+struct Td_Tag { int16_t _; };
 
 union Td_Chunk {
       int8_t c[TdCHUNKSIZE];
@@ -44,11 +23,11 @@ union Td_Chunk {
 extern Td_Chunk tdChunks [];
 extern   Td_Tag tdTags [];
 
-extern      void tdInitPool ();
-extern uint16_t* tdFreeP ();
-extern  uint16_t tdAlloc ();
-extern    Td_Val tdNewInt (int32_t v);
-extern   int32_t tdAsInt (Td_Val v);
+extern    void tdInitPool ();
+extern Td_Tag* tdFreeP ();
+extern int16_t tdAlloc ();
+extern  Td_Val tdNewInt (int32_t v);
+extern int32_t tdAsInt (Td_Val v);
 
 //------------------------------------------------------------------------------
 
@@ -67,30 +46,30 @@ static Td_Chunk* tdChunkP (int cid) {
 
 void tdInitPool () {
     for (uint16_t i = 1; i < TdPOOLSIZE+1; ++i)
-        tdTagP(i<<1)->u = (uint16_t) ((i-1) << 1);
+        tdTagP(i<<1)->_ = (int16_t) ((i-1) << 1);
 }
 
-uint16_t* tdFreeP () {
-    return &tdTags[TdPOOLSIZE].u;
+Td_Tag* tdFreeP () {
+    return tdTags + TdPOOLSIZE;
 }
 
-uint16_t tdAlloc () {
-    uint16_t cid = *tdFreeP();
-    *tdFreeP() = tdTagP(cid)->u;
+int16_t tdAlloc () {
+    int16_t cid = tdFreeP()->_;
+    tdFreeP()->_ = tdTagP(cid)->_;
     return cid;
 }
 
 Td_Val tdNewInt (int32_t n) {
     if (-8192 <= n && n < 8192)
-        return {{1, (int16_t) n, 1}};
-    uint16_t cid = tdAlloc();
+        return {(int16_t) ((n<<2) | 1)};
+    int16_t cid = tdAlloc();
     tdChunkP(cid)->l[0] = n;
-    return {.u = cid};
+    return {cid};
 }
 
 int32_t tdAsInt (Td_Val v) {
-    if (v._.y)
-        return v._.v;
-    uint16_t cid = v.u;
+    if (v._ & 1)
+        return v._ >> 2;
+    int16_t cid = v._;
     return tdChunkP(cid)->l[0];
 }
