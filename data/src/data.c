@@ -92,11 +92,30 @@ extern  Td_Val tdNewVec (int len) {
     return (Td_Val) {cid};
 }
 
-extern int16_t tdSize (Td_Val val) {
+Td_Bool tdIsUndef (Td_Val val) {
+    return val._ == 0;
+}
+
+int16_t tdSize (Td_Val val) {
     int16_t cid = val._;
     if (cid & 1)
         return 0;
     return (*tdTagP(cid)>>12) & 0x7;
+}
+
+Td_Val tdAt (Td_Val vec, int idx) {
+    if (idx >= tdSize(vec))
+        return (Td_Val) {0};
+    int16_t cid = vec._;
+    return (Td_Val) {tdChunkP(cid)->s[idx]};
+}
+
+Td_Val tdSetAt (Td_Val vec, int idx, Td_Val nval) {
+    if (idx >= tdSize(vec))
+        return (Td_Val) {0};
+    int16_t cid = vec._;
+    tdChunkP(cid)->s[idx] = nval._;
+    return vec;
 }
 
 int32_t tdAsInt (Td_Val val) {

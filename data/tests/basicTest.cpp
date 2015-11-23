@@ -13,3 +13,8 @@ TEST(Basic, TrivialEquality) {
 TEST(Basic, ValueSize) {
     CHECK_EQUAL(2, sizeof (Td_Val));
 }
+
+TEST(Basic, UndefinedValue) {
+    Td_Val v = {0};
+    CHECK(tdIsUndef(v));
+}

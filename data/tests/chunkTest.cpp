@@ -48,4 +48,16 @@ TEST(Chunk, ShortStr) {
 TEST(Chunk, ShortVec) {
     Td_Val v = tdNewVec(3);
     CHECK_EQUAL(3, tdSize(v));
+    CHECK(tdIsUndef(tdAt(v, 0)));
+    CHECK(tdIsUndef(tdAt(v, 1)));
+    CHECK(tdIsUndef(tdAt(v, 2)));
+}
+
+TEST(Chunk, SetShortVec) {
+    Td_Val v = tdNewVec(2);
+    tdSetAt(v, 0, tdNewInt(11));
+    tdSetAt(v, 1, tdNewInt(22));
+    CHECK_EQUAL(2, tdSize(v));
+    CHECK_EQUAL(11, tdAsInt(tdAt(v, 0)));
+    CHECK_EQUAL(22, tdAsInt(tdAt(v, 1)));
 }
