@@ -16,27 +16,27 @@ TEST(Chunk, HasFree) {
 }
 
 TEST(Chunk, SmallInt) {
-    int oldFree = tdChain();
+    int oldChain = tdChain();
     Td_Val v1 = tdNewInt(1234);
     Td_Val v2 = tdNewInt(-1234);
-    CHECK(tdChain() == oldFree);
+    CHECK(tdChain() == oldChain);
     CHECK_EQUAL(1234, tdAsInt(v1));
     CHECK_EQUAL(-1234, tdAsInt(v2));
     tdDelRef(v2);
     tdDelRef(v1);
-    CHECK(tdChain() == oldFree);
+    CHECK(tdChain() == oldChain);
 }
 
 TEST(Chunk, LargeInt) {
-    int oldFree = tdChain();
+    int oldChain = tdChain();
     Td_Val v1 = tdNewInt(123456789);
     Td_Val v2 = tdNewInt(-123456789);
-    CHECK(tdChain() != oldFree);
+    CHECK(tdChain() != oldChain);
     CHECK_EQUAL(123456789, tdAsInt(v1));
     CHECK_EQUAL(-123456789, tdAsInt(v2));
     tdDelRef(v2);
     tdDelRef(v1);
-    CHECK(tdChain() == oldFree);
+    CHECK(tdChain() == oldChain);
 }
 
 TEST(Chunk, ShortStr) {
