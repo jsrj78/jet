@@ -3,10 +3,12 @@ SILENCE = @
 CPPUTEST_EXE_FLAGS = -c
 
 ifeq ($(shell uname), Darwin)
-CPPUTEST_CXXFLAGS=-Wno-c++11-extensions -Wno-c99-extensions
+CPPUTEST_CXXFLAGS=-Wno-c++11-extensions
 else
 CPPUTEST_CXXFLAGS=-std=c++11
 endif
+CPPUTEST_CFLAGS+=-Wno-reserved-id-macro
+CPPUTEST_CXXFLAGS+=-Wno-c99-extensions
 
 #---- Outputs ----#
 COMPONENT_NAME = data
