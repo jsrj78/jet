@@ -42,6 +42,7 @@ TEST(Chunk, LargeInt) {
 TEST(Chunk, ShortStr) {
     Td_Val v = tdNewStr("abcde");
     CHECK_EQUAL(5, tdSize(v));
+    STRCMP_EQUAL("abcde", (const char*) tdPeek(v));
 }
 
 TEST(Chunk, ShortVec) {
