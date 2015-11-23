@@ -3,7 +3,7 @@ SILENCE = @
 CPPUTEST_EXE_FLAGS = -c
 
 ifeq ($(shell uname), Darwin)
-CPPUTEST_CXXFLAGS=-Wno-c++11-extensions
+CPPUTEST_CXXFLAGS=-Wno-c++11-extensions -Wno-c99-extensions
 else
 CPPUTEST_CXXFLAGS=-std=c++11
 endif
