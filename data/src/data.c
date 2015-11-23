@@ -48,38 +48,53 @@ int16_t tdAlloc () {
     return cid;
 }
 
-void tdDelRef (Td_Val v) {
-    if ((v._ & 1) == 0) {
-        int16_t cid = v._;
+void tdDelRef (Td_Val val) {
+    if ((val._ & 1) == 0) {
+        int16_t cid = val._;
         *tdTagP(cid) = tdTags[TdPOOLSIZE];
         tdTags[TdPOOLSIZE] = cid;
     }
 }
 
-Td_Val tdNewInt (int32_t n) {
-    if (-8192 <= n && n < 8192)
-        return (Td_Val) {(int16_t) ((n<<2) | 1)};
+static void tdSetTag (int cid, int type, int len) {
+    *tdTagP(cid) = (int16_t) ((1<<15) | (len<<12) | type);
+}
+
+Td_Val tdNewInt (int32_t num) {
+    if (-8192 <= num && num < 8192)
+        return (Td_Val) {(int16_t) ((num<<2) | 1)};
     int16_t cid = tdAlloc();
-    tdChunkP(cid)->l[0] = n;
+    tdSetTag(cid, 1, 0);
+    tdChunkP(cid)->l[0] = num;
     return (Td_Val) {cid};
 }
 
-int32_t tdAsInt (Td_Val v) {
-    if (v._ & 1)
-        return v._ >> 2;
-    int16_t cid = v._;
-    return tdChunkP(cid)->l[0];
-}
-
-extern  Td_Val tdNewStr (const char* s) {
+extern  Td_Val tdNewStr (const char* str) {
     int16_t cid = tdAlloc();
+    tdSetTag(cid, 2, (int) strlen(str));
     // avoid compiler warnings about casts and consts
-    tdChunkP(cid)->p[0] = (void*)(intptr_t) s;
+    tdChunkP(cid)->p[0] = (void*)(intptr_t) str;
     return (Td_Val) {cid};
 }
 
-extern int16_t tdSize (Td_Val v) {
-    if (v._ & 1)
+extern  Td_Val tdNewVec (int len) {
+    int16_t cid = tdAlloc();
+    tdSetTag(cid, 3, len);
+    // avoid compiler warnings about casts and consts
+    tdChunkP(cid)->u[0] = (uint16_t) len;
+    return (Td_Val) {cid};
+}
+
+extern int16_t tdSize (Td_Val val) {
+    if (val._ & 1)
         return 0;
-    return (int16_t) strlen(tdChunkP(v._)->p[0]);
+    int16_t cid = val._;
+    return (*tdTagP(cid)>>12) & 0x7;
+}
+
+int32_t tdAsInt (Td_Val val) {
+    if (val._ & 1)
+        return val._ >> 2;
+    int16_t cid = val._;
+    return tdChunkP(cid)->l[0];
 }

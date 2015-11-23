@@ -40,6 +40,11 @@ TEST(Chunk, LargeInt) {
 }
 
 TEST(Chunk, ShortStr) {
-    Td_Val v = tdNewStr("abc");
+    Td_Val v = tdNewStr("abcde");
+    CHECK_EQUAL(5, tdSize(v));
+}
+
+TEST(Chunk, ShortVec) {
+    Td_Val v = tdNewVec(3);
     CHECK_EQUAL(3, tdSize(v));
 }
