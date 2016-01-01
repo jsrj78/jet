@@ -8,7 +8,9 @@ TEST_GROUP(Chunk) {
     TEST_SETUP() {
         tdInitPool();
     }
-    //TEST_TEARDOWN() {}
+    TEST_TEARDOWN() {
+        // TODO: verify that all chunks have been released
+    }
 };
 
 TEST(Chunk, HasFree) {
