@@ -4,6 +4,7 @@
 #include "config.h"
 
 #define CHUNK_SIZE  (1 << CHUNK_BITS)
+#define REF_SIZE    (REF_SMALL ? 2 : 4)
 
 typedef struct {
 #if REF_SMALL
@@ -14,7 +15,7 @@ typedef struct {
 } Obj;
 
 // private definitions
-extern int gcCount;
+extern uint8_t gcCount;
 
 Obj specialObj (int n);
 int boxedType (Obj o);

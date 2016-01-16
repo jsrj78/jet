@@ -6,8 +6,8 @@
 // needed for cpputest-3.7.1 with gcc 4.8.2 on mohse
 //#pragma GCC diagnostic ignored "-Wpedantic"
 
-int gcCount;
-static int gcLock;
+uint8_t gcCount;
+static uint8_t gcLock;
 
 enum { T_INT, T_STR, T_VEC };
 
@@ -81,7 +81,7 @@ static void sweepMem (int start) {
 }
 
 static Obj newChunk (void) {
-    if (IsNil(freeSlot) && gcLock <= 0) {
+    if (IsNil(freeSlot) && !gcLock) {
         for (int i = 1; i < 5; ++i)
             markObj(specialObj(i));
         sweepMem(5);
@@ -127,7 +127,7 @@ int boxedType (Obj o) {
 static void* offsetInChunk (Obj o, size_t off, int extend) {
     void* result = 0;
     // lock down so we don't GC and risk re-using a just-allocated chunk
-    ++gcLock;
+    gcLock = 1;
     Chunk* p = &OBJ(o);
     for (;;) {
         if (off < MAX_PAYLOAD) {
@@ -144,7 +144,7 @@ static void* offsetInChunk (Obj o, size_t off, int extend) {
         }
         p = &OBJ(p->x.next);
     }
-    --gcLock;
+    gcLock = 0;
     return result;
 }
 

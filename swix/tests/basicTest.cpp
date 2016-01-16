@@ -13,11 +13,7 @@ TEST_GROUP(Basic)
 };
 
 TEST(Basic, DataTypeSizes) {
-#if REF_SMALL
-    CHECK_EQUAL(2, sizeof (Obj));
-#else
-    CHECK_EQUAL(4, sizeof (Obj));
-#endif
+    CHECK_EQUAL(REF_SIZE, sizeof (Obj));
 }
 
 TEST(Basic, Nil) {
