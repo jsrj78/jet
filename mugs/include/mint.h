@@ -1,2 +1,0 @@
-// Micro interpreter.
-#pragma once
