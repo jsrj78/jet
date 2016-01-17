@@ -38,7 +38,8 @@ void JsonEmit(Obj o, int(*f)(char,void*), void* p) {
         char sep = map ? '{' : '[';
         if (n == 2*map)
             f(sep, p);
-        for (int i = 2*map; i < n; ++i) {
+        int i;
+        for (i = 2*map; i < n; ++i) {
             f(sep, p);
             JsonEmit(At(o, i), f, p);
             sep = map && i % 2 == 0 ? ':' : ',';
@@ -47,8 +48,8 @@ void JsonEmit(Obj o, int(*f)(char,void*), void* p) {
     }
     if (IsStr(o)) {
         f('"', p);
-        int n = Size(o);
-        for (int i = 0; i < n; ++i) {
+        int i, n = Size(o);
+        for (i = 0; i < n; ++i) {
             char esc = 0, c = (char) AsInt(At(o, i));
             switch (c) {
                 case '\n':  esc = 'n'; break;

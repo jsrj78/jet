@@ -64,15 +64,16 @@ static void markObj (Obj o) {
     }
     // travere and mark all referenced vector objects
     if (IsVec(o)) {
-        int n = Size(o);
-        for (int i = 0; i < n; ++i)
+        int i, n = Size(o);
+        for (i = 0; i < n; ++i)
             markObj(At(o, i)); // recurse
     }
 }
 
 static void sweepMem (int start) {
     freeSlot = NilVal();
-    for (int n = (int) swixSize / CHUNK_SIZE; --n >= start; ) {
+    int n;
+    for (n = (int) swixSize / CHUNK_SIZE; --n >= start; ) {
         if (--CHUNK(n).x.next._ & 1) {
             CHUNK(n).x.next = freeSlot;
             freeSlot = specialObj(n);
@@ -82,7 +83,8 @@ static void sweepMem (int start) {
 
 static Obj newChunk (void) {
     if (IsNil(freeSlot) && !gcLock) {
-        for (int i = 1; i < 5; ++i)
+        int i;
+        for (i = 1; i < 5; ++i)
             markObj(specialObj(i));
         sweepMem(5);
         ++gcCount;
@@ -108,6 +110,11 @@ Obj boxedNewInt (int n) {
     OBJ(r).x.type = T_INT;
     OBJ(r).l[0] = n;
     return r;
+}
+
+Obj NewInt (int n) {
+    Obj r = { (int16_t)((n << 2) | 1) };
+    return AsInt(r) == n ? r : boxedNewInt(n);
 }
 
 int boxedAsInt (Obj o) {
@@ -155,8 +162,9 @@ Obj NewStrN (const char* s, size_t n) {
         OBJ(r).x.size = 0xFFF & n; // FIXME: depends on size's definition
         if (offsetInChunk(r, n, 1) == 0) // extend and zero-fill all required space
             r = NilVal(); // memory exhausted
-        else
-            for (Obj q = r; n > 0; q = OBJ(q).x.next) {
+        else {
+            Obj q;
+            for (q = r; n > 0; q = OBJ(q).x.next) {
                 size_t m = n;
                 if (m > MAX_PAYLOAD)
                     m = MAX_PAYLOAD;
@@ -164,6 +172,7 @@ Obj NewStrN (const char* s, size_t n) {
                 s += m;
                 n -= m;
             }
+        }
     }
     return r;
 }
@@ -185,7 +194,8 @@ const char* AsStr (Obj o, char* buf, size_t len) {
     ++n; // add trailing null byte
     if ((size_t) n > len)
         n = (int) len;
-    for (int i = 0; i < n; ++i)
+    int i;
+    for (i = 0; i < n; ++i)
         buf[i] = (char) AsInt(At(o, i));
     return buf;
 }
@@ -199,8 +209,8 @@ Obj Append (Obj v, Obj o) {
         *p = o;
     } else if (IsStr(v)) {
         if (IsStr(o)) {
-            int n = Size(o);
-            for (int i = 0; i < n; ++i)
+            int i, n = Size(o);
+            for (i = 0; i < n; ++i)
                 Append(v, At(o, i)); // bail out, use recursion
             return v;
         }
@@ -238,7 +248,8 @@ void Drop (Obj o) {
 
 Obj Pack (Obj v, int n) {
     Obj r = NewVec();
-    for (int i = 0; i < n; ++i)
+    int i;
+    for (i = 0; i < n; ++i)
         Append(r, At(v, i-n));
     while (--n >= 0)
         Drop(v);

@@ -24,6 +24,7 @@ int boxedAsInt (Obj o);
 
 // in mem.c
 Obj Init (void);
+Obj NewInt (int n);
 Obj NewVec (void);
 Obj NewStr (const char* s);
 Obj NewStrN (const char* s, size_t n);
@@ -50,17 +51,20 @@ void JsonInit (JsonState* j);
 char JsonFeed (JsonState* j, int c);
 Obj JsonDone (JsonState* j);
 
-inline Obj NilVal (void) {
-    return specialObj(0);
-}
+#define NilVal() specialObj(0)
+//inline Obj NilVal (void) {
+//    return specialObj(0);
+//}
 
-inline int IsNil (Obj o) {
-    return o._ == 0;
-}
+#define IsNil(o) ((o)._ == 0)
+//inline int IsNil (Obj o) {
+//    return o._ == 0;
+//}
 
-inline Obj TagVal (void) {
-    return specialObj(1);
-}
+#define TagVal() specialObj(1)
+//inline Obj TagVal (void) {
+//    return specialObj(1);
+//}
 
 #define IsTag(o) ((o)._ == 2)
 //inline int IsTag (Obj o) {
@@ -77,27 +81,27 @@ inline Obj TagVal (void) {
 //    return o._ == 4 || o._ == 6;
 //}
 
-inline int IsRef (Obj o) {
-    return (o._ & 1) == 0;
-}
+#define IsRef(o) (((o)._ & 1) == 0)
+//inline int IsRef (Obj o) {
+//    return (o._ & 1) == 0;
+//}
 
-inline int IsInt (Obj o) {
-    return (o._ & 3) == 1 || boxedType(o) == 0;
-}
+#define IsInt(o) (((o)._ & 3) == 1 || boxedType(o) == 0)
+//inline int IsInt (Obj o) {
+//    return (o._ & 3) == 1 || boxedType(o) == 0;
+//}
 
-inline int IsStr (Obj o) {
-    return boxedType(o) == 1;
-}
+#define IsStr(o) (boxedType(o) == 1)
+//inline int IsStr (Obj o) {
+//    return boxedType(o) == 1;
+//}
 
-inline int IsVec (Obj o) {
-    return boxedType(o) == 2;
-}
+#define IsVec(o) (boxedType(o) == 2)
+//inline int IsVec (Obj o) {
+//    return boxedType(o) == 2;
+//}
 
-inline int AsInt (Obj o) {
-    return (o._ & 3) == 1 ? (int) (o._ >> 2) : boxedAsInt(o);
-}
-
-inline Obj NewInt (int n) {
-    Obj r = { (int16_t)((n << 2) | 1) };
-    return AsInt(r) == n ? r : boxedNewInt(n);
-}
+#define AsInt(o) (((o)._ & 3) == 1 ? (int) ((o)._ >> 2) : boxedAsInt(o))
+//inline int AsInt (Obj o) {
+//    return (o._ & 3) == 1 ? (int) (o._ >> 2) : boxedAsInt(o);
+//}
