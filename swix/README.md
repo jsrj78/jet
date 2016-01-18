@@ -1,4 +1,4 @@
-# Swix
+# JET/Swix
 
 Embedded micro-controllers are flexible and low-cost. Their behaviour is
 determined by the software they run. The predominant programming language for

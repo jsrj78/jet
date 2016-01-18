@@ -1,3 +1,3 @@
-# JeeLabs Embello Toolkit
+# JET/Hub
 
 Development branch: T.B.D.
