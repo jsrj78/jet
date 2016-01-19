@@ -1,10 +1,8 @@
 # JET/Swix
 
-Embedded micro-controllers are flexible and low-cost. Their behaviour is
-determined by the software they run. The predominant programming language for
-this is C/C++. Some alternatives exist, such as [Forth][af] (AVR), [BasCom][bc]
-(AVR), [Maximite][mm] (PIC), and [Espruino][es] (JavaScript/ARM), but they're
-not as widely used.
+The most-used programming language for embedded micro-controllers is C/C++.
+Alternatives exist, i.e. [Forth][af] (AVR), [BasCom][bc] (AVR), [Maximite][mm]
+(PIC), and [Espruino][es] (JavaScript/ARM), but they're not as widespread.
 
 **Swix** is an experiment to bring a high-level flow-based engine to these
 low-end µC environments. It's written in C, but the application logic is
