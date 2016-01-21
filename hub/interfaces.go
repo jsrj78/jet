@@ -2,7 +2,6 @@ package main
 
 import (
     "bufio"
-    "fmt"
 
     "github.com/chimera/rs232"
     "github.com/surge/glog"
@@ -20,7 +19,7 @@ func listenToSerialPort(device string, baud uint32) {
     scanner := bufio.NewScanner(serial)
     go func() {
         for scanner.Scan() {
-            fmt.Println("got:", scanner.Text())
+            glog.Debugln("got:", scanner.Text())
         }
         glog.Fatal("unexpected EOF", serial)
     }()

@@ -29,6 +29,7 @@ var (
 
 func main () {
     flag.Parse()
+    defer glog.Flush()
 
     // check for special admin mode, used by the "jet" wrapper script
     if *adminFlag != "" {
@@ -60,7 +61,6 @@ func main () {
     // connect to MQTT and wait for it before doing anything else
     hub := connectToHub("hub", *mqttPort);
     defer hub.Disconnect()
-    glog.Infoln("connected to MQTT", *mqttPort)
 
     // open the persistent data store
     glog.Infoln("opening data store:", *dataStore)
@@ -108,9 +108,11 @@ func connectToHub(clientName, hubPort string) *service.Client {
         hub := &service.Client{}
         err = hub.Connect("tcp://" + hubPort, msg)
         if err == nil {
+            glog.Debugln("connected:", clientName, hubPort)
             return hub
         }
 
+        glog.Debugln("cannot connect to MQTT, retrying", err)
         time.Sleep(time.Second)
     }
 
