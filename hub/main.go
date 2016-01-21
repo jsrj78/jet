@@ -48,13 +48,11 @@ func main () {
 
     quit := make(chan struct{})
 
-    // the default is to launch the built-in MQTT server
+    // the default is to start the built-in MQTT server
     if !*externalServer {
         go func() {
             defer close(quit)
-            srv := service.Server{}
-            glog.Infoln("starting MQTT server at", *mqttPort)
-            glog.Fatal(srv.ListenAndServe("tcp://" + *mqttPort))
+            startMqttServer(*mqttPort)
         }()
     }
 
@@ -75,16 +73,11 @@ func main () {
     listenToSerialPort("usbserial-A40119DV", 57600)
     //listenToSerialPort("USB0", 57600)
 
-    // the default is to start up an internal HTTP server
+    // the default is to start up the built-in HTTP server
     if *httpPort != "" {
         go func() {
             defer close(quit)
-            http.HandleFunc("/bar",
-                func(w http.ResponseWriter, r *http.Request) {
-                    fmt.Fprintf(w, "Hello, %q", r.URL.Path)
-                })
-            glog.Infoln("starting HTTP server at", *httpPort)
-            glog.Fatal(http.ListenAndServe(*httpPort, nil))
+            startHttpServer(*httpPort)
         }()
     }
 
@@ -118,4 +111,32 @@ func connectToHub(clientName, hubPort string) *service.Client {
 
     glog.Fatal(err)
     return nil
+}
+
+func startMqttServer(port string) {
+    // TODO: add SSL support, see also startHttpServer below
+    //  look for environment variables HUB_MQTT_CERT and HUB_MQTT_KEY, and if
+    //  both are non-empty, use them as file name for the proper setup
+    // TODO: needs surgemq fix, see https://github.com/surgemq/surgemq/issues/8
+    srv := service.Server{}
+    glog.Infoln("starting MQTT server at", *mqttPort)
+    glog.Fatal(srv.ListenAndServe("tcp://" + *mqttPort))
+}
+
+func startHttpServer(port string) {
+    http.HandleFunc("/bar",
+        func(w http.ResponseWriter, r *http.Request) {
+            fmt.Fprintf(w, "Hello, %q", r.URL.Path)
+        })
+
+    certFile := os.Getenv("HUB_HTTP_CERT")
+    keyFile := os.Getenv("HUB_HTTP_KEY")
+
+    if certFile != "" && keyFile != "" {
+        glog.Infoln("starting HTTPS (TLS) server at", *httpPort)
+        glog.Fatal(http.ListenAndServeTLS(*httpPort, certFile, keyFile, nil))
+    } else {
+        glog.Infoln("starting HTTP server at", *httpPort)
+        glog.Fatal(http.ListenAndServe(*httpPort, nil))
+    }
 }

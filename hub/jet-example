@@ -1,12 +1,12 @@
 #!/bin/sh
 
 ###############################################################################
-##### This is an example: copy as "jet" to your PATH and adjust as needed #####
+# >>> This is an example: copy as "jet" to your PATH and adjust as needed <<< #
 ###############################################################################
 
 # jet -- Command-line admin interface to a running JET/Hub instance
 # 
-# Needs to know where the local copy of the hub code is ($PROG) and where the
+# Needs to know where a local copy of the hub binary is ($PROG) and where the
 # real hub is running ($MQTT) - it can be either a local or a remote instance.
 #
 # Note: this command never starts up a new hub, it's ONLY an admin front-end!
@@ -14,5 +14,5 @@
 PROG="$(dirname $0)/hub"
 MQTT="127.0.0.1:1883"
 
-# all arguments specified on the cmdline are passed on to the admin mode
+# all arguments specified on the command line are passed command the admin mode
 exec "$PROG" -admin $MQTT "$@"
