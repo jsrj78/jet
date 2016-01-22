@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/boltdb/bolt"
@@ -65,6 +66,8 @@ func main() {
 	hub := connectToHub("hub", *mqttPort)
 	defer hub.Disconnect()
 
+	go sendHeartbeat(hub, "hub/1hz") // one message per second, on the second
+
 	// open the persistent data store
 	glog.Infoln("opening data store:", *dataStore)
 	options := bolt.Options{Timeout: time.Second}
@@ -75,8 +78,8 @@ func main() {
 	defer db.Close()
 
 	// look for serial device(s) and listen to them
-	devChanges := subscribeAsEvents(hub, "serial/+")
-	go listenToDevices(devChanges)
+	//devChanges := subscribeAsEvents(hub, "serial/+")
+	//go listenToDevices(devChanges)
 
 	// the default is to start up the built-in HTTP server
 	if *httpPort != "" {
@@ -98,7 +101,7 @@ func connectToHub(clientName, hubPort string) *service.Client {
 		msg.SetVersion(4)
 		msg.SetCleanSession(true)
 		msg.SetClientId([]byte(clientName))
-		msg.SetKeepAlive(10)
+		//msg.SetKeepAlive(10)
 		msg.SetWillQos(1)
 		msg.SetWillTopic([]byte("will"))
 		msg.SetWillMessage([]byte("send me home"))
@@ -121,15 +124,18 @@ func connectToHub(clientName, hubPort string) *service.Client {
 func subscribeAsEvents(hub *service.Client, pattern string) chan Event {
 	feed := make(chan Event)
 
-	submsg := message.NewSubscribeMessage()
-	submsg.AddTopic([]byte(pattern), 0)
-	hub.Subscribe(submsg, nil, func(msg *message.PublishMessage) error {
+	msg := message.NewSubscribeMessage()
+	msg.AddTopic([]byte(pattern), 0)
+	e := hub.Subscribe(msg, nil, func(msg *message.PublishMessage) error {
 		feed <- Event{
 			topic:   string(msg.Topic()),
 			payload: msg.Payload(),
 		}
 		return nil
 	})
+	if e != nil {
+		glog.Fatal(e)
+	}
 
 	return feed
 }
@@ -159,5 +165,33 @@ func startHttpServer(port string) {
 	} else {
 		glog.Infoln("starting HTTP server at", *httpPort)
 		glog.Fatal(http.ListenAndServe(*httpPort, nil))
+	}
+}
+
+func sendHeartbeat(hub *service.Client, topic string) {
+	for {
+		time.Sleep(time.Duration(1e9 - time.Now().UnixNano()%1e9))
+
+		// publish the heartbeat msg if it's within 10ms of the second mark
+		nanos := time.Now().UnixNano()
+		if nanos%1e9 < 10e6 {
+			millis := strconv.FormatInt(nanos/1e6, 10)
+
+			msg := message.NewPublishMessage()
+			msg.SetTopic([]byte(topic))
+			msg.SetPayload([]byte(millis))
+			e := hub.Publish(msg, func(m, a message.Message, err error) error {
+				return nil
+			})
+			if e != nil {
+				glog.Error(e)
+				// FIXME re-open new connection to hub after error, yikes!
+				hub.Disconnect()
+				hub = connectToHub("hub2", *mqttPort)
+			}
+		} else {
+			glog.Errorln("missed heartbeat:", nanos)
+		}
+		glog.Infoln("heartbeat:", nanos)
 	}
 }

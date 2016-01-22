@@ -44,7 +44,7 @@ func adminCmd(hub *service.Client) {
 		}
 
 		submsg := message.NewSubscribeMessage()
-		submsg.AddTopic([]byte(cmdFlags.Arg(0)), 1)
+		submsg.AddTopic([]byte(cmdFlags.Arg(0)), 0)
 		hub.Subscribe(submsg, nil, func(msg *message.PublishMessage) error {
 			fmt.Printf("%s = %q\n", msg.Topic(), msg.Payload())
 			return nil
@@ -54,7 +54,7 @@ func adminCmd(hub *service.Client) {
 		cmdFlags.Parse(cmdArgs)
 
 		submsg := message.NewSubscribeMessage()
-		submsg.AddTopic([]byte("abc"), 1)
+		submsg.AddTopic([]byte("abc"), 0)
 		hub.Subscribe(submsg, nil, nil)
 
 		pubmsg := message.NewPublishMessage()
@@ -67,7 +67,7 @@ func adminCmd(hub *service.Client) {
 	<-adminQuit // wait forever
 }
 
-func adminDone (msg, ack message.Message, err error) error {
+func adminDone(msg, ack message.Message, err error) error {
 	close(adminQuit)
 	return nil
 }
