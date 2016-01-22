@@ -75,7 +75,7 @@ func main() {
 	defer db.Close()
 
 	// look for serial device(s) and listen to them
-	devChanges := subscribeAsEvents(hub, "dev/+")
+	devChanges := subscribeAsEvents(hub, "serial/+")
 	go listenToDevices(devChanges)
 
 	// the default is to start up the built-in HTTP server
