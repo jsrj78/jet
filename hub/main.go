@@ -20,11 +20,11 @@ const hubUsage = `
 `
 
 var (
-	adminFlag      = flag.String("admin", "", "connect as admin to a running hub")
-	dataStore      = flag.String("data", "storage.db", "data store file name & path")
-	mqttPort       = flag.String("mqtt", "localhost:1883", "MQTT server port")
-	externalServer = flag.Bool("external", false, "use an external MQTT server")
-	httpPort       = flag.String("http", "localhost:8947", "HTTP server port")
+	adminFlag = flag.String("admin", "", "connect as admin to a running hub")
+	dataStore = flag.String("data", "storage.db", "data store file name & path")
+	mqttPort  = flag.String("mqtt", "localhost:1883", "MQTT server port")
+	extServer = flag.Bool("external", false, "use an external MQTT server")
+	httpPort  = flag.String("http", "localhost:8947", "HTTP server port")
 )
 
 type Event struct {
@@ -54,7 +54,7 @@ func main() {
 	quit := make(chan struct{})
 
 	// the default is to start the built-in MQTT server
-	if !*externalServer {
+	if !*extServer {
 		go func() {
 			defer close(quit)
 			startMqttServer(*mqttPort)
@@ -75,7 +75,7 @@ func main() {
 	defer db.Close()
 
 	// look for serial device(s) and listen to them
-	devChanges := subscribeAsEvents(hub, "dev/+")
+	devChanges := topicAsEvents(hub, "dev/+")
 	go listenToDevices(devChanges)
 
 	// the default is to start up the built-in HTTP server
@@ -118,7 +118,7 @@ func connectToHub(clientName, hubPort string) *service.Client {
 	return nil
 }
 
-func subscribeAsEvents(hub *service.Client, pattern string) chan Event {
+func topicAsEvents(hub *service.Client, pattern string) chan Event {
 	feed := make(chan Event)
 
 	submsg := message.NewSubscribeMessage()
@@ -135,13 +135,20 @@ func subscribeAsEvents(hub *service.Client, pattern string) chan Event {
 }
 
 func startMqttServer(port string) {
-	// TODO: add SSL support, see also startHttpServer below
-	//  look for environment variables HUB_MQTT_CERT and HUB_MQTT_KEY, and if
-	//  both are non-empty, use them as file name for the proper setup
-	// TODO: needs surgemq fix, see https://github.com/surgemq/surgemq/issues/8
 	srv := service.Server{}
-	glog.Infoln("starting MQTT server at", *mqttPort)
-	glog.Fatal(srv.ListenAndServe("tcp://" + *mqttPort))
+
+	certFile := os.Getenv("HUB_MQTT_CERT")
+	keyFile := os.Getenv("HUB_MQTT_KEY")
+
+	if certFile != "" && keyFile != "" {
+        glog.Infoln("starting MQTT server at", port)
+        // TODO: fix surgemq, see https://github.com/surgemq/surgemq/issues/8
+        //glog.Fatal(srv.ListenAndServeTLS("tcp://" + port, certFile, keyFile))
+        glog.Fatal(srv.ListenAndServe("tcp://" + port))
+    } else {
+        glog.Infoln("starting MQTT server at", port)
+        glog.Fatal(srv.ListenAndServe("tcp://" + port))
+    }
 }
 
 func startHttpServer(port string) {
@@ -154,10 +161,10 @@ func startHttpServer(port string) {
 	keyFile := os.Getenv("HUB_HTTP_KEY")
 
 	if certFile != "" && keyFile != "" {
-		glog.Infoln("starting HTTPS (TLS) server at", *httpPort)
-		glog.Fatal(http.ListenAndServeTLS(*httpPort, certFile, keyFile, nil))
+		glog.Infoln("starting HTTPS (TLS) server at", port)
+		glog.Fatal(http.ListenAndServeTLS(port, certFile, keyFile, nil))
 	} else {
-		glog.Infoln("starting HTTP server at", *httpPort)
-		glog.Fatal(http.ListenAndServe(*httpPort, nil))
+		glog.Infoln("starting HTTP server at", port)
+		glog.Fatal(http.ListenAndServe(port, nil))
 	}
 }
