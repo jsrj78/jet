@@ -66,7 +66,8 @@ func main() {
 	hub := connectToHub("hub", *mqttPort)
 	defer hub.Disconnect()
 
-	go sendHeartbeat(hub, "hub/1hz") // one message per second, on the second
+	// TODO not working, stops after about 43s (???)
+	//go sendHeartbeat(hub, "hub/1hz") // one message per second, on the second
 
 	// open the persistent data store
 	glog.Infoln("opening data store:", *dataStore)
