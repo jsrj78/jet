@@ -56,9 +56,6 @@ func main() {
 	hub = connectToHub("hub", *mqttPort, true)
 	defer hub.Disconnect(250)
 
-	// send one message every second, on the second
-	go sendHeartbeat("hub/1hz")
-
 	// open the persistent data store
 	log.Println("opening data store:", *dataStore)
 	options := bolt.Options{Timeout: time.Second}
@@ -68,11 +65,14 @@ func main() {
 	}
 	defer db.Close()
 
+	// send one message every second, on the second
+	go sendHeartbeat("hub/1hz")
+
 	// copy each incoming "logger/<x>" message to "logger/<x>/<millis>"
-	go timestampRepeater(topicAsEvents("logger/+"))
+	go timestampRepeater(topicsAsEvents("logger/+"))
 
 	// listen to serial device requests
-	go processSerialRequests(topicAsEvents("serial/+"))
+	go processSerialRequests(topicsAsEvents("serial/+"))
 
 	// the default is to start up the built-in HTTP server
 	if *httpPort != "" {
@@ -113,7 +113,7 @@ func connectToHub(clientName, port string, retain bool) *mqtt.Client {
 	return client
 }
 
-func topicAsEvents(pattern string) chan Event {
+func topicsAsEvents(pattern string) chan Event {
 	feed := make(chan Event)
 
 	t := hub.Subscribe(pattern, 0, func(hub *mqtt.Client, msg mqtt.Message) {
@@ -165,13 +165,5 @@ func publish(topic string, payload []byte, retain bool) {
 	t := hub.Publish(topic, 0, retain, payload)
 	if t.Wait() && t.Error() != nil {
 		log.Print(t.Error())
-	}
-}
-
-func timestampRepeater(feed chan Event) {
-	for evt := range feed {
-		millis := time.Now().UnixNano() / 1e6
-		topic := fmt.Sprintf("%s/%d", evt.Topic, millis)
-		publish(topic, evt.Payload, false)
 	}
 }

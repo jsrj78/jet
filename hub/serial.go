@@ -22,7 +22,11 @@ func processSerialRequests(feed chan Event) {
 			log.Println("serial request parse error:", req, e)
 		} else {
 			serial := listenToSerialPort(serReq.Device, serReq.SendTo)
-			portmap[req.Topic] = serial
+			if serial != nil {
+				portmap[req.Topic] = serial
+			} else {
+				delete(portmap, req.Topic)
+			}
 		}
 	}
 }
@@ -31,7 +35,8 @@ func listenToSerialPort(device, topic string) *rs232.Port {
 	options := rs232.Options{BitRate: 57600, DataBits: 8, StopBits: 1}
 	serial, err := rs232.Open(device, options)
 	if err != nil {
-		log.Fatal(err)
+		log.Println("cannot open:", device, err)
+		return nil
 	}
 
 	scanner := bufio.NewScanner(serial)
