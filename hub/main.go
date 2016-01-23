@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"strconv"
 	"time"
 
 	"github.com/boltdb/bolt"
@@ -102,6 +101,7 @@ func connectToHub(clientName, hubPort string) *service.Client {
 		msg.SetVersion(4)
 		msg.SetCleanSession(true)
 		msg.SetClientId([]byte(clientName))
+		msg.SetKeepAlive(50000) // FIXME this will still fail after 50,000s !!!
 		msg.SetWillQos(1)
 		msg.SetWillTopic([]byte("will"))
 		msg.SetWillMessage([]byte("send me home"))
@@ -113,7 +113,7 @@ func connectToHub(clientName, hubPort string) *service.Client {
 			return client
 		}
 
-		// XXX work around a keep-alive bug with publish-only clients
+		// FIXME try to work around a keep-alive bug with publish-only clients
 		// see https://github.com/surgemq/surgemq/issues/29
 		submsg := message.NewSubscribeMessage()
 		submsg.AddTopic([]byte("hub/1hz"), 0)
@@ -187,14 +187,12 @@ func sendHeartbeat(hub *service.Client, topic string) {
 	for {
 		time.Sleep(time.Duration(1e9 - time.Now().UnixNano()%1e9))
 
-		// publish the heartbeat msg if it's within 10ms of the second mark
-		nanos := time.Now().UnixNano()
-		if nanos%1e9 < 10e6 {
-			millis := strconv.FormatInt(nanos/1e6, 10)
-
+		// publish the heartbeat msg if it's within 25ms of the second mark
+		millis := time.Now().UnixNano() / 1e6
+		if millis % 1000 < 25 {
 			msg := message.NewPublishMessage()
 			msg.SetTopic([]byte(topic))
-			msg.SetPayload([]byte(millis))
+			msg.SetPayload([]byte(fmt.Sprintf("%d", millis)))
 			e := hub.Publish(msg, func(m, a message.Message, err error) error {
 				return nil
 			})
@@ -202,8 +200,8 @@ func sendHeartbeat(hub *service.Client, topic string) {
 				glog.Error(e)
 			}
 		} else {
-			glog.Errorln("missed heartbeat:", nanos)
+			glog.Errorln("missed heartbeat:", millis)
 		}
-		glog.Debugln("heartbeat:", nanos)
+		glog.V(5).Infoln("heartbeat:", millis)
 	}
 }
