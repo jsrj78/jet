@@ -24,7 +24,7 @@ var (
 	adminFlag = flag.String("admin", "", "connect as admin to a running hub")
 	dataStore = flag.String("data", "storage.db", "data store file name & path")
 	mqttPort  = flag.String("mqtt", "localhost:1883", "MQTT server port")
-	extServer = flag.Bool("external", false, "use an external MQTT server")
+	extServer = flag.Bool("ext", false, "connect to an external MQTT server")
 	httpPort  = flag.String("http", "localhost:8947", "HTTP server port")
 )
 
@@ -102,7 +102,6 @@ func connectToHub(clientName, hubPort string) *service.Client {
 		msg.SetVersion(4)
 		msg.SetCleanSession(true)
 		msg.SetClientId([]byte(clientName))
-		msg.SetKeepAlive(50000) // FIXME this will still fail after 50,000s !!!
 		msg.SetWillQos(1)
 		msg.SetWillTopic([]byte("will"))
 		msg.SetWillMessage([]byte("send me home"))
@@ -113,6 +112,14 @@ func connectToHub(clientName, hubPort string) *service.Client {
 			glog.Debugln("connected:", clientName, hubPort)
 			return client
 		}
+
+		// XXX work around a keep-alive bug with publish-only clients
+		// see https://github.com/surgemq/surgemq/issues/29
+		submsg := message.NewSubscribeMessage()
+		submsg.AddTopic([]byte("hub/1hz"), 0)
+		client.Subscribe(submsg, nil, func(msg *message.PublishMessage) error {
+			return nil
+		})
 
 		glog.Debugln("cannot connect to MQTT, retrying", err)
 		time.Sleep(time.Second)
