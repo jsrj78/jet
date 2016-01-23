@@ -3,14 +3,13 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"time"
 
+	mqtt "git.eclipse.org/gitroot/paho/org.eclipse.paho.mqtt.golang.git"
 	"github.com/boltdb/bolt"
-	"github.com/surge/glog"
-	"github.com/surgemq/message"
-	"github.com/surgemq/surgemq/service"
 )
 
 const hubUsage = `
@@ -19,22 +18,17 @@ const hubUsage = `
     Usage: /path/to/hub -logtostderr
 `
 
-var (
-	adminFlag = flag.String("admin", "", "connect as admin to a running hub")
-	dataStore = flag.String("data", "storage.db", "data store file name & path")
-	mqttPort  = flag.String("mqtt", "localhost:1883", "MQTT server port")
-	extServer = flag.Bool("ext", false, "connect to an external MQTT server")
-	httpPort  = flag.String("http", "localhost:8947", "HTTP server port")
-)
-
 type Event struct {
 	topic   string
 	payload []byte
 }
 
 func main() {
+	adminFlag := flag.String("admin", "", "connect as admin to a running hub")
+	dataStore := flag.String("data", "store.db", "data store file name & path")
+	mqttPort := flag.String("mqtt", "localhost:1883", "MQTT server port")
+	httpPort := flag.String("http", "localhost:8947", "HTTP server port")
 	flag.Parse()
-	defer glog.Flush()
 
 	// check for special admin mode, used by the "jet" wrapper script
 	if *adminFlag != "" {
@@ -49,31 +43,23 @@ func main() {
 	}
 
 	// normal hub startup begins here, with a log entry
-	glog.Info(append([]string{"JET/Hub"}, os.Args[1:]...))
+	log.Print(append([]string{"JET/Hub"}, os.Args[1:]...))
 
 	quit := make(chan struct{})
 
-	// the default is to start the built-in MQTT server
-	if !*extServer {
-		go func() {
-			defer close(quit)
-			startMqttServer(*mqttPort)
-		}()
-	}
-
 	// connect to MQTT and wait for it before doing anything else
 	hub := connectToHub("hub", *mqttPort)
-	defer hub.Disconnect()
+	defer hub.Disconnect(250)
 
 	// send one message every second, on the second
 	go sendHeartbeat(hub, "hub/1hz")
 
 	// open the persistent data store
-	glog.Infoln("opening data store:", *dataStore)
+	log.Println("opening data store:", *dataStore)
 	options := bolt.Options{Timeout: time.Second}
 	db, err := bolt.Open(*dataStore, 0600, &options)
 	if err != nil {
-		glog.Fatalln("db:", err)
+		log.Fatalln("db:", err)
 	}
 	defer db.Close()
 
@@ -92,77 +78,35 @@ func main() {
 	<-quit // hang around until something serious happens
 }
 
-func connectToHub(clientName, hubPort string) *service.Client {
-	var err error
+func connectToHub(clientName, hubPort string) *mqtt.Client {
+	options := mqtt.NewClientOptions()
+	options.AddBroker("tcp://"+hubPort)
+	options.SetClientID(clientName)
+	options.SetWill("will", "sendmehome", 1, false)
+	client := mqtt.NewClient(options)
 
-	// retry a few times, the internal MQTT server may still be starting up
-	for i := 0; i < 3; i++ {
-		msg := message.NewConnectMessage()
-		msg.SetVersion(4)
-		msg.SetCleanSession(true)
-		msg.SetClientId([]byte(clientName))
-		msg.SetKeepAlive(50000) // FIXME this will still fail after 50,000s !!!
-		msg.SetWillQos(1)
-		msg.SetWillTopic([]byte("will"))
-		msg.SetWillMessage([]byte("send me home"))
-
-		client := &service.Client{}
-		err = client.Connect("tcp://"+hubPort, msg)
-		if err == nil {
-			glog.Debugln("connected:", clientName, hubPort)
-			return client
-		}
-
-		// FIXME try to work around a keep-alive bug with publish-only clients
-		// see https://github.com/surgemq/surgemq/issues/29
-		submsg := message.NewSubscribeMessage()
-		submsg.AddTopic([]byte("hub/1hz"), 0)
-		client.Subscribe(submsg, nil, func(msg *message.PublishMessage) error {
-			return nil
-		})
-
-		glog.Debugln("cannot connect to MQTT, retrying", err)
-		time.Sleep(time.Second)
+	if t := client.Connect(); t.Wait() && t.Error() != nil {
+		log.Fatal(t.Error)
 	}
 
-	glog.Fatal(err)
-	return nil
+	log.Println("connected:", clientName, hubPort)
+	return client
 }
 
-func topicAsEvents(hub *service.Client, pattern string) chan Event {
+func topicAsEvents(hub *mqtt.Client, pattern string) chan Event {
 	feed := make(chan Event)
 
-	msg := message.NewSubscribeMessage()
-	msg.AddTopic([]byte(pattern), 0)
-	e := hub.Subscribe(msg, nil, func(msg *message.PublishMessage) error {
+	t := hub.Subscribe(pattern, 0, func(hub *mqtt.Client, msg mqtt.Message) {
 		feed <- Event{
 			topic:   string(msg.Topic()),
 			payload: msg.Payload(),
 		}
-		return nil
 	})
-	if e != nil {
-		glog.Fatal(e)
+	if t.Wait() && t.Error() != nil {
+		log.Fatal(t.Error())
 	}
 
 	return feed
-}
-
-func startMqttServer(port string) {
-	srv := service.Server{}
-
-	certFile := os.Getenv("HUB_MQTT_CERT")
-	keyFile := os.Getenv("HUB_MQTT_KEY")
-
-	if certFile != "" && keyFile != "" {
-		glog.Infoln("starting MQTT server at", port)
-		// TODO: fix surgemq, see https://github.com/surgemq/surgemq/issues/8
-		//glog.Fatal(srv.ListenAndServeTLS("tcp://" + port, certFile, keyFile))
-		glog.Fatal(srv.ListenAndServe("tcp://" + port))
-	} else {
-		glog.Infoln("starting MQTT server at", port)
-		glog.Fatal(srv.ListenAndServe("tcp://" + port))
-	}
 }
 
 func startHttpServer(port string) {
@@ -175,33 +119,29 @@ func startHttpServer(port string) {
 	keyFile := os.Getenv("HUB_HTTP_KEY")
 
 	if certFile != "" && keyFile != "" {
-		glog.Infoln("starting HTTPS (TLS) server at", port)
-		glog.Fatal(http.ListenAndServeTLS(port, certFile, keyFile, nil))
+		log.Println("starting HTTPS (TLS) server at", port)
+		log.Fatal(http.ListenAndServeTLS(port, certFile, keyFile, nil))
 	} else {
-		glog.Infoln("starting HTTP server at", port)
-		glog.Fatal(http.ListenAndServe(port, nil))
+		log.Println("starting HTTP server at", port)
+		log.Fatal(http.ListenAndServe(port, nil))
 	}
 }
 
-func sendHeartbeat(hub *service.Client, topic string) {
+func sendHeartbeat(hub *mqtt.Client, topic string) {
 	for {
 		time.Sleep(time.Duration(1e9 - time.Now().UnixNano()%1e9))
 
 		// publish the heartbeat msg if it's within 25ms of the second mark
 		millis := time.Now().UnixNano() / 1e6
-		if millis % 1000 < 25 {
-			msg := message.NewPublishMessage()
-			msg.SetTopic([]byte(topic))
-			msg.SetPayload([]byte(fmt.Sprintf("%d", millis)))
-			e := hub.Publish(msg, func(m, a message.Message, err error) error {
-				return nil
-			})
-			if e != nil {
-				glog.Error(e)
+		if millis%1000 < 25 {
+			payload := fmt.Sprintf("%d", millis)
+			t := hub.Publish(topic, 0, false, payload)
+			if t.Wait() && t.Error() != nil {
+				log.Print(t.Error())
 			}
 		} else {
-			glog.Errorln("missed heartbeat:", millis)
+			log.Println("missed heartbeat:", millis)
 		}
-		glog.V(5).Infoln("heartbeat:", millis)
+		log.Println("heartbeat:", millis)
 	}
 }

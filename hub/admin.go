@@ -2,15 +2,13 @@ package main
 
 import (
 	"flag"
+	"log"
 	"fmt"
 
-	"github.com/surgemq/message"
-	"github.com/surgemq/surgemq/service"
+	mqtt "git.eclipse.org/gitroot/paho/org.eclipse.paho.mqtt.golang.git"
 )
 
-var adminQuit = make(chan struct{})
-
-func adminCmd(hub *service.Client) {
+func adminCmd(hub *mqtt.Client) {
 	cmd := flag.Arg(0)
 	cmdArgs := flag.Args()[1:]
 	cmdFlags := flag.NewFlagSet(cmd, flag.ExitOnError)
@@ -19,7 +17,6 @@ func adminCmd(hub *service.Client) {
 
 	default:
 		fmt.Println("ha!")
-		close(adminQuit)
 
 	case "pub":
 		retain := cmdFlags.Bool("r", false, "send with RETAIN flag set")
@@ -29,12 +26,10 @@ func adminCmd(hub *service.Client) {
 			return
 		}
 
-		pubmsg := message.NewPublishMessage()
-		pubmsg.SetTopic([]byte(cmdFlags.Arg(0)))
-		pubmsg.SetPayload([]byte(cmdFlags.Arg(1)))
-		pubmsg.SetRetain(*retain)
-		pubmsg.SetQoS(0)
-		hub.Publish(pubmsg, adminDone)
+		t := hub.Publish(cmdFlags.Arg(0), 0, *retain, cmdFlags.Arg(1))
+		if t.Wait() && t.Error() != nil {
+			log.Fatal(t.Error())
+		}
 
 	case "sub":
 		cmdFlags.Parse(cmdArgs)
@@ -43,29 +38,22 @@ func adminCmd(hub *service.Client) {
 			return
 		}
 
-		submsg := message.NewSubscribeMessage()
-		submsg.AddTopic([]byte(cmdFlags.Arg(0)), 0)
-		hub.Subscribe(submsg, nil, func(msg *message.PublishMessage) error {
+		topic := cmdFlags.Arg(0)
+		t := hub.Subscribe(topic, 0, func(hub *mqtt.Client, msg mqtt.Message) {
 			fmt.Printf("%s = %q\n", msg.Topic(), msg.Payload())
-			return nil
 		})
+		if t.Wait() && t.Error() != nil {
+			log.Fatal(t.Error())
+		}
 
 	case "test":
 		cmdFlags.Parse(cmdArgs)
 
-		pubmsg := message.NewPublishMessage()
-		pubmsg.SetTopic([]byte("abc"))
-		pubmsg.SetPayload(make([]byte, 1024))
-		pubmsg.SetQoS(0)
-		hub.Publish(pubmsg, adminDone)
+		t := hub.Publish("abc", 0, false, make([]byte, 1024))
+		if t.Wait() && t.Error() != nil {
+			log.Fatal(t.Error())
+		}
 	}
 
-	<-adminQuit
-	hub.Disconnect()
-}
-
-func adminDone(msg, ack message.Message, err error) error {
-	fmt.Println("done")
-	close(adminQuit)
-	return nil
+	hub.Disconnect(250)
 }
