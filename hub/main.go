@@ -12,7 +12,7 @@ import (
 	"github.com/boltdb/bolt"
 )
 
-const VERSION = "0.4.0"
+const VERSION = "4.0-1"
 
 var hubUsage = fmt.Sprintf(`
     JET/Hub v%s (http://jeelabs.org/2016/01/overcoming-jet-lag/)

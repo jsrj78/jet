@@ -29,8 +29,7 @@ func loggerSaveToDisk(dir string, feed chan Event) {
 			log.Println("scan error:", evt.Topic, e)
 			continue
 		}
-		//stamp := time.Unix(0, millis*1e6).UTC()
-		stamp := time.Unix(0, millis*1e6)
+		stamp := time.Unix(0, millis*1e6).UTC()
 
 		// rotate to a new file every day at 0:00 (UTC)
 		path := stamp.Format("/2006/20060102.txt")
@@ -48,6 +47,7 @@ func loggerSaveToDisk(dir string, feed chan Event) {
 				log.Fatal(e)
 			}
 			lastPath = path
+			log.Println("logger output to:", dir+path)
 		}
 
 		tod := stamp.Format("15:04:05.000")
