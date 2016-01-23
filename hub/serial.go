@@ -11,21 +11,21 @@ import (
 func processSerialRequests(feed chan Event) {
 	portmap := map[string]*rs232.Port{}
 
-	for req := range feed {
-		log.Println("req:", req.Topic)
+	for evt := range feed {
+		log.Println("evt:", evt.Topic)
 
 		var serReq struct {
 			Device string `json:"device"`
 			SendTo string `json:"sendto"`
 		}
-		if e := json.Unmarshal(req.Payload, &serReq); e != nil {
-			log.Println("serial request parse error:", req, e)
+		if e := json.Unmarshal(evt.Payload, &serReq); e != nil {
+			log.Println("serial request parse error:", evt, e)
 		} else {
 			serial := listenToSerialPort(serReq.Device, serReq.SendTo)
 			if serial != nil {
-				portmap[req.Topic] = serial
+				portmap[evt.Topic] = serial
 			} else {
-				delete(portmap, req.Topic)
+				delete(portmap, evt.Topic)
 			}
 		}
 	}
@@ -42,10 +42,9 @@ func listenToSerialPort(device, topic string) *rs232.Port {
 	scanner := bufio.NewScanner(serial)
 	go func() {
 		for scanner.Scan() {
-			log.Println("got:", scanner.Text())
 			publish(topic, scanner.Bytes(), false)
 		}
-		log.Fatal("unexpected EOF", serial)
+		log.Println("unexpected EOF:", device)
 	}()
 	return serial
 }

@@ -32,6 +32,7 @@ func main() {
 	dataStore := flag.String("data", "store.db", "data store file name & path")
 	mqttPort := flag.String("mqtt", "tcp://localhost:1883", "MQTT server port")
 	httpPort := flag.String("http", "localhost:8947", "HTTP server port")
+	loggerDir := flag.String("logger", "logger", "dir path for logger files")
 	flag.Parse()
 
 	// check for special admin mode, used by the "jet" wrapper script
@@ -56,6 +57,15 @@ func main() {
 	hub = connectToHub("hub", *mqttPort, true)
 	defer hub.Disconnect(250)
 
+	// save raw logger input to text files, one per day (UTC time)
+	go loggerSaveToDisk(*loggerDir, topicsAsEvents("logger/+/+"))
+
+	// copy each incoming "logger/<x>" message to "logger/<x>/<millis>"
+	go timestampRepeater(topicsAsEvents("logger/+"))
+
+	// send one message every second, on the second
+	go sendHeartbeat("hub/1hz")
+
 	// open the persistent data store
 	log.Println("opening data store:", *dataStore)
 	options := bolt.Options{Timeout: time.Second}
@@ -64,12 +74,6 @@ func main() {
 		log.Fatalln("db:", err)
 	}
 	defer db.Close()
-
-	// send one message every second, on the second
-	go sendHeartbeat("hub/1hz")
-
-	// copy each incoming "logger/<x>" message to "logger/<x>/<millis>"
-	go timestampRepeater(topicsAsEvents("logger/+"))
 
 	// listen to serial device requests
 	go processSerialRequests(topicsAsEvents("serial/+"))
