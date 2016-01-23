@@ -35,7 +35,7 @@ func listenToSerialPort(device, topic string) *rs232.Port {
 	options := rs232.Options{BitRate: 57600, DataBits: 8, StopBits: 1}
 	serial, err := rs232.Open(device, options)
 	if err != nil {
-		log.Println("cannot open:", device, err)
+		log.Print(err)
 		return nil
 	}
 

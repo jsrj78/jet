@@ -1,7 +1,7 @@
 #!/bin/sh
 
 ###############################################################################
-# >>> This is an example: copy as "jet" to your PATH and adjust as needed <<< #
+# >>> This is a template: copy as "jet" to your PATH and adjust as needed <<< #
 ###############################################################################
 
 # jet -- Command-line admin interface to a running JET/Hub instance
