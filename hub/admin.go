@@ -33,7 +33,7 @@ func adminCmd(hub *service.Client) {
 		pubmsg.SetTopic([]byte(cmdFlags.Arg(0)))
 		pubmsg.SetPayload([]byte(cmdFlags.Arg(1)))
 		pubmsg.SetRetain(*retain)
-		pubmsg.SetQoS(1)
+		pubmsg.SetQoS(0)
 		hub.Publish(pubmsg, adminDone)
 
 	case "sub":
@@ -53,10 +53,6 @@ func adminCmd(hub *service.Client) {
 	case "test":
 		cmdFlags.Parse(cmdArgs)
 
-		submsg := message.NewSubscribeMessage()
-		submsg.AddTopic([]byte("abc"), 0)
-		hub.Subscribe(submsg, nil, nil)
-
 		pubmsg := message.NewPublishMessage()
 		pubmsg.SetTopic([]byte("abc"))
 		pubmsg.SetPayload(make([]byte, 1024))
@@ -64,10 +60,12 @@ func adminCmd(hub *service.Client) {
 		hub.Publish(pubmsg, adminDone)
 	}
 
-	<-adminQuit // wait forever
+	<-adminQuit
+	hub.Disconnect()
 }
 
 func adminDone(msg, ack message.Message, err error) error {
+	fmt.Println("done")
 	close(adminQuit)
 	return nil
 }
