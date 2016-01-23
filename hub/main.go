@@ -12,11 +12,13 @@ import (
 	"github.com/boltdb/bolt"
 )
 
-const hubUsage = `
-    JET/Hub v0.4 (http://jeelabs.org/2016/01/overcoming-jet-lag/)
+const VERSION = "0.4.0"
+
+var hubUsage = fmt.Sprintf(`
+    JET/Hub v%s (http://jeelabs.org/2016/01/overcoming-jet-lag/)
 
     Usage: /path/to/hub ?options...?
-`
+`, VERSION)
 
 type Event struct {
 	topic   string
@@ -43,7 +45,7 @@ func main() {
 	}
 
 	// normal hub startup begins here, with a log entry
-	log.Print(append([]string{"JET/Hub"}, os.Args[1:]...))
+	log.Print(append([]string{"JET/Hub v" + VERSION}, os.Args[1:]...))
 
 	quit := make(chan struct{})
 

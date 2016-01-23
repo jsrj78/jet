@@ -10,6 +10,10 @@ import (
 
 func adminCmd(hub *mqtt.Client) {
 	cmd := flag.Arg(0)
+	if cmd == "" {
+		fmt.Println("JET v" + VERSION)
+		return
+	}
 	cmdArgs := flag.Args()[1:]
 	cmdFlags := flag.NewFlagSet(cmd, flag.ExitOnError)
 
