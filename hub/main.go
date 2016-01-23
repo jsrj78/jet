@@ -66,8 +66,8 @@ func main() {
 	hub := connectToHub("hub", *mqttPort)
 	defer hub.Disconnect()
 
-	// TODO not working, stops after about 43s (???)
-	//go sendHeartbeat(hub, "hub/1hz") // one message per second, on the second
+	// send one message every second, on the second
+	go sendHeartbeat(hub, "hub/1hz")
 
 	// open the persistent data store
 	glog.Infoln("opening data store:", *dataStore)
@@ -102,7 +102,7 @@ func connectToHub(clientName, hubPort string) *service.Client {
 		msg.SetVersion(4)
 		msg.SetCleanSession(true)
 		msg.SetClientId([]byte(clientName))
-		//msg.SetKeepAlive(10)
+		msg.SetKeepAlive(50000) // FIXME this will still fail after 50,000s !!!
 		msg.SetWillQos(1)
 		msg.SetWillTopic([]byte("will"))
 		msg.SetWillMessage([]byte("send me home"))
@@ -200,6 +200,6 @@ func sendHeartbeat(hub *service.Client, topic string) {
 		} else {
 			glog.Errorln("missed heartbeat:", nanos)
 		}
-		glog.Infoln("heartbeat:", nanos)
+		glog.Debugln("heartbeat:", nanos)
 	}
 }
