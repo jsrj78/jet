@@ -12,6 +12,7 @@ const SERIAL_DEVICE_PREFIX = "/dev/cu."
 //const SERIAL_DEVICE_PREFIX = "/dev/tty"
 
 func listenToDevices(changes chan Event) {
+	return // TODO
 	listenToSerialPort("usbserial-A40119DV", 57600)
 	//listenToSerialPort("USB0", 57600)
 }

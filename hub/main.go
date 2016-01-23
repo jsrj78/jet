@@ -193,9 +193,6 @@ func sendHeartbeat(hub *service.Client, topic string) {
 			})
 			if e != nil {
 				glog.Error(e)
-				// FIXME re-open new connection to hub after error, yikes!
-				hub.Disconnect()
-				hub = connectToHub("hub2", *mqttPort)
 			}
 		} else {
 			glog.Errorln("missed heartbeat:", nanos)
