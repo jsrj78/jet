@@ -16,13 +16,13 @@ func adminCmd(hub *mqtt.Client) {
 	switch cmd {
 
 	default:
-		fmt.Println("ha!")
+		fmt.Println("Available commands: pub sub delete test")
 
 	case "pub":
 		retain := cmdFlags.Bool("r", false, "send with RETAIN flag set")
 		cmdFlags.Parse(cmdArgs)
 		if cmdFlags.NArg() != 2 {
-			fmt.Println("Usage: jet pub ?-r? topic payload")
+			fmt.Println("Usage: jet pub ?-r? <topic> <payload>")
 			return
 		}
 
@@ -34,7 +34,7 @@ func adminCmd(hub *mqtt.Client) {
 	case "sub":
 		cmdFlags.Parse(cmdArgs)
 		if cmdFlags.NArg() != 1 {
-			fmt.Println("Usage: jet sub topic")
+			fmt.Println("Usage: jet sub <topic>")
 			return
 		}
 
@@ -49,10 +49,10 @@ func adminCmd(hub *mqtt.Client) {
 		quit := make(chan struct{})
 		<-quit // this waits forever
 
-	case "unreg": // manually unregister a "stuck" registration, i.e. lost will
+	case "delete": // unregister a "stuck" registration, i.e. a missing will
 		cmdFlags.Parse(cmdArgs)
 		if cmdFlags.NArg() != 1 {
-			fmt.Println("Usage: jet sub topic")
+			fmt.Println("Usage: jet unreg <topic>")
 		}
 
 		t := hub.Publish(cmdFlags.Arg(0), 1, true, []byte{})
@@ -68,6 +68,4 @@ func adminCmd(hub *mqtt.Client) {
 			log.Fatal(t.Error())
 		}
 	}
-
-	hub.Disconnect(250)
 }

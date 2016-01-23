@@ -93,7 +93,9 @@ func connectToHub(clientName, port string, retain bool) *mqtt.Client {
 		log.Fatal(t.Error())
 	}
 
-	log.Println("connected as", clientId, "to", port)
+	if retain {
+		log.Println("connected as", clientId, "to", port)
+	}
 
 	// register as jet client, cleared on disconnect by the will
 	t := client.Publish("jet/" + clientId, 1, retain, "{}")
@@ -153,6 +155,5 @@ func sendHeartbeat(hub *mqtt.Client, topic string) {
 		} else {
 			log.Println("missed heartbeat:", millis)
 		}
-		log.Println("heartbeat:", millis)
 	}
 }
