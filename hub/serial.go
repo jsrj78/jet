@@ -2,31 +2,45 @@ package main
 
 import (
 	"bufio"
+	"encoding/json"
 	"log"
 
 	"github.com/chimera/rs232"
 )
 
-const SERIAL_DEVICE_PREFIX = "/dev/cu."
+func processSerialRequests(feed chan Event) {
+	portmap := map[string]*rs232.Port{}
 
-//const SERIAL_DEVICE_PREFIX = "/dev/tty"
+	for req := range feed {
+		log.Println("req:", req.Topic)
 
-func listenToDevices(changes chan Event) {
-	listenToSerialPort("usbserial-A40119DV", 57600)
-	//listenToSerialPort("USB0", 57600)
+		var serReq struct {
+			Device string `json:"device"`
+			SendTo string `json:"sendto"`
+		}
+		if e := json.Unmarshal(req.Payload, &serReq); e != nil {
+			log.Println("serial request parse error:", req, e)
+		} else {
+			serial := listenToSerialPort(serReq.Device, serReq.SendTo)
+			portmap[req.Topic] = serial
+		}
+	}
 }
 
-func listenToSerialPort(device string, baud uint32) {
-	options := rs232.Options{BitRate: baud, DataBits: 8, StopBits: 1}
-	serial, err := rs232.Open(SERIAL_DEVICE_PREFIX+device, options)
+func listenToSerialPort(device, topic string) *rs232.Port {
+	options := rs232.Options{BitRate: 57600, DataBits: 8, StopBits: 1}
+	serial, err := rs232.Open(device, options)
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	scanner := bufio.NewScanner(serial)
 	go func() {
 		for scanner.Scan() {
 			log.Println("got:", scanner.Text())
+			publish(topic, scanner.Bytes(), false)
 		}
 		log.Fatal("unexpected EOF", serial)
 	}()
+	return serial
 }

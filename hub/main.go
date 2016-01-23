@@ -20,9 +20,11 @@ var hubUsage = fmt.Sprintf(`
     Usage: /path/to/hub ?options...?
 `, VERSION)
 
+var hub *mqtt.Client
+
 type Event struct {
-	topic   string
-	payload []byte
+	Topic   string
+	Payload []byte
 }
 
 func main() {
@@ -34,7 +36,8 @@ func main() {
 
 	// check for special admin mode, used by the "jet" wrapper script
 	if *adminFlag != "" {
-		adminCmd(connectToHub("admin", *adminFlag, false))
+		hub = connectToHub("admin", *adminFlag, false)
+		adminCmd()
 		return
 	}
 
@@ -50,11 +53,11 @@ func main() {
 	quit := make(chan struct{})
 
 	// connect to MQTT and wait for it before doing anything else
-	hub := connectToHub("hub", *mqttPort, true)
+	hub = connectToHub("hub", *mqttPort, true)
 	defer hub.Disconnect(250)
 
 	// send one message every second, on the second
-	go sendHeartbeat(hub, "hub/1hz")
+	go sendHeartbeat("hub/1hz")
 
 	// open the persistent data store
 	log.Println("opening data store:", *dataStore)
@@ -65,9 +68,8 @@ func main() {
 	}
 	defer db.Close()
 
-	// look for serial device(s) and listen to them
-	devChanges := topicAsEvents(hub, "serial/+")
-	go listenToDevices(devChanges)
+	// listen to serial device requests
+	go processSerialRequests(topicAsEvents("serial/+"))
 
 	// the default is to start up the built-in HTTP server
 	if *httpPort != "" {
@@ -83,12 +85,12 @@ func main() {
 func connectToHub(clientName, port string, retain bool) *mqtt.Client {
 	// add a "fairly random" 6-digit suffix to make the client name unique
 	nanos := time.Now().UnixNano()
-	clientId := fmt.Sprintf("%s/%06d", clientName, nanos % 1e6)
+	clientId := fmt.Sprintf("%s/%06d", clientName, nanos%1e6)
 
 	options := mqtt.NewClientOptions()
 	options.AddBroker(port)
 	options.SetClientID(clientId)
-	options.SetBinaryWill("jet/" + clientId, nil, 1, retain)
+	options.SetBinaryWill("jet/"+clientId, nil, 1, retain)
 	client := mqtt.NewClient(options)
 
 	if t := client.Connect(); t.Wait() && t.Error() != nil {
@@ -100,7 +102,7 @@ func connectToHub(clientName, port string, retain bool) *mqtt.Client {
 	}
 
 	// register as jet client, cleared on disconnect by the will
-	t := client.Publish("jet/" + clientId, 1, retain, "{}")
+	t := client.Publish("jet/"+clientId, 1, retain, "{}")
 	if t.Wait() && t.Error() != nil {
 		log.Fatal(t.Error())
 	}
@@ -108,13 +110,13 @@ func connectToHub(clientName, port string, retain bool) *mqtt.Client {
 	return client
 }
 
-func topicAsEvents(hub *mqtt.Client, pattern string) chan Event {
+func topicAsEvents(pattern string) chan Event {
 	feed := make(chan Event)
 
 	t := hub.Subscribe(pattern, 0, func(hub *mqtt.Client, msg mqtt.Message) {
 		feed <- Event{
-			topic:   string(msg.Topic()),
-			payload: msg.Payload(),
+			Topic:   string(msg.Topic()),
+			Payload: msg.Payload(),
 		}
 	})
 	if t.Wait() && t.Error() != nil {
@@ -142,20 +144,23 @@ func startHttpServer(port string) {
 	}
 }
 
-func sendHeartbeat(hub *mqtt.Client, topic string) {
+func sendHeartbeat(topic string) {
 	for {
 		time.Sleep(time.Duration(1e9 - time.Now().UnixNano()%1e9))
 
 		// publish the heartbeat msg if it's within 25ms of the second mark
 		millis := time.Now().UnixNano() / 1e6
 		if millis%1000 < 25 {
-			payload := fmt.Sprintf("%d", millis)
-			t := hub.Publish(topic, 0, false, payload)
-			if t.Wait() && t.Error() != nil {
-				log.Print(t.Error())
-			}
+			publish(topic, []byte(fmt.Sprintf("%d", millis)), false)
 		} else {
 			log.Println("missed heartbeat:", millis)
 		}
+	}
+}
+
+func publish(topic string, payload []byte, retain bool) {
+	t := hub.Publish(topic, 0, retain, payload)
+	if t.Wait() && t.Error() != nil {
+		log.Print(t.Error())
 	}
 }

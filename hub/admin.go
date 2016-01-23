@@ -2,13 +2,13 @@ package main
 
 import (
 	"flag"
-	"log"
 	"fmt"
+	"log"
 
 	mqtt "git.eclipse.org/gitroot/paho/org.eclipse.paho.mqtt.golang.git"
 )
 
-func adminCmd(hub *mqtt.Client) {
+func adminCmd() {
 	cmd := flag.Arg(0)
 	if cmd == "" {
 		fmt.Println("JET v" + VERSION)
@@ -30,10 +30,7 @@ func adminCmd(hub *mqtt.Client) {
 			return
 		}
 
-		t := hub.Publish(cmdFlags.Arg(0), 0, *retain, cmdFlags.Arg(1))
-		if t.Wait() && t.Error() != nil {
-			log.Fatal(t.Error())
-		}
+		publish(cmdFlags.Arg(0), []byte(cmdFlags.Arg(1)), *retain)
 
 	case "sub":
 		cmdFlags.Parse(cmdArgs)
@@ -59,17 +56,11 @@ func adminCmd(hub *mqtt.Client) {
 			fmt.Println("Usage: jet unreg <topic>")
 		}
 
-		t := hub.Publish(cmdFlags.Arg(0), 1, true, []byte{})
-		if t.Wait() && t.Error() != nil {
-			log.Fatal(t.Error())
-		}
+		publish(cmdFlags.Arg(0), []byte{}, true)
 
 	case "test":
 		cmdFlags.Parse(cmdArgs)
 
-		t := hub.Publish("abc", 0, false, make([]byte, 1024))
-		if t.Wait() && t.Error() != nil {
-			log.Fatal(t.Error())
-		}
+		publish("abc", make([]byte, 1024), false)
 	}
 }
