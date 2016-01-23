@@ -79,9 +79,13 @@ func main() {
 }
 
 func connectToHub(clientName, hubPort string) *mqtt.Client {
+	// add a "fairly random" 6-digit suffix to make the client name unique
+	nanos := time.Now().UnixNano()
+	clientId := fmt.Sprintf("%s-%06d", clientName, nanos % 1e6)
+
 	options := mqtt.NewClientOptions()
 	options.AddBroker("tcp://"+hubPort)
-	options.SetClientID(clientName)
+	options.SetClientID(clientId)
 	options.SetWill("will", "sendmehome", 1, false)
 	client := mqtt.NewClient(options)
 
@@ -89,7 +93,7 @@ func connectToHub(clientName, hubPort string) *mqtt.Client {
 		log.Fatal(t.Error)
 	}
 
-	log.Println("connected:", clientName, hubPort)
+	log.Println("connected:", clientId, hubPort)
 	return client
 }
 

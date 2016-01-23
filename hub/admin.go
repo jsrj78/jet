@@ -46,6 +46,9 @@ func adminCmd(hub *mqtt.Client) {
 			log.Fatal(t.Error())
 		}
 
+		quit := make(chan struct{})
+		<-quit // this waits forever
+
 	case "test":
 		cmdFlags.Parse(cmdArgs)
 
