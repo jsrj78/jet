@@ -68,6 +68,9 @@ func main() {
 	}
 	defer db.Close()
 
+	// copy each incoming "logger/<x>" message to "logger/<x>/<millis>"
+	go timestampRepeater(topicAsEvents("logger/+"))
+
 	// listen to serial device requests
 	go processSerialRequests(topicAsEvents("serial/+"))
 
@@ -162,5 +165,13 @@ func publish(topic string, payload []byte, retain bool) {
 	t := hub.Publish(topic, 0, retain, payload)
 	if t.Wait() && t.Error() != nil {
 		log.Print(t.Error())
+	}
+}
+
+func timestampRepeater(feed chan Event) {
+	for evt := range feed {
+		millis := time.Now().UnixNano() / 1e6
+		topic := fmt.Sprintf("%s/%d", evt.Topic, millis)
+		publish(topic, evt.Payload, false)
 	}
 }
