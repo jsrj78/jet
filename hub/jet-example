@@ -12,7 +12,7 @@
 # Note: this command never starts up a new hub, it's ONLY an admin front-end!
 
 PROG="$(dirname $0)/hub"
-MQTT="127.0.0.1:1883"
+MQTT="tcp://127.0.0.1:1883"
 
 # all arguments specified on the command line are passed command the admin mode
 exec "$PROG" -admin $MQTT "$@"

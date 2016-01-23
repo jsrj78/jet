@@ -49,6 +49,17 @@ func adminCmd(hub *mqtt.Client) {
 		quit := make(chan struct{})
 		<-quit // this waits forever
 
+	case "unreg": // manually unregister a "stuck" registration, i.e. lost will
+		cmdFlags.Parse(cmdArgs)
+		if cmdFlags.NArg() != 1 {
+			fmt.Println("Usage: jet sub topic")
+		}
+
+		t := hub.Publish(cmdFlags.Arg(0), 1, true, []byte{})
+		if t.Wait() && t.Error() != nil {
+			log.Fatal(t.Error())
+		}
+
 	case "test":
 		cmdFlags.Parse(cmdArgs)
 

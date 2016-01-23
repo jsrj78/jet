@@ -15,7 +15,7 @@ import (
 const hubUsage = `
     JET/Hub v0.4 (http://jeelabs.org/2016/01/overcoming-jet-lag/)
 
-    Usage: /path/to/hub -logtostderr
+    Usage: /path/to/hub ?options...?
 `
 
 type Event struct {
@@ -26,13 +26,13 @@ type Event struct {
 func main() {
 	adminFlag := flag.String("admin", "", "connect as admin to a running hub")
 	dataStore := flag.String("data", "store.db", "data store file name & path")
-	mqttPort := flag.String("mqtt", "localhost:1883", "MQTT server port")
+	mqttPort := flag.String("mqtt", "tcp://localhost:1883", "MQTT server port")
 	httpPort := flag.String("http", "localhost:8947", "HTTP server port")
 	flag.Parse()
 
 	// check for special admin mode, used by the "jet" wrapper script
 	if *adminFlag != "" {
-		adminCmd(connectToHub("admin", *adminFlag))
+		adminCmd(connectToHub("admin", *adminFlag, false))
 		return
 	}
 
@@ -48,7 +48,7 @@ func main() {
 	quit := make(chan struct{})
 
 	// connect to MQTT and wait for it before doing anything else
-	hub := connectToHub("hub", *mqttPort)
+	hub := connectToHub("hub", *mqttPort, true)
 	defer hub.Disconnect(250)
 
 	// send one message every second, on the second
@@ -78,22 +78,29 @@ func main() {
 	<-quit // hang around until something serious happens
 }
 
-func connectToHub(clientName, hubPort string) *mqtt.Client {
+func connectToHub(clientName, port string, retain bool) *mqtt.Client {
 	// add a "fairly random" 6-digit suffix to make the client name unique
 	nanos := time.Now().UnixNano()
-	clientId := fmt.Sprintf("%s-%06d", clientName, nanos % 1e6)
+	clientId := fmt.Sprintf("%s/%06d", clientName, nanos % 1e6)
 
 	options := mqtt.NewClientOptions()
-	options.AddBroker("tcp://"+hubPort)
+	options.AddBroker(port)
 	options.SetClientID(clientId)
-	options.SetWill("will", "sendmehome", 1, false)
+	options.SetBinaryWill("jet/" + clientId, nil, 1, retain)
 	client := mqtt.NewClient(options)
 
 	if t := client.Connect(); t.Wait() && t.Error() != nil {
-		log.Fatal(t.Error)
+		log.Fatal(t.Error())
 	}
 
-	log.Println("connected:", clientId, hubPort)
+	log.Println("connected as", clientId, "to", port)
+
+	// register as jet client, cleared on disconnect by the will
+	t := client.Publish("jet/" + clientId, 1, retain, "{}")
+	if t.Wait() && t.Error() != nil {
+		log.Fatal(t.Error())
+	}
+
 	return client
 }
 
