@@ -18,7 +18,7 @@ func adminCmd() {
 	switch cmd {
 
 	default:
-		fmt.Println("Available commands: pub sub delete test")
+		fmt.Println("Available commands: pub sub delete config test")
 
 	case "pub":
 		retain := cmdFlags.Bool("r", false, "send with RETAIN flag set")
@@ -48,6 +48,21 @@ func adminCmd() {
 		}
 
 		sendToHub(cmdFlags.Arg(0), []byte{}, true)
+
+	case "config":
+		cmdFlags.Parse(cmdArgs)
+		if cmdFlags.NArg() != 0 {
+			fmt.Println("Usage: jet config")
+		}
+
+		// show all the retained state in MQTT, which is always sent first
+		// TODO minor bug: this hangs if there is no MQTT activity at all
+		for evt := range topicWatcher("#") {
+			if !evt.Retained {
+				break
+			}
+			fmt.Printf("%s = %s\n", evt.Topic, evt.Payload)
+		}
 
 	case "test":
 		cmdFlags.Parse(cmdArgs)

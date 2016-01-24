@@ -137,8 +137,9 @@ func sendToHub(topic string, payload interface{}, retain bool) {
 }
 
 type event struct {
-	Topic   string
-	Payload []byte
+	Topic    string
+	Payload  []byte
+	Retained bool
 }
 
 func (e *event) Decode(result interface{}) bool {
@@ -160,8 +161,9 @@ func topicWatcher(pattern string) <-chan event {
 
 	t := hub.Subscribe(pattern, 0, func(hub *mqtt.Client, msg mqtt.Message) {
 		feed <- event{
-			Topic:   msg.Topic(),
-			Payload: msg.Payload(),
+			Topic:    msg.Topic(),
+			Payload:  msg.Payload(),
+			Retained: msg.Retained(),
 		}
 	})
 	if t.Wait() && t.Error() != nil {
