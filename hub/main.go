@@ -118,16 +118,21 @@ func connectToHub(clientName, port string, retain bool) chan<- interface{} {
 }
 
 // sendToHub publishes a message, and waits for it to complete successfully.
-func sendToHub(topic string, payload []byte, retain bool) {
-	t := hub.Publish(topic, 1, retain, payload)
-	if t.Wait() && t.Error() != nil {
-		log.Print(t.Error())
+func sendToHub(topic string, payload interface{}, retain bool) {
+	data, e := json.Marshal(payload)
+	if e != nil {
+		log.Println("json conversion failed:", e, payload)
+	} else {
+		t := hub.Publish(topic, 1, retain, data)
+		if t.Wait() && t.Error() != nil {
+			log.Print(t.Error())
+		}
 	}
 }
 
 type event struct {
 	Topic   string
-	Payload []byte
+	Payload interface{}
 }
 
 // topicWatcher turns an MQTT subscription into a channel feed of events.
@@ -135,9 +140,14 @@ func topicWatcher(pattern string) <-chan event {
 	feed := make(chan event)
 
 	t := hub.Subscribe(pattern, 0, func(hub *mqtt.Client, msg mqtt.Message) {
-		feed <- event{
-			Topic:   string(msg.Topic()),
-			Payload: msg.Payload(),
+		var payload interface{}
+		if e := json.Unmarshal(msg.Payload(), &payload); e != nil {
+			log.Println("json decode error:", e, msg.Payload())
+		} else {
+			feed <- event{
+				Topic:   string(msg.Topic()),
+				Payload: payload,
+			}
 		}
 	})
 	if t.Wait() && t.Error() != nil {
@@ -153,12 +163,7 @@ func topicNotifier(topic string, retain bool) chan<- interface{} {
 
 	go func() {
 		for msg := range feed {
-			data, err := json.Marshal(msg)
-			if err == nil {
-				sendToHub(topic, data, retain)
-			} else {
-				log.Println("feed failed:", topic, err)
-			}
+			sendToHub(topic, msg, retain)
 		}
 	}()
 
@@ -192,7 +197,7 @@ func startHeartbeat(topic string) {
 		// synchronise as closely as possible to the exact next second
 		time.Sleep(time.Duration(1e9 - time.Now().UnixNano()%1e9))
 
-		// publish the heartbeat msg if it's within 25ms of the second mark
+		// publish the heartbeat msg only if within 25ms of the second mark
 		millis := time.Now().UnixNano() / 1e6
 		if millis%1000 < 25 {
 			feed <- millis

@@ -19,7 +19,8 @@ func serialProcessRequests(feed string) {
 			Device string `json:"device"`
 			SendTo string `json:"sendto"`
 		}
-		if e := json.Unmarshal(evt.Payload, &serReq); e != nil {
+		data, _ := json.Marshal(evt.Payload) // TODO messy "un-conversion" !
+		if e := json.Unmarshal(data, &serReq); e != nil {
 			log.Println("serial request parse error:", evt, e)
 		} else {
 			serial := listenToSerial(serReq.Device, serReq.SendTo)
@@ -44,9 +45,10 @@ func listenToSerial(device, topic string) *rs232.Port {
 	scanner := bufio.NewScanner(serial)
 	go func() {
 		for scanner.Scan() {
-			sendToHub(topic, scanner.Bytes(), false)
+			sendToHub(topic, scanner.Text(), false)
 		}
 		log.Println("unexpected EOF:", device)
+		// TODO: serial.Close() ?
 	}()
 	return serial
 }

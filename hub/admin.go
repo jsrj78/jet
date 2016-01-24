@@ -3,9 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"log"
-
-	mqtt "git.eclipse.org/gitroot/paho/org.eclipse.paho.mqtt.golang.git"
 )
 
 // adminCmd dispatches "jet <cmd> ..." command-line requests.
@@ -40,16 +37,9 @@ func adminCmd() {
 			return
 		}
 
-		topic := cmdFlags.Arg(0)
-		t := hub.Subscribe(topic, 0, func(hub *mqtt.Client, msg mqtt.Message) {
-			fmt.Printf("%s = %q\n", msg.Topic(), msg.Payload())
-		})
-		if t.Wait() && t.Error() != nil {
-			log.Fatal(t.Error())
+		for evt := range topicWatcher(cmdFlags.Arg(0)) {
+			fmt.Printf("%s = %v\n", evt.Topic, evt.Payload)
 		}
-
-		quit := make(chan struct{})
-		<-quit // this waits forever
 
 	case "delete": // unregister a "stuck" registration, i.e. a missing will
 		cmdFlags.Parse(cmdArgs)

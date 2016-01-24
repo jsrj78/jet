@@ -54,7 +54,7 @@ func loggerSaveToDisk(feed, dir string) {
 
 		tod := stamp.Format("15:04:05.000")
 		// linefeeds must be escaped, these log files are one-entry-per-line
-		msg := strings.Replace(string(evt.Payload), "\n", "\\n", -1)
+		msg := strings.Replace(evt.Payload.(string), "\n", "\\n", -1)
 		fmt.Fprintf(lastFile, "L %s %s %s\n", tod, segments[1], msg)
 	}
 }
