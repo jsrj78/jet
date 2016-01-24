@@ -8,25 +8,35 @@ import (
 	"time"
 )
 
+// loggerTimestamper resends each incoming message to a new timestamped topic.
 func loggerTimestamper(feed string) {
-	for evt := range topicsAsEvents(feed) {
+	for evt := range topicWatcher(feed) {
 		millis := time.Now().UnixNano() / 1e6
 		topic := fmt.Sprintf("%s/%d", evt.Topic, millis)
-		publish(topic, evt.Payload, false)
+		sendToHub(topic, evt.Payload, false)
 	}
 }
 
-func loggerSaveToDisk(dir, feed string) {
+// loggerSaveToDisk picks up timestamped messages and saves them to log files.
+func loggerSaveToDisk(feed, dir string) {
 	var lastPath string
 	var lastFile *os.File
 
-	for evt := range topicsAsEvents(feed) {
+	for evt := range topicWatcher(feed) {
+		var message string
+		if !evt.Decode(&message) {
+			continue // ignore this event, failure has been logged by Decode
+		}
+		// linefeeds must be escaped, since log files have one-entry-per-line
+		message = strings.Replace(message, "\n", "\\n", -1)
+
 		// topic = "logger/<device>/<milliseconds>"
 		segments := strings.Split(evt.Topic, "/")
 
+		// extract the timestamp from the topic
 		var millis int64
 		if _, e := fmt.Sscanf(segments[2], "%d", &millis); e != nil {
-			log.Println("scan error:", evt.Topic, e)
+			log.Println("timestamp error:", evt.Topic, e)
 			continue
 		}
 		stamp := time.Unix(0, millis*1e6).UTC()
@@ -51,8 +61,6 @@ func loggerSaveToDisk(dir, feed string) {
 		}
 
 		tod := stamp.Format("15:04:05.000")
-		// linefeeds must be escaped, these log files are one-entry-per-line
-		msg := strings.Replace(string(evt.Payload), "\n", "\\n", -1)
-		fmt.Fprintf(lastFile, "L %s %s %s\n", tod, segments[1], msg)
+		fmt.Fprintf(lastFile, "L %s %s %s\n", tod, segments[1], message)
 	}
 }

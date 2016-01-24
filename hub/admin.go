@@ -3,11 +3,9 @@ package main
 import (
 	"flag"
 	"fmt"
-	"log"
-
-	mqtt "git.eclipse.org/gitroot/paho/org.eclipse.paho.mqtt.golang.git"
 )
 
+// adminCmd dispatches "jet <cmd> ..." command-line requests.
 func adminCmd() {
 	cmd := flag.Arg(0)
 	if cmd == "" {
@@ -20,7 +18,7 @@ func adminCmd() {
 	switch cmd {
 
 	default:
-		fmt.Println("Available commands: pub sub delete test")
+		fmt.Println("Available commands: pub sub delete config test")
 
 	case "pub":
 		retain := cmdFlags.Bool("r", false, "send with RETAIN flag set")
@@ -30,7 +28,7 @@ func adminCmd() {
 			return
 		}
 
-		publish(cmdFlags.Arg(0), []byte(cmdFlags.Arg(1)), *retain)
+		sendToHub(cmdFlags.Arg(0), []byte(cmdFlags.Arg(1)), *retain)
 
 	case "sub":
 		cmdFlags.Parse(cmdArgs)
@@ -39,16 +37,9 @@ func adminCmd() {
 			return
 		}
 
-		topic := cmdFlags.Arg(0)
-		t := hub.Subscribe(topic, 0, func(hub *mqtt.Client, msg mqtt.Message) {
-			fmt.Printf("%s = %q\n", msg.Topic(), msg.Payload())
-		})
-		if t.Wait() && t.Error() != nil {
-			log.Fatal(t.Error())
+		for evt := range topicWatcher(cmdFlags.Arg(0)) {
+			fmt.Printf("%s = %s\n", evt.Topic, evt.Payload)
 		}
-
-		quit := make(chan struct{})
-		<-quit // this waits forever
 
 	case "delete": // unregister a "stuck" registration, i.e. a missing will
 		cmdFlags.Parse(cmdArgs)
@@ -56,11 +47,26 @@ func adminCmd() {
 			fmt.Println("Usage: jet unreg <topic>")
 		}
 
-		publish(cmdFlags.Arg(0), []byte{}, true)
+		sendToHub(cmdFlags.Arg(0), []byte{}, true)
+
+	case "config":
+		cmdFlags.Parse(cmdArgs)
+		if cmdFlags.NArg() != 0 {
+			fmt.Println("Usage: jet config")
+		}
+
+		// show all the retained state in MQTT, which is always sent first
+		// TODO minor bug: this hangs if there is no MQTT activity at all
+		for evt := range topicWatcher("#") {
+			if !evt.Retained {
+				break
+			}
+			fmt.Printf("%s = %s\n", evt.Topic, evt.Payload)
+		}
 
 	case "test":
 		cmdFlags.Parse(cmdArgs)
 
-		publish("abc", make([]byte, 1024), false)
+		sendToHub("abc", make([]byte, 1024), false)
 	}
 }
