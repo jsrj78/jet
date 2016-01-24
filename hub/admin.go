@@ -44,7 +44,8 @@ func adminCmd() {
 	case "delete": // unregister a "stuck" registration, i.e. a missing will
 		cmdFlags.Parse(cmdArgs)
 		if cmdFlags.NArg() != 1 {
-			fmt.Println("Usage: jet unreg <topic>")
+			fmt.Println("Usage: jet delete <topic>")
+			return
 		}
 
 		sendToHub(cmdFlags.Arg(0), []byte{}, true)
@@ -53,6 +54,7 @@ func adminCmd() {
 		cmdFlags.Parse(cmdArgs)
 		if cmdFlags.NArg() != 0 {
 			fmt.Println("Usage: jet config")
+			return
 		}
 
 		// show all the retained state in MQTT, which is always sent first
