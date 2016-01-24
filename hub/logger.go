@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-func timestampRepeater(feed chan Event) {
+func timestampRepeater(feed chan event) {
 	for evt := range feed {
 		millis := time.Now().UnixNano() / 1e6
 		topic := fmt.Sprintf("%s/%d", evt.Topic, millis)
@@ -16,7 +16,7 @@ func timestampRepeater(feed chan Event) {
 	}
 }
 
-func loggerSaveToDisk(dir string, feed chan Event) {
+func loggerSaveToDisk(dir string, feed chan event) {
 	var lastPath string
 	var lastFile *os.File
 

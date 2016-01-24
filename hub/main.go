@@ -12,17 +12,17 @@ import (
 	"github.com/boltdb/bolt"
 )
 
-const VERSION = "4.0-1"
+const version = "4.0-1"
 
 var hubUsage = fmt.Sprintf(`
     JET/Hub v%s (http://jeelabs.org/2016/01/overcoming-jet-lag/)
 
     Usage: /path/to/hub ?options...?
-`, VERSION)
+`, version)
 
 var hub *mqtt.Client
 
-type Event struct {
+type event struct {
 	Topic   string
 	Payload []byte
 }
@@ -49,7 +49,7 @@ func main() {
 	}
 
 	// normal hub startup begins here, with a log entry
-	log.Print(append([]string{"JET/Hub v" + VERSION}, os.Args[1:]...))
+	log.Print(append([]string{"JET/Hub v" + version}, os.Args[1:]...))
 
 	quit := make(chan struct{})
 
@@ -82,7 +82,7 @@ func main() {
 	if *httpPort != "" {
 		go func() {
 			defer close(quit)
-			startHttpServer(*httpPort)
+			startHTTPServer(*httpPort)
 		}()
 	}
 
@@ -92,12 +92,12 @@ func main() {
 func connectToHub(clientName, port string, retain bool) *mqtt.Client {
 	// add a "fairly random" 6-digit suffix to make the client name unique
 	nanos := time.Now().UnixNano()
-	clientId := fmt.Sprintf("%s/%06d", clientName, nanos%1e6)
+	clientID := fmt.Sprintf("%s/%06d", clientName, nanos%1e6)
 
 	options := mqtt.NewClientOptions()
 	options.AddBroker(port)
-	options.SetClientID(clientId)
-	options.SetBinaryWill("jet/"+clientId, nil, 1, retain)
+	options.SetClientID(clientID)
+	options.SetBinaryWill("jet/"+clientID, nil, 1, retain)
 	client := mqtt.NewClient(options)
 
 	if t := client.Connect(); t.Wait() && t.Error() != nil {
@@ -105,11 +105,11 @@ func connectToHub(clientName, port string, retain bool) *mqtt.Client {
 	}
 
 	if retain {
-		log.Println("connected as", clientId, "to", port)
+		log.Println("connected as", clientID, "to", port)
 	}
 
 	// register as jet client, cleared on disconnect by the will
-	t := client.Publish("jet/"+clientId, 1, retain, "{}")
+	t := client.Publish("jet/"+clientID, 1, retain, "{}")
 	if t.Wait() && t.Error() != nil {
 		log.Fatal(t.Error())
 	}
@@ -117,11 +117,11 @@ func connectToHub(clientName, port string, retain bool) *mqtt.Client {
 	return client
 }
 
-func topicsAsEvents(pattern string) chan Event {
-	feed := make(chan Event)
+func topicsAsEvents(pattern string) chan event {
+	feed := make(chan event)
 
 	t := hub.Subscribe(pattern, 0, func(hub *mqtt.Client, msg mqtt.Message) {
-		feed <- Event{
+		feed <- event{
 			Topic:   string(msg.Topic()),
 			Payload: msg.Payload(),
 		}
@@ -133,7 +133,7 @@ func topicsAsEvents(pattern string) chan Event {
 	return feed
 }
 
-func startHttpServer(port string) {
+func startHTTPServer(port string) {
 	http.HandleFunc("/bar",
 		func(w http.ResponseWriter, r *http.Request) {
 			fmt.Fprintf(w, "Hello, %q", r.URL.Path)

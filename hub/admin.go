@@ -11,7 +11,7 @@ import (
 func adminCmd() {
 	cmd := flag.Arg(0)
 	if cmd == "" {
-		fmt.Println("JET v" + VERSION)
+		fmt.Println("JET v" + version)
 		return
 	}
 	cmdArgs := flag.Args()[1:]

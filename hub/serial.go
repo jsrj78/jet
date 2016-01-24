@@ -8,7 +8,7 @@ import (
 	"github.com/chimera/rs232"
 )
 
-func processSerialRequests(feed chan Event) {
+func processSerialRequests(feed chan event) {
 	portmap := map[string]*rs232.Port{}
 
 	for evt := range feed {
