@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"encoding/json"
 	"net/http"
 	"os"
 	"time"
@@ -20,13 +21,6 @@ var hubUsage = fmt.Sprintf(`
     Usage: /path/to/hub ?options...?
 `, version)
 
-var hub *mqtt.Client
-
-type event struct {
-	Topic   string
-	Payload []byte
-}
-
 func main() {
 	adminFlag := flag.String("admin", "", "connect as admin to a running hub")
 	dataStore := flag.String("data", "store.db", "data store file name & path")
@@ -37,7 +31,7 @@ func main() {
 
 	// check for special admin mode, used by the "jet" wrapper script
 	if *adminFlag != "" {
-		hub = connectToHub("admin", *adminFlag, false)
+		connectToHub("admin", *adminFlag, false)
 		adminCmd()
 		return
 	}
@@ -51,6 +45,10 @@ func main() {
 	// normal hub startup begins here, with a log entry
 	log.Print(append([]string{"JET/Hub v" + version}, os.Args[1:]...))
 
+	// connect to MQTT and wait for it before doing anything else
+	hubStatus := connectToHub("hub", *mqttPort, true)
+	defer hub.Disconnect(250)
+
 	// open the persistent data store
 	log.Println("opening data store:", *dataStore)
 	options := bolt.Options{Timeout: time.Second}
@@ -60,23 +58,19 @@ func main() {
 	}
 	defer db.Close()
 
-	quit := make(chan struct{})
-
-	// connect to MQTT and wait for it before doing anything else
-	hub = connectToHub("hub", *mqttPort, true)
-	defer hub.Disconnect(250)
-
 	// save raw logger input to text files, one per day (UTC time)
-	go loggerSaveToDisk(*loggerDir, "logger/+/+")
+	go loggerSaveToDisk("logger/+/+", *loggerDir)
 
 	// copy each incoming "logger/<x>" message to "logger/<x>/<millis>"
 	go loggerTimestamper("logger/+")
 
-	// send one message every second, on the second
-	go sendHeartbeat("hub/1hz")
-
 	// listen to serial device requests
 	go serialProcessRequests("serial/+")
+
+	// send one message every second, on the second
+	go startHeartbeat("hub/1hz")
+
+	quit := make(chan struct{})
 
 	// start up the built-in HTTP server
 	if *httpPort != "" {
@@ -86,10 +80,17 @@ func main() {
 		}()
 	}
 
+	hubStatus <- 1 // hub is now fully initialised and running
+
 	<-quit // hang around until something serious happens
 }
 
-func connectToHub(clientName, port string, retain bool) *mqtt.Client {
+var hub *mqtt.Client
+
+// connectToHub sets up an MQTT client and registers as "jet/..." client.
+// Uses last will to automatically unregister on disconnect. This returns a
+// "topic notifier" channel to allow updating the registered status value.
+func connectToHub(clientName, port string, retain bool) chan<- interface{} {
 	// add a "fairly random" 6-digit suffix to make the client name unique
 	nanos := time.Now().UnixNano()
 	clientID := fmt.Sprintf("%s/%06d", clientName, nanos%1e6)
@@ -98,9 +99,9 @@ func connectToHub(clientName, port string, retain bool) *mqtt.Client {
 	options.AddBroker(port)
 	options.SetClientID(clientID)
 	options.SetBinaryWill("jet/"+clientID, nil, 1, retain)
-	client := mqtt.NewClient(options)
+	hub = mqtt.NewClient(options)
 
-	if t := client.Connect(); t.Wait() && t.Error() != nil {
+	if t := hub.Connect(); t.Wait() && t.Error() != nil {
 		log.Fatal(t.Error())
 	}
 
@@ -109,15 +110,28 @@ func connectToHub(clientName, port string, retain bool) *mqtt.Client {
 	}
 
 	// register as jet client, cleared on disconnect by the will
-	t := client.Publish("jet/"+clientID, 1, retain, "{}")
-	if t.Wait() && t.Error() != nil {
-		log.Fatal(t.Error())
-	}
+	feed := topicNotifier("jet/"+clientID, retain)
+	feed <- 0 // start off with state "0" to indicate connection
 
-	return client
+	// return a topic feed to allow publishing hub status changes
+	return feed;
 }
 
-func topicsAsEvents(pattern string) chan event {
+// sendToHub publishes a message, and waits for it to complete successfully.
+func sendToHub(topic string, payload []byte, retain bool) {
+	t := hub.Publish(topic, 1, retain, payload)
+	if t.Wait() && t.Error() != nil {
+		log.Print(t.Error())
+	}
+}
+
+type event struct {
+	Topic   string
+	Payload []byte
+}
+
+// topicWatcher turns an MQTT subscription into a channel feed of events.
+func topicWatcher(pattern string) <-chan event {
 	feed := make(chan event)
 
 	t := hub.Subscribe(pattern, 0, func(hub *mqtt.Client, msg mqtt.Message) {
@@ -133,6 +147,25 @@ func topicsAsEvents(pattern string) chan event {
 	return feed
 }
 
+// topicNotifier returns a channel which publishes all its messages to MQTT.
+func topicNotifier(topic string, retain bool) chan<- interface{} {
+	feed := make(chan interface{})
+
+	go func() {
+		for msg := range feed {
+			data, err := json.Marshal(msg)
+			if err == nil {
+				sendToHub(topic, data, retain)
+			} else {
+				log.Println("feed failed:", topic, err)
+			}
+		}
+	}()
+
+	return feed
+}
+
+// startHTTPServer starts the default HTTP server on the specified port.
 func startHTTPServer(port string) {
 	http.HandleFunc("/bar",
 		func(w http.ResponseWriter, r *http.Request) {
@@ -151,23 +184,20 @@ func startHTTPServer(port string) {
 	}
 }
 
-func sendHeartbeat(topic string) {
+// startHeartbeat will send a timestamp every second to the specified topic.
+func startHeartbeat(topic string) {
+	feed := topicNotifier(topic, false)
+
 	for {
+		// synchronise as closely as possible to the exact next second
 		time.Sleep(time.Duration(1e9 - time.Now().UnixNano()%1e9))
 
 		// publish the heartbeat msg if it's within 25ms of the second mark
 		millis := time.Now().UnixNano() / 1e6
 		if millis%1000 < 25 {
-			publish(topic, []byte(fmt.Sprintf("%d", millis)), false)
+			feed <- millis
 		} else {
 			log.Println("missed heartbeat:", millis)
 		}
-	}
-}
-
-func publish(topic string, payload []byte, retain bool) {
-	t := hub.Publish(topic, 0, retain, payload)
-	if t.Wait() && t.Error() != nil {
-		log.Print(t.Error())
 	}
 }

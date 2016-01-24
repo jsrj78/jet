@@ -8,10 +8,11 @@ import (
 	"github.com/chimera/rs232"
 )
 
+// serialProcessRequests handles all serial port setup and outgoing data.
 func serialProcessRequests(feed string) {
 	portmap := map[string]*rs232.Port{}
 
-	for evt := range topicsAsEvents(feed) {
+	for evt := range topicWatcher(feed) {
 		log.Println("evt:", evt.Topic)
 
 		var serReq struct {
@@ -21,7 +22,7 @@ func serialProcessRequests(feed string) {
 		if e := json.Unmarshal(evt.Payload, &serReq); e != nil {
 			log.Println("serial request parse error:", evt, e)
 		} else {
-			serial := listenToSerialPort(serReq.Device, serReq.SendTo)
+			serial := listenToSerial(serReq.Device, serReq.SendTo)
 			if serial != nil {
 				portmap[evt.Topic] = serial
 			} else {
@@ -31,7 +32,8 @@ func serialProcessRequests(feed string) {
 	}
 }
 
-func listenToSerialPort(device, topic string) *rs232.Port {
+// listenToSerial reads incoming serial text lines and publishes them to MQTT.
+func listenToSerial(device, topic string) *rs232.Port {
 	options := rs232.Options{BitRate: 57600, DataBits: 8, StopBits: 1}
 	serial, err := rs232.Open(device, options)
 	if err != nil {
@@ -42,7 +44,7 @@ func listenToSerialPort(device, topic string) *rs232.Port {
 	scanner := bufio.NewScanner(serial)
 	go func() {
 		for scanner.Scan() {
-			publish(topic, scanner.Bytes(), false)
+			sendToHub(topic, scanner.Bytes(), false)
 		}
 		log.Println("unexpected EOF:", device)
 	}()

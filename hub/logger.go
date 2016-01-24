@@ -8,19 +8,21 @@ import (
 	"time"
 )
 
+// loggerTimestamper resends each incoming message to a new timestamped topic.
 func loggerTimestamper(feed string) {
-	for evt := range topicsAsEvents(feed) {
+	for evt := range topicWatcher(feed) {
 		millis := time.Now().UnixNano() / 1e6
 		topic := fmt.Sprintf("%s/%d", evt.Topic, millis)
-		publish(topic, evt.Payload, false)
+		sendToHub(topic, evt.Payload, false)
 	}
 }
 
-func loggerSaveToDisk(dir, feed string) {
+// loggerSaveToDisk picks up timestamped messages and saves them to log files.
+func loggerSaveToDisk(feed, dir string) {
 	var lastPath string
 	var lastFile *os.File
 
-	for evt := range topicsAsEvents(feed) {
+	for evt := range topicWatcher(feed) {
 		// topic = "logger/<device>/<milliseconds>"
 		segments := strings.Split(evt.Topic, "/")
 

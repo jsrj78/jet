@@ -8,6 +8,7 @@ import (
 	mqtt "git.eclipse.org/gitroot/paho/org.eclipse.paho.mqtt.golang.git"
 )
 
+// adminCmd dispatches "jet <cmd> ..." command-line requests.
 func adminCmd() {
 	cmd := flag.Arg(0)
 	if cmd == "" {
@@ -30,7 +31,7 @@ func adminCmd() {
 			return
 		}
 
-		publish(cmdFlags.Arg(0), []byte(cmdFlags.Arg(1)), *retain)
+		sendToHub(cmdFlags.Arg(0), []byte(cmdFlags.Arg(1)), *retain)
 
 	case "sub":
 		cmdFlags.Parse(cmdArgs)
@@ -56,11 +57,11 @@ func adminCmd() {
 			fmt.Println("Usage: jet unreg <topic>")
 		}
 
-		publish(cmdFlags.Arg(0), []byte{}, true)
+		sendToHub(cmdFlags.Arg(0), []byte{}, true)
 
 	case "test":
 		cmdFlags.Parse(cmdArgs)
 
-		publish("abc", make([]byte, 1024), false)
+		sendToHub("abc", make([]byte, 1024), false)
 	}
 }
