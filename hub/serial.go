@@ -8,10 +8,10 @@ import (
 	"github.com/chimera/rs232"
 )
 
-func processSerialRequests(feed chan event) {
+func serialProcessRequests(feed string) {
 	portmap := map[string]*rs232.Port{}
 
-	for evt := range feed {
+	for evt := range topicsAsEvents(feed) {
 		log.Println("evt:", evt.Topic)
 
 		var serReq struct {

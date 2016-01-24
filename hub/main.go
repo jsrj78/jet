@@ -51,21 +51,6 @@ func main() {
 	// normal hub startup begins here, with a log entry
 	log.Print(append([]string{"JET/Hub v" + version}, os.Args[1:]...))
 
-	quit := make(chan struct{})
-
-	// connect to MQTT and wait for it before doing anything else
-	hub = connectToHub("hub", *mqttPort, true)
-	defer hub.Disconnect(250)
-
-	// save raw logger input to text files, one per day (UTC time)
-	go loggerSaveToDisk(*loggerDir, topicsAsEvents("logger/+/+"))
-
-	// copy each incoming "logger/<x>" message to "logger/<x>/<millis>"
-	go timestampRepeater(topicsAsEvents("logger/+"))
-
-	// send one message every second, on the second
-	go sendHeartbeat("hub/1hz")
-
 	// open the persistent data store
 	log.Println("opening data store:", *dataStore)
 	options := bolt.Options{Timeout: time.Second}
@@ -75,10 +60,25 @@ func main() {
 	}
 	defer db.Close()
 
-	// listen to serial device requests
-	go processSerialRequests(topicsAsEvents("serial/+"))
+	quit := make(chan struct{})
 
-	// the default is to start up the built-in HTTP server
+	// connect to MQTT and wait for it before doing anything else
+	hub = connectToHub("hub", *mqttPort, true)
+	defer hub.Disconnect(250)
+
+	// save raw logger input to text files, one per day (UTC time)
+	go loggerSaveToDisk(*loggerDir, "logger/+/+")
+
+	// copy each incoming "logger/<x>" message to "logger/<x>/<millis>"
+	go loggerTimestamper("logger/+")
+
+	// send one message every second, on the second
+	go sendHeartbeat("hub/1hz")
+
+	// listen to serial device requests
+	go serialProcessRequests("serial/+")
+
+	// start up the built-in HTTP server
 	if *httpPort != "" {
 		go func() {
 			defer close(quit)
