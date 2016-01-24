@@ -38,7 +38,7 @@ func adminCmd() {
 		}
 
 		for evt := range topicWatcher(cmdFlags.Arg(0)) {
-			fmt.Printf("%s = %v\n", evt.Topic, evt.Payload)
+			fmt.Printf("%s = %s\n", evt.Topic, evt.Payload)
 		}
 
 	case "delete": // unregister a "stuck" registration, i.e. a missing will
