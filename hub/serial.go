@@ -2,7 +2,6 @@ package main
 
 import (
 	"bufio"
-	"encoding/json"
 	"log"
 
 	"github.com/chimera/rs232"
@@ -16,13 +15,9 @@ func serialProcessRequests(feed string) {
 		log.Println("evt:", evt.Topic)
 
 		var serReq struct {
-			Device string `json:"device"`
-			SendTo string `json:"sendto"`
+			Device, SendTo string
 		}
-		data, _ := json.Marshal(evt.Payload) // TODO messy "un-conversion" !
-		if e := json.Unmarshal(data, &serReq); e != nil {
-			log.Println("serial request parse error:", evt, e)
-		} else {
+		if evt.Decode(&serReq) {
 			serial := listenToSerial(serReq.Device, serReq.SendTo)
 			if serial != nil {
 				portmap[evt.Topic] = serial

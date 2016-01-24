@@ -1,16 +1,17 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"log"
-	"encoding/json"
 	"net/http"
 	"os"
 	"time"
 
 	mqtt "git.eclipse.org/gitroot/paho/org.eclipse.paho.mqtt.golang.git"
 	"github.com/boltdb/bolt"
+	"github.com/mitchellh/mapstructure"
 )
 
 const version = "4.0"
@@ -114,7 +115,7 @@ func connectToHub(clientName, port string, retain bool) chan<- interface{} {
 	feed <- 0 // start off with state "0" to indicate connection
 
 	// return a topic feed to allow publishing hub status changes
-	return feed;
+	return feed
 }
 
 // sendToHub publishes a message, and waits for it to complete successfully.
@@ -135,6 +136,14 @@ type event struct {
 	Payload interface{}
 }
 
+func (ev *event) Decode(result interface{}) bool {
+	if e := mapstructure.WeakDecode(ev.Payload, result); e != nil {
+		log.Println("serial request parse error:", ev, e)
+		return false
+	}
+	return true
+}
+
 // topicWatcher turns an MQTT subscription into a channel feed of events.
 func topicWatcher(pattern string) <-chan event {
 	feed := make(chan event)
@@ -145,7 +154,7 @@ func topicWatcher(pattern string) <-chan event {
 			log.Println("json decode error:", e, msg.Payload())
 		} else {
 			feed <- event{
-				Topic:   string(msg.Topic()),
+				Topic:   msg.Topic(),
 				Payload: payload,
 			}
 		}
