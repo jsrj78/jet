@@ -119,26 +119,36 @@ func connectToHub(clientName, port string, retain bool) chan<- interface{} {
 }
 
 // sendToHub publishes a message, and waits for it to complete successfully.
+// Note: does no JSON conversion if the payload is already a []byte.
 func sendToHub(topic string, payload interface{}, retain bool) {
-	data, e := json.Marshal(payload)
-	if e != nil {
-		log.Println("json conversion failed:", e, payload)
-	} else {
-		t := hub.Publish(topic, 1, retain, data)
-		if t.Wait() && t.Error() != nil {
-			log.Print(t.Error())
+	data, ok := payload.([]byte)
+	if !ok {
+		var e error
+		data, e = json.Marshal(payload)
+		if e != nil {
+			log.Println("json conversion failed:", e, payload)
+			return
 		}
+	}
+	t := hub.Publish(topic, 1, retain, data)
+	if t.Wait() && t.Error() != nil {
+		log.Print(t.Error())
 	}
 }
 
 type event struct {
 	Topic   string
-	Payload interface{}
+	Payload []byte
 }
 
-func (ev *event) Decode(result interface{}) bool {
-	if e := mapstructure.WeakDecode(ev.Payload, result); e != nil {
-		log.Println("serial request parse error:", ev, e)
+func (e *event) Decode(result interface{}) bool {
+	var payload interface{}
+	if err := json.Unmarshal(e.Payload, &payload); err != nil {
+		log.Println("json decode error:", err, e.Payload)
+		return false
+	}
+	if err := mapstructure.WeakDecode(payload, result); err != nil {
+		log.Println("decode error:", err, e)
 		return false
 	}
 	return true
@@ -149,14 +159,9 @@ func topicWatcher(pattern string) <-chan event {
 	feed := make(chan event)
 
 	t := hub.Subscribe(pattern, 0, func(hub *mqtt.Client, msg mqtt.Message) {
-		var payload interface{}
-		if e := json.Unmarshal(msg.Payload(), &payload); e != nil {
-			log.Println("json decode error:", e, msg.Payload())
-		} else {
-			feed <- event{
-				Topic:   msg.Topic(),
-				Payload: payload,
-			}
+		feed <- event{
+			Topic:   msg.Topic(),
+			Payload: msg.Payload(),
 		}
 	})
 	if t.Wait() && t.Error() != nil {
