@@ -82,8 +82,8 @@ func main() {
 
 var hub *mqtt.Client
 
-// connectToHub sets up an MQTT client and registers as "jet/..." client.
-// Uses last will to automatically unregister on disconnect. This returns a
+// connectToHub sets up an MQTT client and registers as a "jet/..." client.
+// Uses last-will to automatically unregister on disconnect. This returns a
 // "topic notifier" channel to allow updating the registered status value.
 func connectToHub(clientName, port string, retain bool) chan<- interface{} {
 	// add a "fairly random" 6-digit suffix to make the client name unique

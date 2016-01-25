@@ -14,5 +14,5 @@
 PROG="$(dirname $0)/hub"
 MQTT="tcp://127.0.0.1:1883"
 
-# all arguments specified on the command line are passed command the admin mode
+# all arguments specified on the command line are passed on to the admin mode
 exec "$PROG" -admin $MQTT "$@"
