@@ -18,7 +18,7 @@ import (
 var (
 	// these variables will be adjusted during Makefile builds
 	vers, date = "v4.0", ""
-	version    = vers + " " + runtime.Version() + " " + date
+	version    = vers + " " + date + " (" + runtime.Version() + ")"
 )
 
 func main() {
