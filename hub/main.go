@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"runtime"
 	"os"
+	"runtime"
 	"time"
 
 	mqtt "git.eclipse.org/gitroot/paho/org.eclipse.paho.mqtt.golang.git"
@@ -15,15 +15,11 @@ import (
 	"github.com/mitchellh/mapstructure"
 )
 
-var vers = "v4.0"
-var date = ""
-var version = vers + " " + runtime.Version() + " " + date
-
-var hubUsage = fmt.Sprintf(`
-    JET/Hub %s
-
-    Usage: /path/to/hub ?options...?
-`, version)
+var (
+	// these variables will be adjusted during Makefile builds
+	vers, date = "v4.0", ""
+	version    = vers + " " + runtime.Version() + " " + date
+)
 
 func main() {
 	adminFlag := flag.String("admin", "", "connect as admin to a running hub")
@@ -40,15 +36,9 @@ func main() {
 		return
 	}
 
-	// due to the above, "--help" isn't very user-friendly, use "help" instead
-	if flag.Arg(0) == "help" {
-		fmt.Println(hubUsage)
-		return
-	}
-
 	// normal hub startup begins here, with a log entry
 	log.Println("[JET/Hub] " + version)
-	log.Println("args:", os.Args[1:])
+	//log.Println("args:", os.Args[1:])
 
 	// connect to MQTT and wait for it before doing anything else
 	hubStatus := connectToHub("hub", *mqttPort, true)
