@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"runtime"
 	"os"
 	"time"
 
@@ -14,10 +15,12 @@ import (
 	"github.com/mitchellh/mapstructure"
 )
 
-var version = "v4.0"
+var vers = "v4.0"
+var date = ""
+var version = vers + " " + runtime.Version() + " " + date
 
 var hubUsage = fmt.Sprintf(`
-    JET/Hub %s (http://jeelabs.org/2016/01/overcoming-jet-lag/)
+    JET/Hub %s
 
     Usage: /path/to/hub ?options...?
 `, version)
@@ -44,7 +47,8 @@ func main() {
 	}
 
 	// normal hub startup begins here, with a log entry
-	log.Print(append([]string{"JET/Hub " + version}, os.Args[1:]...))
+	log.Println("[JET/Hub] " + version)
+	log.Println("args:", os.Args[1:])
 
 	// connect to MQTT and wait for it before doing anything else
 	hubStatus := connectToHub("hub", *mqttPort, true)
