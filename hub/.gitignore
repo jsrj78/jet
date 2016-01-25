@@ -1,4 +1,5 @@
 /hub
+/hub-*
 /jet
 /logger
 /*.db

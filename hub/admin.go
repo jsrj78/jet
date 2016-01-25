@@ -9,7 +9,7 @@ import (
 func adminCmd() {
 	cmd := flag.Arg(0)
 	if cmd == "" {
-		fmt.Println("JET v" + version)
+		fmt.Println("JET " + version)
 		return
 	}
 	cmdArgs := flag.Args()[1:]
