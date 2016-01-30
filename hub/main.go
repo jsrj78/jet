@@ -62,6 +62,9 @@ func main() {
 	// listen to serial device requests
 	go serialProcessRequests("serial/+")
 
+	// listen for JET pack setup requests
+	go packsListener("packs/+")
+
 	// send one message every second, on the second
 	go startHeartbeat("hub/1hz")
 
