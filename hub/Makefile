@@ -27,8 +27,8 @@ builds:
 	@ echo Re-building binaries:
 	@ echo "  MacOSX 64-bit"
 	@ GOOS=darwin GOARCH=amd64 go build $(GO_BUILDINFO) -o $@/hub-darwin-amd64
-	@ echo "  ARMv5 32-bit"
-	@ GOOS=linux GOARCH=arm GOARM=5 go build $(GO_BUILDINFO) -o $@/hub-linux-arm
+	@ echo "  ARMv6 32-bit"
+	@ GOOS=linux GOARCH=arm GOARM=6 go build $(GO_BUILDINFO) -o $@/hub-linux-arm
 	@ echo "  Linux 64-bit"
 	@ GOOS=linux GOARCH=amd64 go build $(GO_BUILDINFO) -o $@/hub-linux-amd64
 	@ gzip $@/hub-*
