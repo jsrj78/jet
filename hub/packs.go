@@ -26,6 +26,9 @@ func packsListener(feed string) {
 		if cmd, ok := packMap[packName]; ok {
 			if cmd.Process != nil {
 				log.Println("stopping pack:", packName, "pid:", cmd.Process.Pid)
+				if e := cmd.Process.Kill(); e != nil {
+					log.Println("kill", packName, "error:", e)
+				}
 			}
 			delete(packMap, packName)
 		}
@@ -50,7 +53,6 @@ func packsListener(feed string) {
 				}
 
 				log.Println("starting pack:", packName, packReq)
-
 				cmd := exec.Command(path, packReq[1:]...)
 
 				// capture all stdout and log it to MQTT
