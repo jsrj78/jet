@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"log"
 	"os"
+	"io"
 	"os/exec"
 	"strings"
 )
@@ -17,79 +18,80 @@ func packsListener(feed, dir string) {
 	}
 
 	for evt := range topicWatcher(feed) {
-		packName := evt.Topic[6:]
+		packName := evt.Topic[6:] // TODO wrong if feed isn't "packs/+"
 		logTopic := evt.Topic + "/log"
 
-		// kill the pack if it is currently running
-		if cmd, ok := packMap[packName]; ok {
-			if cmd.Process != nil {
-				log.Println("stopping pack:", packName, "pid:", cmd.Process.Pid)
-				if e := cmd.Process.Kill(); e != nil {
-					log.Println("kill", packName, "error:", e)
-				}
-			}
-			delete(packMap, packName)
+		killRunningPack(packName)
+		delete(packMap, packName)
+
+		if len(evt.Payload) == 0 {
+			continue
 		}
 
 		// launch the new pack, with stdout & stderr output logged via pipes
-		if len(evt.Payload) > 0 {
-			var packReq []string
-			if evt.Decode(&packReq) {
-				var cmdName string
-				if len(packReq) > 0 {
-					cmdName = packReq[0]
-				}
-				if cmdName == "" || strings.Contains(cmdName, "/") {
-					log.Println("pack name is not valid:", cmdName)
-					continue
-				}
-
-				path, e := exec.LookPath(dir + "/" + cmdName)
-				if e != nil {
-					log.Println("can't find", cmdName, "in:", dir)
-					continue
-				}
-
+		var packReq []string
+		if evt.Decode(&packReq) {
+			if len(packReq) == 0 {
+				packReq = append(packReq, "") // avoid indexing error
+			}
+			path := validatePack(packReq[0], dir)
+			if path != "" {
 				log.Println("starting pack:", packName, packReq)
 				cmd := exec.Command(path, packReq[1:]...)
 
-				// capture all stdout and log it to MQTT
+				// capture stdout and log it to MQTT
 				if pipe, e := cmd.StdoutPipe(); e != nil {
 					log.Fatal(e)
 				} else {
-					go func() {
-						scanner := bufio.NewScanner(pipe)
-						for scanner.Scan() {
-							msg := scanner.Text()
-							log.Println("pack:", cmdName, "stdout:", msg)
-							sendToHub(logTopic, msg, false)
-						}
-						log.Println("pack:", cmdName, "EOF on stdout")
-					}()
+					go reportPackOutput(pipe, packName, logTopic, "")
 				}
 
-				// capture all stderr and log it to MQTT with "(stderr)" prefix
+				// capture stderr and log it to MQTT with "(stderr)" prefix
 				if pipe, e := cmd.StderrPipe(); e != nil {
 					log.Fatal(e)
 				} else {
-					go func() {
-						scanner := bufio.NewScanner(pipe)
-						for scanner.Scan() {
-							msg := "(stderr) " + scanner.Text()
-							log.Println("pack:", cmdName, "stderr:", msg)
-							sendToHub(logTopic, msg, false)
-						}
-						log.Println("pack:", cmdName, "EOF on stderr")
-					}()
+					go reportPackOutput(pipe, packName, logTopic, "(stderr) ")
 				}
 
 				if e := cmd.Start(); e != nil {
 					log.Println("pack:", path, "can't start", e)
 					continue
 				}
-				log.Println("started:", cmdName, "pid:", cmd.Process.Pid)
+				log.Println("started:", path, "pid:", cmd.Process.Pid)
 				packMap[packName] = cmd
 			}
 		}
 	}
+}
+
+func killRunningPack(name string) {
+	if cmd, ok := packMap[name]; ok && cmd.Process != nil {
+		log.Println("stopping pack:", name, "pid:", cmd.Process.Pid)
+		if e := cmd.Process.Kill(); e != nil {
+			log.Println("kill", name, "error:", e)
+		}
+	}
+}
+
+func validatePack(name, dir string) string {
+	if name == "" || strings.Contains(name, "/") {
+		log.Println("pack name is not valid:", name)
+		return ""
+	}
+	path, e := exec.LookPath(dir + "/" + name)
+	if e != nil {
+		log.Println(e)
+		return ""
+	}
+	return path
+}
+
+func reportPackOutput(pipe io.ReadCloser, name, topic, prefix string) {
+	scanner := bufio.NewScanner(pipe)
+	for scanner.Scan() {
+		msg := prefix + scanner.Text()
+		log.Println("pack:", name, "=", msg)
+		sendToHub(topic, msg, false)
+	}
+	log.Println("pack:", name, "EOF on stdout")
 }
