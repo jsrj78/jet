@@ -3,15 +3,23 @@ DATE = $(shell date +%F)
 
 GO_BUILDINFO = -ldflags "-X main.vers=$(VERS) -X main.date=$(DATE)"
 
+# not used yet
 test:
 	go test
 
+# build and run the hub locally
 run: hub
 	./hub
 
+# build the hub for local use
 hub:
 	go build $(GO_BUILDINFO) -o $@
 
+# build the hub and report its full git tag
+version: hub
+	jet
+
+# build the hub for several platforms and compress for release
 builds:
 	@ rm -rf $@; mkdir $@
 	@ (echo JET/Hub $(VERS) $(DATE); go version) >$@/README.txt
@@ -29,6 +37,6 @@ builds:
 clean:
 	rm -f hub builds
 
-.PHONY: test run hub builds clean
+.PHONY: test run hub version builds clean
 
 # vim: set noexpandtab :
