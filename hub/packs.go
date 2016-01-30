@@ -8,13 +8,11 @@ import (
 	"strings"
 )
 
-const PACKS_DIR = "./packs"
-
 var packMap = map[string]*exec.Cmd{}
 
 // listen to requests to launch or kill a JET "pack"
-func packsListener(feed string) {
-	if e := os.MkdirAll(PACKS_DIR, 0777); e != nil {
+func packsListener(feed, dir string) {
+	if e := os.MkdirAll(dir, 0777); e != nil {
 		log.Fatal(e)
 	}
 
@@ -46,9 +44,9 @@ func packsListener(feed string) {
 					continue
 				}
 
-				path, e := exec.LookPath(PACKS_DIR + "/" + cmdName)
+				path, e := exec.LookPath(dir + "/" + cmdName)
 				if e != nil {
-					log.Println("can't find", cmdName, "in:", PACKS_DIR)
+					log.Println("can't find", cmdName, "in:", dir)
 					continue
 				}
 

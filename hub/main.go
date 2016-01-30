@@ -27,6 +27,7 @@ func main() {
 	mqttPort := flag.String("mqtt", "tcp://localhost:1883", "MQTT server port")
 	httpPort := flag.String("http", "localhost:8947", "HTTP server port")
 	loggerDir := flag.String("logger", "logger", "dir path for logger files")
+	packsDir := flag.String("packs", "packs", "location of all pack scripts")
 	flag.Parse()
 
 	// check for special admin mode, used by the "jet" wrapper script
@@ -63,7 +64,7 @@ func main() {
 	go serialProcessRequests("serial/+")
 
 	// listen for JET pack setup requests
-	go packsListener("packs/+")
+	go packsListener("packs/+", *packsDir)
 
 	// send one message every second, on the second
 	go startHeartbeat("hub/1hz")
