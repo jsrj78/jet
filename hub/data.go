@@ -4,6 +4,7 @@ import (
 	"log"
 	"strings"
 	"time"
+	"bytes"
 
 	"github.com/boltdb/bolt"
 )
@@ -25,33 +26,53 @@ func dataStoreInit(file string) *bolt.DB {
 // dataModifyListener listens for data store and delete requests
 func dataModifyListener(feed string) {
 	for evt := range topicWatcher(feed) {
-		key := strings.Split(evt.Topic, "/")[1:]
-		if len(key) == 0 || key[0] == "" {
-			log.Println("modify key missing, value:", len(evt.Payload), "bytes")
+		keys := bytes.Split([]byte(evt.Topic), []byte("/"))
+		if len(keys) < 3 {
+			log.Println("bad modify key:", evt.Topic)
 			continue
 		}
 
 		if len(evt.Payload) > 0 {
-			storeValue(key, evt.Payload)
+			log.Println("store:", evt.Topic, "value:", len(evt.Payload), "b")
+			storeValue(keys[1:], evt.Payload)
 		} else {
-			deleteKey(key)
+			log.Println("delete:", evt.Topic)
+			deleteKey(keys[1:])
 		}
 	}
 }
 
-func storeValue(key []string, value []byte) {
-	log.Println("store key:", key, "value:", len(value), "bytes")
+func storeValue(keys [][]byte, value []byte) {
+	updater := func(tx *bolt.Tx) error {
+		bucket, e := tx.CreateBucketIfNotExists([]byte(keys[0]))
+		for i, k := range keys {
+			if e != nil {
+				break
+			}
+			if len(k) == 0 {
+				continue
+			}
+			if i < len(keys)-1 {
+				bucket, e = bucket.CreateBucketIfNotExists(k)
+			} else {
+				e = bucket.Put(k, value)
+			}
+		}
+		return e
+	}
+	if e := db.Update(updater); e != nil {
+		log.Println("store:", e)
+	}
 }
 
-func deleteKey(key []string) {
-	log.Println("delete key:", key)
+func deleteKey(keys [][]byte) {
 }
 
 // dataAccessListener listens for data fetch and list requests
 func dataAccessListener(feed string) {
 	for evt := range topicWatcher(feed) {
 		key := strings.Split(evt.Topic, "/")[1:]
-		if len(key) == 0 || key[0] == "" {
+		if len(key) < 2 || key[0] == "" {
 			log.Println("access key missing:", string(evt.Payload))
 			continue
 		}
