@@ -132,10 +132,10 @@ func listKeys(keys [][]byte, reply string) error {
 		if bucket == nil {
 			return errors.New("?")
 		}
-		result := map[string][]byte{}
+		result := map[string]int{}
 		c := bucket.Cursor()
 		for k, v := c.First(); k != nil; k, v = c.Next() {
-			result[string(k)] = v
+			result[string(k)] = len(v)
 		}
 		sendToHub(reply, result, false)
 		return nil
