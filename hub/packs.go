@@ -36,7 +36,7 @@ func packsListener(feed, dir string) {
 			}
 			path := validatePack(packReq[0], dir)
 			if path != "" {
-				log.Println("starting pack:", packName, packReq)
+				log.Println("starting", packName, "pack:", packReq)
 				cmd := exec.Command(path, packReq[1:]...)
 
 				// capture stdout and log it to MQTT
@@ -90,8 +90,8 @@ func reportPackOutput(pipe io.ReadCloser, name, topic, prefix string) {
 	scanner := bufio.NewScanner(pipe)
 	for scanner.Scan() {
 		msg := prefix + scanner.Text()
-		log.Println("pack:", name, "=", msg)
+		log.Println(name, "pack:", msg)
 		sendToHub(topic, msg, false)
 	}
-	log.Println("pack:", name, "EOF on stdout")
+	log.Println(name, "pack:", prefix + "EOF")
 }
