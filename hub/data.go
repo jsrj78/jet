@@ -27,7 +27,7 @@ func dataStoreInit(file string) *bolt.DB {
 func dataModifyListener(feed string) {
 	for evt := range topicWatcher(feed) {
 		keys := bytes.Split([]byte(evt.Topic), []byte("/"))
-		if len(keys) < 3 {
+		if len(keys) < 2 {
 			log.Println("bad modify key:", evt.Topic)
 			continue
 		}
@@ -64,13 +64,37 @@ func storeValue(keys [][]byte, value []byte) {
 }
 
 func deleteKey(keys [][]byte) {
+	updater := func(tx *bolt.Tx) error {
+		bucket := tx.Bucket([]byte(keys[1]))
+		last := len(keys) - 1
+		for i := 2; i < last; i++ {
+			k := keys[i]
+			if bucket != nil && len(k) > 0 {
+				bucket = bucket.Bucket(k)
+			}
+		}
+		e := errors.New("?")
+		if bucket != nil {
+			k := keys[last]
+			if len(k) > 0 {
+				e = bucket.Delete(k)
+				if e != nil {
+					e = bucket.DeleteBucket(k)
+				}
+			}
+		}
+		return e
+	}
+	if e := db.Update(updater); e != nil {
+		log.Println("delete:", e)
+	}
 }
 
 // dataAccessListener listens for data fetch and list requests
 func dataAccessListener(feed string) {
 	for evt := range topicWatcher(feed) {
 		keys := bytes.Split([]byte(evt.Topic), []byte("/"))
-		if len(keys) < 2 || len(keys[0]) == 0 {
+		if len(keys) < 2 {
 			log.Println("bad access key:", evt.Topic)
 			continue
 		}
@@ -103,8 +127,8 @@ func dataAccessListener(feed string) {
 
 func fetchKey(keys [][]byte, reply string) error {
 	viewer := func(tx *bolt.Tx) error {
-		last := len(keys) - 1
 		bucket := tx.Bucket([]byte(keys[1]))
+		last := len(keys) - 1
 		for i := 2; i < last; i++ {
 			k := keys[i]
 			if bucket != nil && len(k) > 0 {
