@@ -1,10 +1,10 @@
 package main
 
 import (
-	"log"
-	"strings"
-	"time"
 	"bytes"
+	"errors"
+	"log"
+	"time"
 
 	"github.com/boltdb/bolt"
 )
@@ -34,29 +34,27 @@ func dataModifyListener(feed string) {
 
 		if len(evt.Payload) > 0 {
 			log.Println("store:", evt.Topic, "value:", len(evt.Payload), "b")
-			storeValue(keys[1:], evt.Payload)
+			storeValue(keys, evt.Payload)
 		} else {
 			log.Println("delete:", evt.Topic)
-			deleteKey(keys[1:])
+			deleteKey(keys)
 		}
 	}
 }
 
 func storeValue(keys [][]byte, value []byte) {
 	updater := func(tx *bolt.Tx) error {
-		bucket, e := tx.CreateBucketIfNotExists([]byte(keys[0]))
-		for i, k := range keys {
-			if e != nil {
-				break
-			}
-			if len(k) == 0 {
-				continue
-			}
-			if i < len(keys)-1 {
+		last := len(keys) - 1
+		bucket, e := tx.CreateBucketIfNotExists([]byte(keys[1]))
+		for i := 2; i < last; i++ {
+			k := keys[i]
+			if e == nil && len(k) > 0 {
 				bucket, e = bucket.CreateBucketIfNotExists(k)
-			} else {
-				e = bucket.Put(k, value)
 			}
+		}
+		k := keys[last]
+		if e == nil && len(k) > 0 {
+			e = bucket.Put(k, value)
 		}
 		return e
 	}
@@ -71,9 +69,9 @@ func deleteKey(keys [][]byte) {
 // dataAccessListener listens for data fetch and list requests
 func dataAccessListener(feed string) {
 	for evt := range topicWatcher(feed) {
-		key := strings.Split(evt.Topic, "/")[1:]
-		if len(key) < 2 || key[0] == "" {
-			log.Println("access key missing:", string(evt.Payload))
+		keys := bytes.Split([]byte(evt.Topic), []byte("/"))
+		if len(keys) < 2 || len(keys[0]) == 0 {
+			log.Println("bad access key:", evt.Topic)
 			continue
 		}
 
@@ -82,25 +80,65 @@ func dataAccessListener(feed string) {
 		}
 		if evt.Decode(&req) {
 			if req.Reply == "" {
-				log.Println("no reply topic:", req.Cmd, "key:", key)
+				log.Println("no reply topic:", req.Cmd, "key:", evt.Topic)
 				continue
 			}
 			switch req.Cmd {
 			case "", "fetch":
-				fetchKey(key, req.Reply)
+				//log.Println("fetch key:", evt.Topic, "to:", req.Reply)
+				if e := fetchKey(keys, req.Reply); e != nil {
+					log.Println("fetch error:", e, "key:", evt.Topic)
+				}
 			case "*", "list":
-				listKeys(key, req.Reply)
+				log.Println("list keys:", evt.Topic, "to:", req.Reply)
+				if e := listKeys(keys, req.Reply); e != nil {
+					log.Println("fetch error:", e, "key:", evt.Topic)
+				}
 			default:
-				log.Println("bad data request:", req.Cmd, "key:", key)
+				log.Println("bad data request:", req.Cmd, "key:", evt.Topic)
 			}
 		}
 	}
 }
 
-func fetchKey(key []string, reply string) {
-	log.Println("fetch key:", key, "to:", reply)
+func fetchKey(keys [][]byte, reply string) error {
+	viewer := func(tx *bolt.Tx) error {
+		last := len(keys) - 1
+		bucket := tx.Bucket([]byte(keys[1]))
+		for i := 2; i < last; i++ {
+			k := keys[i]
+			if bucket != nil && len(k) > 0 {
+				bucket = bucket.Bucket(k)
+			}
+		}
+		if bucket == nil {
+			return errors.New("?")
+		}
+		sendToHub(reply, bucket.Get(keys[last]), false)
+		return nil
+	}
+	return db.View(viewer)
 }
 
-func listKeys(key []string, reply string) {
-	log.Println("list keys:", key, "to:", reply)
+func listKeys(keys [][]byte, reply string) error {
+	viewer := func(tx *bolt.Tx) error {
+		bucket := tx.Bucket([]byte(keys[1]))
+		for i := 2; i < len(keys); i++ {
+			k := keys[i]
+			if bucket != nil && len(k) > 0 {
+				bucket = bucket.Bucket(k)
+			}
+		}
+		if bucket == nil {
+			return errors.New("?")
+		}
+		result := map[string][]byte{}
+		c := bucket.Cursor()
+		for k, v := c.First(); k != nil; k, v = c.Next() {
+			result[string(k)] = v
+		}
+		sendToHub(reply, result, false)
+		return nil
+	}
+	return db.View(viewer)
 }
