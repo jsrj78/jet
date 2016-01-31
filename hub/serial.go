@@ -9,27 +9,44 @@ import (
 
 // serialProcessRequests handles all serial port setup and outgoing data.
 func serialProcessRequests(feed string) {
-	portmap := map[string]*rs232.Port{}
+	portMap := map[string]*rs232.Port{}
 
 	for evt := range topicWatcher(feed) {
-		log.Println("evt:", evt.Topic)
+		serName := evt.Topic[7:] // TODO wrong if feed isn't "serial/+"
+		log.Println("serial:", serName)
 
-		var serReq struct {
-			Device, SendTo string
+		var firstByte uint8
+		if len(evt.Payload) > 0 {
+			firstByte = evt.Payload[0]
 		}
-		if evt.Decode(&serReq) {
-			serial := listenToSerial(serReq.Device, serReq.SendTo)
-			if serial != nil {
-				portmap[evt.Topic] = serial
-			} else {
-				delete(portmap, evt.Topic)
+
+		switch firstByte {
+			case 0, '{':
+				if port, ok := portMap[serName]; ok {
+					log.Println("serial:", serName, "closing")
+					port.Close()
+					delete(portMap, serName)
+				}
+		}
+
+		if firstByte == '{' {
+			var serReq struct {
+				Device, SendTo string
+			}
+			if evt.Decode(&serReq) {
+				serial := listenToSerial(serName, serReq.Device, serReq.SendTo)
+				if serial != nil {
+					portMap[serName] = serial
+				} else {
+					delete(portMap, serName)
+				}
 			}
 		}
 	}
 }
 
 // listenToSerial reads incoming serial text lines and publishes them to MQTT.
-func listenToSerial(device, topic string) *rs232.Port {
+func listenToSerial(name, device, topic string) *rs232.Port {
 	options := rs232.Options{BitRate: 57600, DataBits: 8, StopBits: 1}
 	serial, err := rs232.Open(device, options)
 	if err != nil {
@@ -47,8 +64,7 @@ func listenToSerial(device, topic string) *rs232.Port {
 			// sendToHub(topic, scanner.Bytes(), false)
 			sendToHub(topic, scanner.Text(), false)
 		}
-		log.Println("unexpected EOF:", device)
-		// TODO: serial.Close() ?
+		log.Println("serial:", name, "EOF")
 	}()
 	return serial
 }
