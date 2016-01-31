@@ -15,7 +15,6 @@ func serialProcessRequests(feed string) {
 
 	for evt := range topicWatcher(feed) {
 		serName := evt.Topic[7:] // TODO wrong if feed isn't "serial/+"
-		log.Println("serial:", serName)
 
 		if len(evt.Payload) == 0 || evt.Payload[0] == '{' {
 			if port, ok := portMap[serName]; ok {

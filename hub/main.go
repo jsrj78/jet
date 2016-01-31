@@ -11,7 +11,6 @@ import (
 	"time"
 
 	mqtt "git.eclipse.org/gitroot/paho/org.eclipse.paho.mqtt.golang.git"
-	"github.com/boltdb/bolt"
 	"github.com/mitchellh/mapstructure"
 )
 
@@ -46,12 +45,7 @@ func main() {
 	defer hub.Disconnect(250)
 
 	// open the persistent data store
-	log.Println("opening data store:", *dataStore)
-	options := bolt.Options{Timeout: time.Second}
-	db, err := bolt.Open(*dataStore, 0600, &options)
-	if err != nil {
-		log.Fatalln("db:", err)
-	}
+	db := dataStoreInit(*dataStore)
 	defer db.Close()
 
 	// save raw logger input to text files, one per day (UTC time)
@@ -62,6 +56,10 @@ func main() {
 
 	// listen to serial device requests
 	go serialProcessRequests("serial/+")
+
+	// start responding to data store requests
+	go dataModifyListener("!/#")
+	go dataAccessListener("?/#")
 
 	// listen for JET pack setup requests
 	go packsListener("packs/+", *packsDir)
