@@ -93,5 +93,5 @@ func reportPackOutput(pipe io.ReadCloser, name, topic, prefix string) {
 		log.Println(name, "pack:", msg)
 		sendToHub(topic, msg, false)
 	}
-	log.Println(name, "pack:", prefix + "EOF")
+	log.Println(name, "pack:", prefix+"EOF")
 }

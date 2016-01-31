@@ -1,5 +1,7 @@
 package main
 
+// TODO refactor to use a struct with member methods for each serial connection
+
 import (
 	"bufio"
 	"log"
@@ -15,31 +17,40 @@ func serialProcessRequests(feed string) {
 		serName := evt.Topic[7:] // TODO wrong if feed isn't "serial/+"
 		log.Println("serial:", serName)
 
-		var firstByte uint8
-		if len(evt.Payload) > 0 {
-			firstByte = evt.Payload[0]
-		}
-
-		switch firstByte {
-			case 0, '{':
-				if port, ok := portMap[serName]; ok {
-					log.Println("serial:", serName, "closing")
-					port.Close()
-					delete(portMap, serName)
-				}
-		}
-
-		if firstByte == '{' {
-			var serReq struct {
-				Device, SendTo string
+		if len(evt.Payload) == 0 || evt.Payload[0] == '{' {
+			if port, ok := portMap[serName]; ok {
+				log.Println("serial:", serName, "closing")
+				port.Close()
+				delete(portMap, serName)
 			}
-			if evt.Decode(&serReq) {
-				serial := listenToSerial(serName, serReq.Device, serReq.SendTo)
-				if serial != nil {
-					portMap[serName] = serial
-				} else {
-					delete(portMap, serName)
+		}
+
+		if len(evt.Payload) > 0 {
+			port, _ := portMap[serName]
+			switch evt.Payload[0] {
+			case '{':
+				var req struct {
+					Device, SendTo string
 				}
+				if evt.Decode(&req) {
+					ser := listenToSerial(serName, req.Device, req.SendTo)
+					if ser != nil {
+						portMap[serName] = ser
+					}
+				}
+			case '[':
+				var req []interface{}
+				if evt.Decode(&req) && port != nil {
+					processSerialRequests(serName, port, req)
+				}
+			case '"':
+				var req string
+				if evt.Decode(&req) && port != nil {
+					port.Write([]byte(req))
+				}
+			default:
+				n := len(evt.Payload)
+				log.Println("serial", serName, "ignored:", n, "bytes")
 			}
 		}
 	}
@@ -54,6 +65,11 @@ func listenToSerial(name, device, topic string) *rs232.Port {
 		return nil
 	}
 
+	// TODO flush old pending data, since it's not actually real-time
+	//if n, _ := serial.BytesAvailable(); n > 0 {
+	//	serial.Read(make([]byte, n))
+	//}
+
 	scanner := bufio.NewScanner(serial)
 	go func() {
 		for scanner.Scan() {
@@ -67,4 +83,20 @@ func listenToSerial(name, device, topic string) *rs232.Port {
 		log.Println("serial:", name, "EOF")
 	}()
 	return serial
+}
+
+// processSerialRequests interprets a list of special serial port requests.
+func processSerialRequests(name string, port *rs232.Port, reqs []interface{}) {
+	log.Println("serial", name, "requests:", reqs)
+
+	for _, req := range reqs {
+		log.Printf("req: %T %v\n", req, req)
+		/*
+			case '1'..'9':
+				var req uint32
+				if evt.Decode(&req) {
+					log.Println("serial", serName, "baudrate:", req)
+				}
+		*/
+	}
 }
