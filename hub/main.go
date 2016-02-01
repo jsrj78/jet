@@ -89,6 +89,7 @@ func connectToHub(clientName, port string, retain bool) chan<- interface{} {
 	options := mqtt.NewClientOptions()
 	options.AddBroker(port)
 	options.SetClientID(clientID)
+	options.SetKeepAlive(10)
 	options.SetBinaryWill("jet/"+clientID, nil, 1, retain)
 	hub = mqtt.NewClient(options)
 
