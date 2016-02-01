@@ -48,7 +48,9 @@ func main() {
 	defer db.Close()
 
 	// save raw logger input to text files, one per day (UTC time)
-	go loggerSaveToDisk("logger/+/+", *loggerDir)
+	if *loggerDir != "" {
+		go loggerSaveToDisk("logger/+/+", *loggerDir)
+	}
 
 	// copy each incoming "logger/<x>" message to "logger/<x>/<millis>"
 	go loggerTimestamper("logger/+")
@@ -61,7 +63,9 @@ func main() {
 	go dataAccessListener("@/#")
 
 	// listen for JET pack setup requests
-	go packsListener("packs/+", *packsDir)
+	if *packsDir != "" {
+		go packsListener("packs/+", *packsDir)
+	}
 
 	// listen for web server setup requests
 	go webListener("web/+")
