@@ -23,10 +23,7 @@ func loggerSaveToDisk(feed, dir string) {
 	var lastFile *os.File
 
 	for evt := range topicWatcher(feed) {
-		var message string
-		if !evt.Decode(&message) {
-			continue // ignore this event, failure has been logged by Decode
-		}
+		message := string(evt.Payload)
 		// linefeeds must be escaped, since log files have one-entry-per-line
 		message = strings.Replace(message, "\n", "\\n", -1)
 
