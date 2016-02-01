@@ -15,7 +15,7 @@ import (
 )
 
 var (
-	// these variables will be adjusted during Makefile builds
+	// the vers and date variables will be adjusted during Makefile builds
 	vers, date = "v4.0", ""
 	version    = vers + " " + date + " (" + runtime.Version() + ")"
 )
@@ -69,11 +69,10 @@ func main() {
 	// send one message every second, on the second
 	go startHeartbeat("hub/1hz")
 
-	quit := make(chan struct{})
-
 	hubStatus <- 1 // hub is now fully initialised and running
 
-	<-quit // hang around until something serious happens
+	done := make(chan struct{})
+	<-done // hang around forever
 }
 
 var hub *mqtt.Client
