@@ -72,12 +72,7 @@ func listenToSerial(name, device, topic string) *rs232.Port {
 	scanner := bufio.NewScanner(serial)
 	go func() {
 		for scanner.Scan() {
-			// TODO support binary data with Bytes() i.s.o. Text() as option?
-			//	this is likely to break in some places, e.g. "jet sub ..."
-			// solution could be to use some special topic naming convention
-			//	also would need to enable read timeout for framing the data
-			// sendToHub(topic, scanner.Bytes(), false)
-			sendToHub(topic, scanner.Text(), false)
+			sendToHub(topic, scanner.Bytes(), false)
 		}
 		log.Println("serial:", name, "EOF")
 	}()
