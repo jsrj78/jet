@@ -24,7 +24,6 @@ func main() {
 	adminFlag := flag.String("admin", "", "connect as admin to a running hub")
 	dataStore := flag.String("data", "store.db", "data store file name & path")
 	mqttPort := flag.String("mqtt", "tcp://localhost:1883", "MQTT server port")
-	httpPort := flag.String("http", "localhost:8947", "HTTP server port")
 	loggerDir := flag.String("logger", "logger", "dir path for logger files")
 	packsDir := flag.String("packs", "packs", "location of all pack scripts")
 	flag.Parse()
@@ -64,18 +63,13 @@ func main() {
 	// listen for JET pack setup requests
 	go packsListener("packs/+", *packsDir)
 
+	// listen for web server setup requests
+	go webListener("web/+")
+
 	// send one message every second, on the second
 	go startHeartbeat("hub/1hz")
 
 	quit := make(chan struct{})
-
-	// start up the built-in HTTP server
-	if *httpPort != "" {
-		go func() {
-			defer close(quit)
-			startHTTPServer(*httpPort)
-		}()
-	}
 
 	hubStatus <- 1 // hub is now fully initialised and running
 
