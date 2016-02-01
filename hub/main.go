@@ -59,7 +59,7 @@ func main() {
 
 	// start responding to data store requests
 	go dataModifyListener("!/#")
-	go dataAccessListener("?/#")
+	go dataAccessListener("@/#")
 
 	// listen for JET pack setup requests
 	go packsListener("packs/+", *packsDir)
