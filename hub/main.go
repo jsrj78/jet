@@ -34,6 +34,10 @@ func main() {
 		log.SetFlags(log.Flags() & ^log.Ldate & ^log.Ltime)
 	}
 
+	// inform child processes (i.e. packs) about hub's version and mqtt port
+	os.Setenv("HUB_VERSION", version)
+	os.Setenv("HUB_MQTT", *mqttPort)
+
 	// check for special admin mode, used by the "jet" wrapper script
 	if *adminFlag != "" {
 		connectToHub("admin", *adminFlag, false)

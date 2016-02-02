@@ -31,6 +31,9 @@ func packsListener(feed, dir string) {
 		// launch the new pack, with stdout & stderr output logged via pipes
 		var packReq []string
 		if evt.Decode(&packReq) {
+			// inform the pack about the name it's registered under in the hub
+			os.Setenv("HUB_PACK", packName)
+
 			if len(packReq) == 0 {
 				packReq = append(packReq, "") // avoid indexing error
 			}
