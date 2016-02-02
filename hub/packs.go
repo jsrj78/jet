@@ -31,9 +31,6 @@ func packsListener(feed, dir string) {
 		// launch the new pack, with stdout & stderr output logged via pipes
 		var packReq []string
 		if evt.Decode(&packReq) {
-			// inform the pack about the name it's registered under in the hub
-			os.Setenv("HUB_PACK", packName)
-
 			if len(packReq) == 0 {
 				packReq = append(packReq, "") // avoid indexing error
 			}
@@ -56,12 +53,17 @@ func packsListener(feed, dir string) {
 					go reportPackOutput(pipe, packName, logTopic, "(stderr) ")
 				}
 
+				// inform the pack about name it's registered under in the hub
+				os.Setenv("HUB_PACK", packName)
+
 				if e := cmd.Start(); e != nil {
 					log.Println("pack:", path, "can't start", e)
-					continue
+				} else {
+					log.Println("started:", path, "pid:", cmd.Process.Pid)
+					packMap[packName] = cmd
 				}
-				log.Println("started:", path, "pid:", cmd.Process.Pid)
-				packMap[packName] = cmd
+
+				os.Unsetenv("HUB_PACK")
 			}
 		}
 	}
