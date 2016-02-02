@@ -28,6 +28,12 @@ func main() {
 	packsDir := flag.String("packs", "packs", "location of all pack scripts")
 	flag.Parse()
 
+	// omit timestamps from the Log if $HOME is not set in the environment
+	// works better when started from systemd, which adds its own timestamps
+	if os.Getenv("HOME") == "" {
+		log.SetFlags(log.Flags() & ^log.Ldate & ^log.Ltime)
+	}
+
 	// check for special admin mode, used by the "jet" wrapper script
 	if *adminFlag != "" {
 		connectToHub("admin", *adminFlag, false)
