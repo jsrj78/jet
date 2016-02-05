@@ -1,38 +1,76 @@
-"use strict";
+"use strict"
 let p = (...args) => console.log("p:", ...args)
 p("hello", "world")
 
-let events = []
+let pending_g = []
+let pending_w = []
 
-let show_h = (gi, hv) => {
+let show_h = (gInst, hv) => {
     console.log("show:", hv)
 }
 
 let show_t = { name: "show", handler: show_h, outCount: 0, }
 let show_i = { id: null, ins: [null], outs: null, type: show_t, }
 
-let metro_h = (gi, hv) => {
+let metro_h = (gInst, hv) => {
     if (!hv) {
         p("PONG!")
-        gi.outs[0] = true
+        gInst.outs[0] = true
         return
     }
-    //clearInterval(gi.l_tid)
-    //gi.l_tid = setInterval(() => {
+    //clearInterval(gInst.l_tid)
+    //gInst.l_tid = setInterval(() => {
     setInterval(() => {
         p("ping!")
-        events.push([gi,null])
+        pending_g.unshift(gInst)
+        pending_w.unshift(null)
     }, hv)
 }
 
 let metro_t = { name: "metro", handler: metro_h, outCount: 1, }
 let metro_i = { id: null, ins: [null], outs: null, type: metro_t, }
 
-let top_h = (gi, hv) => {
-    p("top", hv)
-    while (events.length > 0) {
-        let e = events.shift()
-        p("shifted", e)
+let activate = (gInst, hv) => {
+    p("activate", gInst.type.name+"#"+gInst.id, "val:", hv)
+    if (gInst.outs)
+        p("re-activating, but already active???")
+    gInst.outs = []
+    for (let i = 0; i < gInst.type.outCount; ++i)
+        gInst.outs.push(undefined)
+    gInst.type.handler(gInst, hv)
+}
+
+let top_h = (gInst, hv) => {
+    while (pending_g.length > 0) {
+        let n = pending_g.length - 1
+        let pg = pending_g[n]
+        let pw = pending_w[n]
+        let hv = null
+        if (pw === null) {
+            pending_g.pop()
+            pending_w.pop()
+        } else {
+            let nout = pg.outs.length - 1
+            let circ = pg.parent
+            let wnet = circ.wires[nout]
+            if (pw >= wnet.length) {
+                pg.outs.pop()
+                if (pg.outs.length == 0) {
+                    pg.outs = null // marks the end of this gadget's activity
+                    pending_g.pop()
+                    pending_w.pop()
+                }
+                continue
+            }
+            gNum = wnet[pw++]
+            gPad = wnet[pw++]
+            pending_w[n] = pw
+            pg = gInst.gadgets[gNum]
+            hv = pg.outs[nout]
+            if (gPad > 0)
+                continue // not a hot input
+        }
+        activate(pg, hv)
     }
 }
 
@@ -62,6 +100,6 @@ show_h(show_i, 123)
 metro_h(metro_i, 1000)
 top_h(top_i, null)
 //console.log(JSON.stringify(top_i, null, 2))
-setTimeout(() => {
+setInterval(() => {
     top_h(top_i, null)
-}, 1500)
+}, 100)
