@@ -4,44 +4,64 @@ p("hello", "world")
 
 let events = []
 
-let timer = (gi, hv) => {
-    let id = setInterval(() => {
+let show_h = (gi, hv) => {
+    console.log("show:", hv)
+}
+
+let show_t = { name: "show", handler: show_h, outCount: 0, }
+let show_i = { id: null, ins: [null], outs: null, type: show_t, }
+
+let metro_h = (gi, hv) => {
+    if (!hv) {
+        p("PONG!")
+        gi.outs[0] = true
+        return
+    }
+    //clearInterval(gi.l_tid)
+    //gi.l_tid = setInterval(() => {
+    setInterval(() => {
         p("ping!")
         events.push([gi,null])
     }, hv)
-    // don't return, this creates a circular structure, can't JSON.stringify
-    //return id
 }
-
-let show_h = (gi, hv) => { console.log("show:", hv) }
-
-let show_t = { name: "show", handler: show_h, outCount: 0, }
-let show_i = { inputs: [null], outVec: null, type: show_t, }
-
-let metro_h = (gi, hv) => { clearInterval(gi.l_id); gi.l_id = timer(gi, hv) }
 
 let metro_t = { name: "metro", handler: metro_h, outCount: 1, }
-let metro_i = { inputs: [null], outVec: null, type: metro_t, }
-
-let top_t = { name: "top", handler: null, outcount: 0, }
-let top_i = {
-    inputs: [null],
-    outVec: null,
-    type: top_t,
-    gadgets: [show_i, metro_i],
-    wires: [
-        [], // show
-        [ [0,0] ], // metro
-    ],
-}
+let metro_i = { id: null, ins: [null], outs: null, type: metro_t, }
 
 let top_h = (gi, hv) => {
     p("top", hv)
+    while (events.length > 0) {
+        let e = events.shift()
+        p("shifted", e)
+    }
 }
-top_t.handler = top_h
+
+let top_t = { name: "top", handler: top_h, outcount: 0, }
+let top_i = { id: null, ins: [null], outs: null, type: top_t, }
+
+top_i.gadgets = [
+    null, // self
+    metro_i,
+    show_i,
+]
+top_i.wires = [
+    [],
+    [ [2,0] ],
+    [],
+]
+
+show_i.parent = top_i
+metro_i.parent = top_i
+
+top_i.id = 0
+metro_i.id = 1
+show_i.id = 2
 
 p("show_i", show_i)
 show_h(show_i, 123)
 metro_h(metro_i, 1000)
 top_h(top_i, null)
 //console.log(JSON.stringify(top_i, null, 2))
+setTimeout(() => {
+    top_h(top_i, null)
+}, 1500)
