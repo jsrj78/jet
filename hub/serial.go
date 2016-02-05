@@ -30,12 +30,16 @@ func serialProcessRequests(feed string) {
 			case '{':
 				var req struct {
 					Device, SendTo string
+					Baud uint32
+					Init []interface{}
 				}
 				if evt.Decode(&req) {
-					ser := listenToSerial(serName, req.Device, req.SendTo)
+					ser := listenToSerial(serName, req.Device, req.SendTo,
+													req.Baud)
 					if ser != nil {
 						portMap[serName] = ser
 					}
+					processSerialRequests(serName, ser, req.Init)
 				}
 			case '[':
 				var req []interface{}
@@ -56,8 +60,11 @@ func serialProcessRequests(feed string) {
 }
 
 // listenToSerial reads incoming serial text lines and publishes them to MQTT.
-func listenToSerial(name, device, topic string) *rs232.Port {
-	options := rs232.Options{BitRate: 57600, DataBits: 8, StopBits: 1}
+func listenToSerial(name, device, topic string, baud uint32) *rs232.Port {
+	if baud == 0 {
+		baud = 57600
+	}
+	options := rs232.Options{BitRate: baud, DataBits: 8, StopBits: 1}
 	serial, err := rs232.Open(device, options)
 	if err != nil {
 		log.Print(err)
