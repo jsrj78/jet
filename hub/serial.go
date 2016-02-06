@@ -5,6 +5,7 @@ package main
 import (
 	"bufio"
 	"log"
+	"time"
 
 	"github.com/chimera/rs232"
 )
@@ -30,12 +31,12 @@ func serialProcessRequests(feed string) {
 			case '{':
 				var req struct {
 					Device, SendTo string
-					Baud uint32
-					Init []interface{}
+					Baud           uint32
+					Init           []interface{}
 				}
 				if evt.Decode(&req) {
 					ser := listenToSerial(serName, req.Device, req.SendTo,
-													req.Baud)
+						req.Baud)
 					if ser != nil {
 						portMap[serName] = ser
 					}
@@ -91,13 +92,31 @@ func processSerialRequests(name string, port *rs232.Port, reqs []interface{}) {
 	log.Println("serial", name, "requests:", reqs)
 
 	for _, req := range reqs {
-		log.Printf("req: %T %v\n", req, req)
-		/*
-			case '1'..'9':
-				var req uint32
-				if evt.Decode(&req) {
-					log.Println("serial", serName, "baudrate:", req)
+		if cmd, ok := req.(string); ok {
+			switch cmd {
+			case "+dtr":
+				port.SetDTR(true)
+			case "-dtr":
+				port.SetDTR(false)
+			case "+rts":
+				port.SetRTS(true)
+			case "-rts":
+				port.SetRTS(false)
+			default:
+				if len(cmd) > 0 && cmd[0] == '=' {
+					port.Write([]byte(cmd[1:]))
+				} else {
+					log.Println("serial", name, "cmd:", cmd, "?")
 				}
-		*/
+			}
+		} else if delay, ok := req.(float64); ok {
+			if 1 <= delay && delay <= 10000 {
+				time.Sleep(time.Duration(delay) * time.Millisecond)
+			} else {
+				log.Println("serial", name, "delay:", delay, "?")
+			}
+		} else {
+			log.Println("serial", name, "req:", req, "?")
+		}
 	}
 }
