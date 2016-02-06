@@ -47,14 +47,17 @@ func storeValue(keys [][]byte, value []byte) {
 		last := len(keys) - 1
 		bucket, e := tx.CreateBucketIfNotExists([]byte(keys[1]))
 		for i := 2; i < last; i++ {
-			k := keys[i]
-			if e == nil && len(k) > 0 {
-				bucket, e = bucket.CreateBucketIfNotExists(k)
+			if e == nil {
+				bucket, e = bucket.CreateBucketIfNotExists(keys[i])
 			}
 		}
 		k := keys[last]
-		if e == nil && len(k) > 0 {
-			e = bucket.Put(k, value)
+		if e == nil {
+			if len(k) > 0 {
+				e = bucket.Put(k, value)
+			} else {
+				// TODO store obj as N items
+			}
 		}
 		return e
 	}
@@ -68,9 +71,8 @@ func deleteKey(keys [][]byte) {
 		bucket := tx.Bucket([]byte(keys[1]))
 		last := len(keys) - 1
 		for i := 2; i < last; i++ {
-			k := keys[i]
-			if bucket != nil && len(k) > 0 {
-				bucket = bucket.Bucket(k)
+			if bucket != nil {
+				bucket = bucket.Bucket(keys[i])
 			}
 		}
 		e := errors.New("?")
@@ -78,9 +80,8 @@ func deleteKey(keys [][]byte) {
 			k := keys[last]
 			if len(k) > 0 {
 				e = bucket.Delete(k)
-				if e != nil {
-					e = bucket.DeleteBucket(k)
-				}
+			} else {
+				e = bucket.DeleteBucket(k)
 			}
 		}
 		return e
@@ -94,32 +95,28 @@ func deleteKey(keys [][]byte) {
 func dataAccessListener(feed string) {
 	for evt := range topicWatcher(feed) {
 		keys := bytes.Split([]byte(evt.Topic), []byte("/"))
-		if len(keys) < 2 {
+		last := len(keys) - 1
+		if last < 1 {
 			log.Println("bad access key:", evt.Topic)
 			continue
 		}
 
-		var req struct {
-			Cmd, Reply string
-		}
-		if evt.Decode(&req) {
-			if req.Reply == "" {
-				log.Println("no reply topic:", req.Cmd, "key:", evt.Topic)
+		var reply string
+		if evt.Decode(&reply) {
+			if reply == "" {
+				log.Println("no reply for key:", evt.Topic)
 				continue
 			}
-			switch req.Cmd {
-			case "", "fetch":
-				//log.Println("fetch key:", evt.Topic, "to:", req.Reply)
-				if e := fetchKey(keys, req.Reply); e != nil {
+			if len(keys[last]) > 0 {
+				log.Println("fetch key:", evt.Topic, "to:", reply)
+				if e := fetchKey(keys, reply); e != nil {
 					log.Println("fetch error:", e, "key:", evt.Topic)
 				}
-			case "*", "list":
-				log.Println("list keys:", evt.Topic, "to:", req.Reply)
-				if e := listKeys(keys, req.Reply); e != nil {
+			} else {
+				log.Println("list keys:", evt.Topic, "to:", reply)
+				if e := listKeys(keys, reply); e != nil {
 					log.Println("fetch error:", e, "key:", evt.Topic)
 				}
-			default:
-				log.Println("bad data request:", req.Cmd, "key:", evt.Topic)
 			}
 		}
 	}
@@ -131,7 +128,7 @@ func fetchKey(keys [][]byte, reply string) error {
 		last := len(keys) - 1
 		for i := 2; i < last; i++ {
 			k := keys[i]
-			if bucket != nil && len(k) > 0 {
+			if bucket != nil {
 				bucket = bucket.Bucket(k)
 			}
 		}
@@ -149,7 +146,7 @@ func listKeys(keys [][]byte, reply string) error {
 		bucket := tx.Bucket([]byte(keys[1]))
 		for i := 2; i < len(keys); i++ {
 			k := keys[i]
-			if bucket != nil && len(k) > 0 {
+			if bucket != nil {
 				bucket = bucket.Bucket(k)
 			}
 		}
