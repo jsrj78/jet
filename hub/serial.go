@@ -39,8 +39,8 @@ func serialProcessRequests(feed string) {
 						req.Baud)
 					if ser != nil {
 						portMap[serName] = ser
+						processSerialRequests(serName, ser, req.Init)
 					}
-					processSerialRequests(serName, ser, req.Init)
 				}
 			case '[':
 				var req []interface{}
