@@ -5,6 +5,7 @@ import (
 	"errors"
 	"log"
 	"time"
+	"encoding/json"
 
 	"github.com/boltdb/bolt"
 )
@@ -57,6 +58,15 @@ func storeValue(keys [][]byte, value []byte) {
 				e = bucket.Put(k, value)
 			} else {
 				// TODO store obj as N items
+				var entries map[string]json.RawMessage
+				e = json.Unmarshal(value, &entries)
+				if e == nil {
+					for k, v := range entries {
+						if e == nil {
+							e = bucket.Put([]byte(k), v)
+						}
+					}
+				}
 			}
 		}
 		return e
