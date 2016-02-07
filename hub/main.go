@@ -69,8 +69,8 @@ func main() {
 	go serialProcessRequests("serial/+")
 
 	// start responding to data store requests
-	go dataModifyListener("!/#")
-	go dataAccessListener("@/#")
+	go dataStoreListener("!/#")
+	go dataFetchListener("@/#")
 
 	// listen for JET pack setup requests
 	if *packsDir != "" {

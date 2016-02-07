@@ -23,8 +23,8 @@ func dataStoreInit(file string) *bolt.DB {
 	return db
 }
 
-// dataModifyListener listens for data store and delete requests
-func dataModifyListener(feed string) {
+// dataStoreListener listens for data store and delete requests
+func dataStoreListener(feed string) {
 	for evt := range topicWatcher(feed) {
 		keys := bytes.Split([]byte(evt.Topic), []byte("/"))
 		if len(keys) < 2 {
@@ -91,8 +91,8 @@ func deleteKey(keys [][]byte) {
 	}
 }
 
-// dataAccessListener listens for data fetch and list requests
-func dataAccessListener(feed string) {
+// dataFetchListener listens for data fetch and list requests
+func dataFetchListener(feed string) {
 	for evt := range topicWatcher(feed) {
 		keys := bytes.Split([]byte(evt.Topic), []byte("/"))
 		last := len(keys) - 1
