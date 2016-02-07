@@ -45,7 +45,7 @@ func dataStoreListener(feed string) {
 func storeValue(keys [][]byte, value []byte) {
 	updater := func(tx *bolt.Tx) error {
 		last := len(keys) - 1
-		bucket, e := tx.CreateBucketIfNotExists([]byte(keys[1]))
+		bucket, e := tx.CreateBucketIfNotExists(keys[1])
 		for i := 2; i < last; i++ {
 			if e == nil {
 				bucket, e = bucket.CreateBucketIfNotExists(keys[i])
@@ -68,7 +68,7 @@ func storeValue(keys [][]byte, value []byte) {
 
 func deleteKey(keys [][]byte) {
 	updater := func(tx *bolt.Tx) error {
-		bucket := tx.Bucket([]byte(keys[1]))
+		bucket := tx.Bucket(keys[1])
 		last := len(keys) - 1
 		for i := 2; i < last; i++ {
 			if bucket != nil {
@@ -115,7 +115,7 @@ func dataFetchListener(feed string) {
 			} else {
 				log.Println("list keys:", evt.Topic, "to:", reply)
 				if e := listKeys(keys, reply); e != nil {
-					log.Println("fetch error:", e, "key:", evt.Topic)
+					log.Println("fetch list error:", e, "key:", evt.Topic)
 				}
 			}
 		}
@@ -124,7 +124,7 @@ func dataFetchListener(feed string) {
 
 func fetchKey(keys [][]byte, reply string) error {
 	viewer := func(tx *bolt.Tx) error {
-		bucket := tx.Bucket([]byte(keys[1]))
+		bucket := tx.Bucket(keys[1])
 		last := len(keys) - 1
 		for i := 2; i < last; i++ {
 			k := keys[i]
@@ -143,19 +143,24 @@ func fetchKey(keys [][]byte, reply string) error {
 
 func listKeys(keys [][]byte, reply string) error {
 	viewer := func(tx *bolt.Tx) error {
-		bucket := tx.Bucket([]byte(keys[1]))
-		last := len(keys) - 1
-		for i := 2; i < last; i++ {
-			k := keys[i]
-			if bucket != nil {
-				bucket = bucket.Bucket(k)
-			}
-		}
-		if bucket == nil {
-			return errors.New("?")
-		}
+		var c *bolt.Cursor
 		result := map[string]int{}
-		c := bucket.Cursor()
+		last := len(keys) - 1
+		if last <= 1 {
+			c = tx.Cursor()
+		} else {
+			bucket := tx.Bucket(keys[1])
+			for i := 2; i < last; i++ {
+				k := keys[i]
+				if bucket != nil {
+					bucket = bucket.Bucket(k)
+				}
+			}
+			if bucket == nil {
+				return errors.New("?")
+			}
+			c = bucket.Cursor()
+		}
 		for k, v := c.First(); k != nil; k, v = c.Next() {
 			result[string(k)] = len(v)
 		}
