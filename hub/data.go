@@ -80,6 +80,9 @@ func deleteKey(keys [][]byte) {
 	updater := func(tx *bolt.Tx) error {
 		bucket := tx.Bucket(keys[1])
 		last := len(keys) - 1
+		if len(keys[last]) == 0 {
+			last--
+		}
 		for i := 2; i < last; i++ {
 			if bucket != nil {
 				bucket = bucket.Bucket(keys[i])
@@ -88,10 +91,12 @@ func deleteKey(keys [][]byte) {
 		e := errors.New("?")
 		if bucket != nil {
 			k := keys[last]
-			if len(k) > 0 {
+			if last == len(keys) - 1 {
 				e = bucket.Delete(k)
-			} else {
+			} else if last > 1 {
 				e = bucket.DeleteBucket(k)
+			} else {
+				e = tx.DeleteBucket(k)
 			}
 		}
 		return e
