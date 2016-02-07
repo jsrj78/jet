@@ -144,7 +144,8 @@ func fetchKey(keys [][]byte, reply string) error {
 func listKeys(keys [][]byte, reply string) error {
 	viewer := func(tx *bolt.Tx) error {
 		bucket := tx.Bucket([]byte(keys[1]))
-		for i := 2; i < len(keys); i++ {
+		last := len(keys) - 1
+		for i := 2; i < last; i++ {
 			k := keys[i]
 			if bucket != nil {
 				bucket = bucket.Bucket(k)
