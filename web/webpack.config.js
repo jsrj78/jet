@@ -19,9 +19,7 @@ var common = {
     },
 
     plugins: [
-        new HtmlWebpackPlugin({
-            title: 'React ES2015'
-        })
+        new HtmlWebpackPlugin({ title: 'JET web interface' })
     ],
 
     module: {
@@ -31,7 +29,6 @@ var common = {
                 loaders: ['react-hot', 'babel?stage=1'],
                 include: path.resolve(ROOT_PATH, 'app')
             },
-
             {
                 test: /\.css$/,
                 loaders: ['style', 'css']
@@ -41,6 +38,15 @@ var common = {
 };
 
 switch (TARGET) {
+    case 'dev':
+        module.exports = merge(common, {
+            entry: [
+                'webpack-dev-server/client?http://localhost:8080',
+                'webpack/hot/dev-server'
+            ]
+        });
+        break;
+
     case 'build':
         module.exports = merge(common, {
             plugins: [
@@ -54,16 +60,6 @@ switch (TARGET) {
                         'NODE_ENV': JSON.stringify('production')
                     }
                 })
-            ]
-        });
-
-        break;
-
-    case 'dev':
-        module.exports = merge(common, {
-            entry: [
-                'webpack-dev-server/client?http://localhost:8080',
-                'webpack/hot/dev-server'
             ]
         });
         break;

@@ -14,7 +14,7 @@ Launch dev server using:
 
     npm start
 
-Then open http://localhost:8080 in the browser.
+Then open <http://localhost:8080> in the browser.
 
 ## Production build
 
