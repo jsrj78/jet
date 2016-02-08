@@ -4,6 +4,7 @@ var webpack = require('webpack');
 var TARGET = process.env.TARGET;
 var ROOT_PATH = path.resolve(__dirname);
 var HtmlWebpackPlugin = require('html-webpack-plugin');
+var OpenBrowserPlugin = require('open-browser-webpack-plugin');
 
 var common = {
 
@@ -19,7 +20,8 @@ var common = {
     },
 
     plugins: [
-        new HtmlWebpackPlugin({ title: 'JET web interface' })
+        new HtmlWebpackPlugin({ title: 'JET web interface' }),
+        new OpenBrowserPlugin({ url: 'http://localhost:8080' })
     ],
 
     module: {
