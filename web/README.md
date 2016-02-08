@@ -2,7 +2,7 @@
 
 This code started from Oscar Lodriguez's [react-example-es2015][r] template.
 
-    [r]: https://github.com/code0wl/react-example-es2015
+[r]: https://github.com/code0wl/react-example-es2015
 
 ## Development mode
 
