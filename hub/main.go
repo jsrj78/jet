@@ -54,8 +54,13 @@ func main() {
 	defer hub.Disconnect(250)
 
 	// open the persistent data store
-	db := dataStoreInit(*dataStore)
-	defer db.Close()
+	if *dataStore != "" {
+		db := dataStoreInit(*dataStore)
+		defer db.Close()
+		// start responding to data store requests
+		go dataStoreListener("!/#")
+		go dataFetchListener("@/#")
+	}
 
 	// save raw logger input to text files, one per day (UTC time)
 	if *loggerDir != "" {
@@ -67,10 +72,6 @@ func main() {
 
 	// listen to serial device requests
 	go serialProcessRequests("serial/+")
-
-	// start responding to data store requests
-	go dataStoreListener("!/#")
-	go dataFetchListener("@/#")
 
 	// listen for JET pack setup requests
 	if *packsDir != "" {
