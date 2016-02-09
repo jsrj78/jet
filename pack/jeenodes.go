@@ -79,10 +79,10 @@ func newJeeNodeDecoder(in <-chan event, dev, nid string, fields []interface{}) {
 
 	prefix := "OK " + nid + " "
 	for evt := range in {
-		keys := strings.Split(evt.Topic, "/")
 		line := string(evt.Payload)
 		if strings.HasPrefix(line, prefix) {
-			log.Println("split", string(evt.Payload), dev, nid, keys, fields)
+			keys := strings.Split(evt.Topic, "/")
+
 			// set up a result map with some fields already filled in
 			id, _ := strconv.Atoi(nid)
 			ms, _ := strconv.Atoi(keys[2])
@@ -90,7 +90,6 @@ func newJeeNodeDecoder(in <-chan event, dev, nid string, fields []interface{}) {
 				"dev":  dev,
 				"id": id,
 				"ms": ms,
-				//"text": line,
 			}
 
 			// split the "OK <1> <2> ..." line into an array of strings
