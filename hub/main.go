@@ -22,6 +22,7 @@ var (
 
 func main() {
 	adminFlag := flag.String("admin", "", "connect as admin to a running hub")
+	decodeFlag := flag.Bool("dv", false, "decode varints in displayed messages")
 	dataStore := flag.String("data", "store.db", "data store file name & path")
 	mqttPort := flag.String("mqtt", "tcp://localhost:1883", "MQTT server port")
 	loggerDir := flag.String("logger", "logger", "dir path for logger files")
@@ -41,7 +42,7 @@ func main() {
 	// check for special admin mode, used by the "jet" wrapper script
 	if *adminFlag != "" {
 		connectToHub("admin", *adminFlag, false)
-		adminCmd()
+		adminCmd(*decodeFlag)
 		return
 	}
 

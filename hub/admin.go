@@ -1,12 +1,30 @@
 package main
 
 import (
+	"encoding/hex"
 	"flag"
 	"fmt"
+	"strings"
 )
 
+// hexToVarint interprets the packet data as hex-code varints
+func hexToVarint(msg string) []int {
+	var values []int
+	if hexData, err := hex.DecodeString(msg); err == nil {
+		v := 0
+		for _, b := range hexData {
+			v = (v << 7) | int(b&0x7F)
+			if (b & 0x80) != 0 {
+				values = append(values, v)
+				v = 0
+			}
+		}
+	}
+	return values
+}
+
 // adminCmd dispatches "jet <cmd> ..." command-line requests.
-func adminCmd() {
+func adminCmd(decode bool) {
 	cmd := flag.Arg(0)
 	if cmd == "" {
 		fmt.Println("JET " + version)
@@ -38,7 +56,34 @@ func adminCmd() {
 		}
 
 		for evt := range topicWatcher(cmdFlags.Arg(0)) {
-			fmt.Printf("%s = %s\n", evt.Topic, evt.Payload)
+			msg := string(evt.Payload)
+			fmt.Println(evt.Topic, "=", msg)
+			if !decode {
+				continue
+			}
+			if seg := strings.Split(msg, " "); len(seg) == 3 {
+				if strings.ToUpper(seg[0]) == "RF69" && len(seg[1]) == 20 {
+					if b, err := hex.DecodeString(seg[1]); err == nil {
+						// : rf69-info ( -- )  \ display params as hex string
+						//   rf69.freq @ h.4 rf69.group @ h.2
+						//	 rf.rssi @ h.2 rf.lna @ h.2 rf.afc @ h.4 ;
+						freq := int(b[0])*256 + int(b[1])
+						afc := int(b[5])*256 + int(b[4])
+						if afc >= 32768 {
+							afc -= 65536
+						}
+						rssi := float32(255-b[3]) * -0.5
+						fmt.Printf("    f: %d g: %d rssi: %g lna: %d afc: %d",
+							freq, b[2], rssi, b[4], afc)
+						fmt.Printf(" dst: %d src: %d hdr: %d len: %d\n",
+							b[7]&0x3F, b[8]&0x3F, b[8]>>6, b[9])
+					}
+				}
+				values := hexToVarint(seg[2])
+				if len(values) > 0 {
+					fmt.Println("       ", values)
+				}
+			}
 		}
 
 	case "delete": // unregister a "stuck" registration, i.e. a missing will
