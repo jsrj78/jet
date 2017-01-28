@@ -72,7 +72,7 @@ func adminCmd(decode bool) {
 						if afc >= 32768 {
 							afc -= 65536
 						}
-						rssi := float32(255-b[3]) * -0.5
+						rssi := float32(b[3]) * -0.5
 						fmt.Printf("    f: %d g: %d rssi: %g lna: %d afc: %d",
 							freq, b[2], rssi, b[4], afc)
 						fmt.Printf(" dst: %d src: %d hdr: %d len: %d\n",
