@@ -9,7 +9,7 @@ To launch this code in development mode, you need [Leiningen][LEIN] and a JVM:
 
     lein figwheel
 
-The following command generates an optimised client-side-only static build:
+The following command generates an optimised client-side-only build:
 
     lein do clean, cljsbuild once min
 
