@@ -1,25 +1,20 @@
 # JET web interface
 
-This code started from Oscar Lodriguez's [react-example-es2015][r] template.
+The web interface is built with [ClojureScript][CLJS] (which compiles to
+JavaScript) and [Reagent][REAG] (which is a lightweight wrapper around ReactJS).
 
-[r]: https://github.com/code0wl/react-example-es2015
+This application was created using `lein new figwheel web -- --reagent`.
 
-## Development mode
+To launch this code in development mode, you need [Leiningen][LEIN] and a JVM:
 
-Install all dependencies with:
+    lein figwheel
 
-    npm install
+The following command generates an optimised client-side-only static build:
 
-Launch dev server using:
+    lein do clean, cljsbuild once min
 
-    npm start
+The result will be a static set of files in `resources/public/`.
 
-This will also open <http://localhost:8080> in the default browser.
-
-## Production build
-
-Generate all the necessary files with:
-
-    npm run build
-
-The results will end up in the `dist` folder.
+   [CLJS]: https://clojurescript.org
+   [REAG]: https://reagent-project.github.io
+   [LEIN]: https://leiningen.org
