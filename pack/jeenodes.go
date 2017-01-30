@@ -87,9 +87,9 @@ func newJeeNodeDecoder(in <-chan event, dev, nid string, fields []interface{}) {
 			id, _ := strconv.Atoi(nid)
 			ms, _ := strconv.Atoi(keys[2])
 			result := map[string]interface{}{
-				"dev":  dev,
-				"id": id,
-				"ms": ms,
+				"dev": dev,
+				"id":  id,
+				"ms":  ms,
 			}
 
 			// split the "OK <1> <2> ..." line into an array of strings
@@ -108,7 +108,7 @@ func newJeeNodeDecoder(in <-chan event, dev, nid string, fields []interface{}) {
 					// extract the requested number of bits as little-endian
 					value = 0
 					residue := off % 8
-					for fill := uint(0); fill < n + residue; fill += 8 {
+					for fill := uint(0); fill < n+residue; fill += 8 {
 						b, _ := strconv.Atoi(bytes[(fill+off)/8])
 						value |= int64(b) << fill
 					}
@@ -118,8 +118,8 @@ func newJeeNodeDecoder(in <-chan event, dev, nid string, fields []interface{}) {
 					value &= (int64(1) << n) - 1
 					// extend the sign if needed
 					if v < 0 {
-						value <<= 64-n
-						value >>= 64-n
+						value <<= 64 - n
+						value >>= 64 - n
 					}
 				}
 				if v, ok := field.(string); ok {

@@ -2,10 +2,10 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"log"
 	"time"
-	"encoding/json"
 
 	"github.com/boltdb/bolt"
 )
@@ -91,7 +91,7 @@ func deleteKey(keys [][]byte) {
 		e := errors.New("?")
 		if bucket != nil {
 			k := keys[last]
-			if last == len(keys) - 1 {
+			if last == len(keys)-1 {
 				e = bucket.Delete(k)
 			} else if last > 1 {
 				e = bucket.DeleteBucket(k)
