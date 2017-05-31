@@ -1,5 +1,6 @@
 (ns web.core
-  (:require [reagent.core :as reagent :refer [atom]]))
+  (:require [reagent.core :as reagent :refer [atom]]
+            [reagent.dom.server :as server]))
 
 (enable-console-print!)
 
