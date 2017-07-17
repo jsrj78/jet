@@ -59,19 +59,6 @@ func TestNotStringMsg(t *testing.T) {
 	}
 }
 
-var nestedMsg = NewMsg(123, "abc", NewMsg(4, NewMsg(), 6), "def", 789)
-
-func TestNestedMsg(t *testing.T) {
-	m := nestedMsg
-	if len(m) != 5 {
-		t.Errorf("expected length 4, got %d", len(m))
-	}
-	m2 := m.At(2)
-	if len(m2) != 3 {
-		t.Errorf("expected length 3, got %d", len(m2))
-	}
-}
-
 func TestAsInt(t *testing.T) {
 	m := NewMsg(12345)
 	if m.AsInt() != 12345 {
@@ -100,6 +87,29 @@ func TestAsNotString(t *testing.T) {
 	}
 }
 
-// At could be dropped, add optional args to AsInt, etc
-// AsMsg can return self of any nested element, arbitrarily deep
-// IsInt etc could also support nested indexing
+var nestedMsg = NewMsg(123, "abc", NewMsg(4, NewMsg(), 6), "def", 789)
+
+func TestNestedMsg(t *testing.T) {
+	m := nestedMsg
+	if len(m) != 5 {
+		t.Errorf("expected length 5, got %d", len(m))
+	}
+	if len(m.At()) != 5 {
+		t.Errorf("should be length 5")
+	}
+	if x := m.At(2); len(x) != 3 {
+		t.Errorf("expected length 3, got %d", len(x))
+	}
+	if x := m.At(2, 0); len(x) != 1 {
+		t.Errorf("expected length 1, got %d", len(x))
+	}
+	if x := m.At(2, 0); !x.IsInt() {
+		t.Errorf("expected int, got %v", x)
+	}
+	if x := m.At(2, 1); !x.IsBang() {
+		t.Errorf("expected bang, got %v", x)
+	}
+	if x := m.At(2, 2).AsInt(); x != 6 {
+		t.Errorf("expected 6, got %d", x)
+	}
+}
