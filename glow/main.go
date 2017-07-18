@@ -1,6 +1,10 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"io"
+	"os"
+)
 
 func main() {
 	fmt.Println("hello")
@@ -66,4 +70,40 @@ func (m Msg) AsString() string {
 	}
 	//fmt.Println("not a string:", m)
 	return ""
+}
+
+// Debug is a Writer for debugging output.
+var Debug io.Writer = os.Stdout
+
+// Registry is a named collection of gadgets.
+var Registry = map[string]func() Gadgetry{}
+
+// Gadgetry is the common interface to gadgets.
+type Gadgetry interface {
+	In(i int, m Msg)
+}
+
+// Gadget is the base type for all gadgets.
+type Gadget struct {
+	inlets []func(m Msg)
+}
+
+// AddInlet is used to set up all inlets.
+func (g *Gadget) AddInlet(f func(m Msg)) {
+	g.inlets = append(g.inlets, f)
+}
+
+// In sends a message to a specific inlet (indexed from 0 upwards).
+func (g *Gadget) In(i int, m Msg) {
+	g.inlets[i](m)
+}
+
+func init() {
+	Registry["print"] = func() Gadgetry {
+		g := new(Gadget)
+		g.AddInlet(func(m Msg) {
+			Debug.Write([]byte(m.AsString()))
+		})
+		return g
+	}
 }
