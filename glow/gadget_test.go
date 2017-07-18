@@ -46,8 +46,8 @@ func TestPassGadgetExists(t *testing.T) {
 func TestPassAndPrintGadget(t *testing.T) {
 	tmp := Debug
 	defer func() { Debug = tmp }()
-	b := &bytes.Buffer{}
-	Debug = b
+	var b bytes.Buffer
+	Debug = &b
 
 	g1 := Registry["pass"]()
 	g2 := Registry["print"]()

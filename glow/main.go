@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 )
 
 func main() {
@@ -17,6 +18,36 @@ func NewMsg(args ...interface{}) Msg {
 
 // Msg is what gets passed around: a "bang", int, string, or vector.
 type Msg []interface{}
+
+// String returns a nice string representation of a message.
+func (m Msg) String() string {
+	if m.IsBang() {
+		return "[]"
+	}
+	if m.IsInt() {
+		return fmt.Sprint(m.AsInt())
+	}
+	if m.IsString() {
+		s := m.AsString()
+		t := fmt.Sprintf("%q", s)
+		if len(s) == 0 {
+			s = `""`
+		} else if len(t) != len(s)+2 || strings.Contains(s, " ") {
+			s = t
+		}
+		return s
+	}
+	v := []string{}
+	for i := range m {
+		e := m.At(i)
+		s := e.String()
+		if !e.IsBang() && !e.IsInt() && !e.IsString() {
+			s = "[" + s + "]"
+		}
+		v = append(v, s)
+	}
+	return strings.Join(v, " ")
+}
 
 // At indexes arbitrarily-deeply-nested message structures.
 func (m Msg) At(indices ...int) Msg {
@@ -122,7 +153,7 @@ func (g *Gadget) Connect(o int, d Gadgetry, i int) {
 	g.outlets[o] = append(g.outlets[o], Endpoint{d, i})
 }
 
-// Feed accepts a message to a specific inlet (indexed from 0 upwards).
+// Feed accepts a message for a specific inlet (indexed from 0 upwards).
 func (g *Gadget) Feed(i int, m Msg) {
 	g.inlets[i].handler(m)
 }

@@ -87,15 +87,15 @@ func TestAsNotString(t *testing.T) {
 	}
 }
 
-var nestedMsg = NewMsg(123, "abc", NewMsg(4, NewMsg(), 6), "def", 789)
+var nestedMsg = NewMsg(123, "abc", NewMsg(4, NewMsg(), 6), "d e", 789, "f\ng")
 
 func TestNestedMsg(t *testing.T) {
 	m := nestedMsg
-	if len(m) != 5 {
-		t.Errorf("expected length 5, got %d", len(m))
+	if len(m) != 6 {
+		t.Errorf("expected length 6, got %d", len(m))
 	}
-	if len(m.At()) != 5 {
-		t.Errorf("should be length 5")
+	if len(m.At()) != 6 {
+		t.Errorf("should be length 6")
 	}
 	if x := m.At(2); len(x) != 3 {
 		t.Errorf("expected length 3, got %d", len(x))
@@ -111,5 +111,27 @@ func TestNestedMsg(t *testing.T) {
 	}
 	if x := m.At(2, 2).AsInt(); x != 6 {
 		t.Errorf("expected 6, got %d", x)
+	}
+}
+
+func TestPrintSimpleMsg(t *testing.T) {
+	s := NewMsg("abc").String()
+	if s != "abc" {
+		t.Errorf("wrong string, got %q", s)
+	}
+	s = NewMsg("").String()
+	if s != `""` {
+		t.Errorf("wrong string, got %q", s)
+	}
+	s = NewMsg().String()
+	if s != "[]" {
+		t.Errorf("wrong string, got %q", s)
+	}
+}
+
+func TestPrintNestedMsg(t *testing.T) {
+	s := nestedMsg.String()
+	if s != `123 abc [4 [] 6] "d e" 789 "f\ng"` {
+		t.Errorf("wrong string, got: %s", s)
 	}
 }
