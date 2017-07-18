@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -30,9 +31,10 @@ func (m Msg) String() string {
 	if m.IsString() {
 		s := m.AsString()
 		t := fmt.Sprintf("%q", s)
+		_, e := strconv.Atoi(s)
 		if len(s) == 0 {
 			s = `""`
-		} else if len(t) != len(s)+2 || strings.Contains(s, " ") {
+		} else if e == nil || len(t) != len(s)+2 || strings.Contains(s, " ") {
 			s = t
 		}
 		return s

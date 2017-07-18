@@ -62,28 +62,28 @@ func TestNotStringMsg(t *testing.T) {
 func TestAsInt(t *testing.T) {
 	m := NewMsg(12345)
 	if m.AsInt() != 12345 {
-		t.Errorf("expected 12345, got %d", m.AsInt())
+		t.Errorf("expected 12345, got: %d", m.AsInt())
 	}
 }
 
 func TestAsNotInt(t *testing.T) {
 	m := NewMsg("abc")
 	if m.AsInt() != 0 {
-		t.Errorf("expected 0, got %d", m.AsInt())
+		t.Errorf("expected 0, got: %d", m.AsInt())
 	}
 }
 
 func TestAsString(t *testing.T) {
 	m := NewMsg("abcde")
 	if m.AsString() != "abcde" {
-		t.Errorf("expected \"abcde\", got %s", m.AsString())
+		t.Errorf("expected \"abcde\", got: %s", m.AsString())
 	}
 }
 
 func TestAsNotString(t *testing.T) {
 	m := NewMsg(123)
 	if m.AsString() != "" {
-		t.Errorf("expected \"\", got %s", m.AsString())
+		t.Errorf("expected \"\", got: %s", m.AsString())
 	}
 }
 
@@ -92,44 +92,49 @@ var nestedMsg = NewMsg(123, "abc", NewMsg(4, NewMsg(), 6), "d e", 789, "f\ng")
 func TestNestedMsg(t *testing.T) {
 	m := nestedMsg
 	if len(m) != 6 {
-		t.Errorf("expected length 6, got %d", len(m))
+		t.Errorf("expected length 6, got: %d", len(m))
 	}
 	if len(m.At()) != 6 {
 		t.Errorf("should be length 6")
 	}
 	if x := m.At(2); len(x) != 3 {
-		t.Errorf("expected length 3, got %d", len(x))
+		t.Errorf("expected length 3, got: %d", len(x))
 	}
 	if x := m.At(2, 0); len(x) != 1 {
-		t.Errorf("expected length 1, got %d", len(x))
+		t.Errorf("expected length 1, got: %d", len(x))
 	}
 	if x := m.At(2, 0); !x.IsInt() {
-		t.Errorf("expected int, got %v", x)
+		t.Errorf("expected int, got: %s", x)
 	}
 	if x := m.At(2, 1); !x.IsBang() {
-		t.Errorf("expected bang, got %v", x)
+		t.Errorf("expected bang, got: %s", x)
 	}
 	if x := m.At(2, 2).AsInt(); x != 6 {
-		t.Errorf("expected 6, got %d", x)
+		t.Errorf("expected 6, got: %d", x)
 	}
 }
 
-func TestPrintSimpleMsg(t *testing.T) {
-	s := NewMsg("abc").String()
+func TestMsgAsString(t *testing.T) {
+	var s string
+	s = NewMsg().String()
+	if s != "[]" {
+		t.Errorf("wrong string, got: %s", s)
+	}
+	s = NewMsg("abc").String()
 	if s != "abc" {
-		t.Errorf("wrong string, got %q", s)
+		t.Errorf("wrong string, got: %s", s)
 	}
 	s = NewMsg("").String()
 	if s != `""` {
-		t.Errorf("wrong string, got %q", s)
+		t.Errorf("wrong string, got: %s", s)
 	}
-	s = NewMsg().String()
-	if s != "[]" {
-		t.Errorf("wrong string, got %q", s)
+	s = NewMsg("123").String()
+	if s != `"123"` {
+		t.Errorf("wrong string, got: %s", s)
 	}
 }
 
-func TestPrintNestedMsg(t *testing.T) {
+func TestNestedMsgAsString(t *testing.T) {
 	s := nestedMsg.String()
 	if s != `123 abc [4 [] 6] "d e" 789 "f\ng"` {
 		t.Errorf("wrong string, got: %s", s)
