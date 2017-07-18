@@ -16,7 +16,7 @@ func NewMsg(args ...interface{}) Msg {
 	return Msg(args)
 }
 
-// Msg is what gets passed around: a "bang", int, string, or vector.
+// A Msg is what gets passed around: a "bang", int, string, or vector.
 type Msg []interface{}
 
 // String returns a nice string representation of a message.
@@ -106,7 +106,7 @@ func (m Msg) AsString() string {
 // Debug is a Writer for debugging output.
 var Debug io.Writer = os.Stdout
 
-// Registry is a named collection of gadgets.
+// The Registry is a named collection of gadgets.
 var Registry = map[string]func() Gadgetry{}
 
 // Gadgetry is the common interface to gadgets.
@@ -116,24 +116,24 @@ type Gadgetry interface {
 	Emit(i int, m Msg)
 }
 
-// Gadget is the base type for all gadgets.
+// A Gadget is the base type for all gadgets.
 type Gadget struct {
 	inlets  []Inlet
 	outlets []Outlet
 }
 
-// Endpoint is a reference to a specific inlet or outlet in a gadget.
+// An Endpoint is a reference to a specific inlet or outlet in a gadget.
 type Endpoint struct {
 	gadget Gadgetry
 	index  int
 }
 
-// Inlet is an endpoint which accepts messages.
+// An Inlet is an endpoint which accepts messages.
 type Inlet struct {
 	handler func(m Msg)
 }
 
-// Outlet is an endpoint which publishes messages.
+// An Outlet is an endpoint which publishes messages.
 type Outlet []Endpoint
 
 // AddInlet is used to set up each inlet.
@@ -141,11 +141,9 @@ func (g *Gadget) AddInlet(f func(m Msg)) {
 	g.inlets = append(g.inlets, Inlet{handler: f})
 }
 
-// AddOutlets is used to set up new outlets.
-func (g *Gadget) AddOutlets(n int) {
-	for i := 0; i < n; i++ {
-		g.outlets = append(g.outlets, Outlet{})
-	}
+// NumOutlets is used to set up all outlets.
+func (g *Gadget) NumOutlets(n int) {
+	g.outlets = make([]Outlet, n)
 }
 
 // Connect adds a connection from a gadget output to a gadget input.

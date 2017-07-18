@@ -11,7 +11,7 @@ func init() {
 
 	Registry["pass"] = func() Gadgetry {
 		g := new(Gadget)
-		g.AddOutlets(1)
+		g.NumOutlets(1)
 		g.AddInlet(func(m Msg) {
 			g.Emit(0, m)
 		})
