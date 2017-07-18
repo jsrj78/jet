@@ -113,7 +113,7 @@ var Registry = map[string]func() Gadgetry{}
 type Gadgetry interface {
 	Connect(o int, d Gadgetry, i int)
 	Feed(i int, m Msg)
-	Emit(i int, m Msg)
+	Emit(o int, m Msg)
 }
 
 // A Gadget is the base type for all gadgets.
