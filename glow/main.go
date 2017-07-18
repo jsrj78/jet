@@ -80,20 +80,56 @@ var Registry = map[string]func() Gadgetry{}
 
 // Gadgetry is the common interface to gadgets.
 type Gadgetry interface {
-	In(i int, m Msg)
+	Connect(o int, d Gadgetry, i int)
+	Feed(i int, m Msg)
+	Emit(i int, m Msg)
 }
 
 // Gadget is the base type for all gadgets.
 type Gadget struct {
-	inlets []func(m Msg)
+	inlets  []Inlet
+	outlets []Outlet
 }
 
-// AddInlet is used to set up all inlets.
+// Endpoint is a reference to a specific inlet or outlet in a gadget.
+type Endpoint struct {
+	gadget Gadgetry
+	index  int
+}
+
+// Inlet is an endpoint which accepts messages.
+type Inlet struct {
+	handler func(m Msg)
+}
+
+// Outlet is an endpoint which publishes messages.
+type Outlet []Endpoint
+
+// AddInlet is used to set up each inlet.
 func (g *Gadget) AddInlet(f func(m Msg)) {
-	g.inlets = append(g.inlets, f)
+	g.inlets = append(g.inlets, Inlet{handler: f})
 }
 
-// In sends a message to a specific inlet (indexed from 0 upwards).
-func (g *Gadget) In(i int, m Msg) {
-	g.inlets[i](m)
+// AddOutlets is used to set up new outlets.
+func (g *Gadget) AddOutlets(n int) {
+	for i := 0; i < n; i++ {
+		g.outlets = append(g.outlets, Outlet{})
+	}
+}
+
+// Connect adds a connection from a gadget output to a gadget input.
+func (g *Gadget) Connect(o int, d Gadgetry, i int) {
+	g.outlets[o] = append(g.outlets[o], Endpoint{d, i})
+}
+
+// Feed accepts a message to a specific inlet (indexed from 0 upwards).
+func (g *Gadget) Feed(i int, m Msg) {
+	g.inlets[i].handler(m)
+}
+
+// Emit sends a message to a specific outlet (indexed from 0 upwards).
+func (g *Gadget) Emit(o int, m Msg) {
+	for _, ep := range g.outlets[o] {
+		ep.gadget.Feed(ep.index, m)
+	}
 }
