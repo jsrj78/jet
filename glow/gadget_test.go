@@ -27,6 +27,6 @@ func TestPrintGadget(t *testing.T) {
 	g.In(0, NewMsg("hello"))
 
 	if b.String() != "hello" {
-		t.Errorf("debug output is incorrect: %v", b.String())
+		t.Errorf("expected \"hello\", got: %v", b)
 	}
 }

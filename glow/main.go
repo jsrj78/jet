@@ -97,13 +97,3 @@ func (g *Gadget) AddInlet(f func(m Msg)) {
 func (g *Gadget) In(i int, m Msg) {
 	g.inlets[i](m)
 }
-
-func init() {
-	Registry["print"] = func() Gadgetry {
-		g := new(Gadget)
-		g.AddInlet(func(m Msg) {
-			Debug.Write([]byte(m.AsString()))
-		})
-		return g
-	}
-}
