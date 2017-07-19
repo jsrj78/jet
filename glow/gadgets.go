@@ -3,7 +3,7 @@ package glow
 import "fmt"
 
 func init() {
-	Registry["print"] = func() Gadgetry {
+	Registry["print"] = func(args Msg) Gadgetry {
 		g := new(Gadget)
 		g.AddInlet(func(m Msg) {
 			fmt.Fprint(Debug, m)
@@ -11,7 +11,7 @@ func init() {
 		return g
 	}
 
-	Registry["pass"] = func() Gadgetry {
+	Registry["pass"] = func(args Msg) Gadgetry {
 		g := new(Gadget)
 		g.AddOutlets(1)
 		g.AddInlet(func(m Msg) {
@@ -20,12 +20,12 @@ func init() {
 		return g
 	}
 	/*
-		Registry["circuit"] = func() Gadgetry {
+		Registry["circuit"] = func(args Msg) Gadgetry {
 			g := new(Circuit)
 			return g
 		}
 	*/
-	Registry["inlet~"] = func() Gadgetry {
+	Registry["inlet~"] = func(args Msg) Gadgetry {
 		g := new(Gadget)
 		g.AddOutlets(1)
 		g.onAdded = func(c *Circuit) {
@@ -36,7 +36,7 @@ func init() {
 		return g
 	}
 
-	Registry["outlet~"] = func() Gadgetry {
+	Registry["outlet~"] = func(args Msg) Gadgetry {
 		g := new(Gadget)
 		g.onAdded = func(c *Circuit) {
 			o := c.AddOutlets(1)

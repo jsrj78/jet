@@ -107,7 +107,7 @@ func (m Msg) AsString() string {
 var Debug io.Writer = os.Stdout
 
 // The Registry is a named collection of gadgets.
-var Registry = map[string]func() Gadgetry{}
+var Registry = map[string]func(args Msg) Gadgetry{}
 
 // Gadgetry is the common interface for all gadgets and circuits.
 type Gadgetry interface {
