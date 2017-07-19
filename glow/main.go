@@ -1,4 +1,6 @@
-package main
+// The Glow package implements a dataflow engine in Go.
+// It was inspired by Pure Data (http://puredata.info).
+package glow
 
 import (
 	"fmt"
@@ -7,10 +9,6 @@ import (
 	"strconv"
 	"strings"
 )
-
-func main() {
-	fmt.Println("hello")
-}
 
 // NewMsg constructs a new message object.
 func NewMsg(args ...interface{}) Msg {
@@ -111,7 +109,7 @@ var Debug io.Writer = os.Stdout
 // The Registry is a named collection of gadgets.
 var Registry = map[string]func() Gadgetry{}
 
-// Gadgetry is the common interface to gadgets.
+// Gadgetry is the common interface for all gadgets and circuits.
 type Gadgetry interface {
 	AddedTo(*Circuit)
 	Connect(int, Gadgetry, int)

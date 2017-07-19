@@ -1,4 +1,4 @@
-package main
+package glow
 
 func init() {
 	Registry["print"] = func() Gadgetry {
