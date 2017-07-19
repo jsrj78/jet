@@ -143,10 +143,10 @@ func (g *Gadget) AddInlet(f func(m Msg)) {
 	g.inlets = append(g.inlets, Inlet{handler: f})
 }
 
-// AddOutlet sets up a new gadget outlet.
-func (g *Gadget) AddOutlet() int {
+// AddOutlets sets up new gadget outlets.
+func (g *Gadget) AddOutlets(n int) int {
 	i := len(g.outlets)
-	g.outlets = append(g.outlets, Outlet{})
+	g.outlets = append(g.outlets, make([]Outlet, n)...)
 	return i
 }
 
