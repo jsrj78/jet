@@ -48,14 +48,13 @@ func init() {
 
 	Registry["swap"] = func(args Msg) Gadgetry {
 		g := new(Gadget)
-		val := args.At(0)
 		g.AddOutlets(2)
 		g.AddInlet(func(m Msg) {
 			g.Emit(1, m)
-			g.Emit(0, val)
+			g.Emit(0, args)
 		})
 		g.AddInlet(func(m Msg) {
-			val = m
+			args = m
 		})
 		return g
 	}
