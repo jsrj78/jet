@@ -140,14 +140,16 @@ type Inlet struct {
 // An Outlet is an endpoint which publishes messages.
 type Outlet []Endpoint
 
-// AddInlet is used to set up each inlet.
+// AddInlet sets up a new gadget inlet.
 func (g *Gadget) AddInlet(f func(m Msg)) {
 	g.inlets = append(g.inlets, Inlet{handler: f})
 }
 
-// NumOutlets is used to set up all outlets.
-func (g *Gadget) NumOutlets(n int) {
-	g.outlets = make([]Outlet, n)
+// AddOutlet sets up a new gadget outlet.
+func (g *Gadget) AddOutlet() int {
+	i := len(g.outlets)
+	g.outlets = append(g.outlets, Outlet{})
+	return i
 }
 
 // AddedTo is called when a gadget has been added to a circuit.

@@ -11,7 +11,7 @@ func init() {
 
 	Registry["pass"] = func() Gadgetry {
 		g := new(Gadget)
-		g.NumOutlets(1)
+		g.AddOutlet()
 		g.AddInlet(func(m Msg) {
 			g.Emit(0, m)
 		})
@@ -25,10 +25,21 @@ func init() {
 
 	Registry["inlet~"] = func() Gadgetry {
 		g := new(Gadget)
-		g.NumOutlets(1)
+		g.AddOutlet()
 		g.onAdded = func(c *Circuit) {
 			c.AddInlet(func(m Msg) {
 				g.Emit(0, m)
+			})
+		}
+		return g
+	}
+
+	Registry["outlet~"] = func() Gadgetry {
+		g := new(Gadget)
+		g.onAdded = func(c *Circuit) {
+			i := c.AddOutlet()
+			g.AddInlet(func(m Msg) {
+				c.Emit(i, m)
 			})
 		}
 		return g

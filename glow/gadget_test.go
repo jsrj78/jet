@@ -104,3 +104,24 @@ func TestCircuitInlet(t *testing.T) {
 		t.Errorf("expected 'foo', got: %v", b)
 	}
 }
+
+func TestCircuitOutlet(t *testing.T) {
+	tmp := Debug
+	defer func() { Debug = tmp }()
+	b := &bytes.Buffer{}
+	Debug = b
+
+	c := new(Circuit)
+	c.Add(Registry["inlet~"]())
+	c.Add(Registry["outlet~"]())
+	c.AddWire(0, 0, 1, 0)
+
+	g := Registry["print"]()
+	c.Connect(0, g, 0) // c.out[0] => g.in[0]
+
+	c.Feed(0, NewMsg("bar"))
+
+	if b.String() != "bar" {
+		t.Errorf("expected 'bar', got: %v", b)
+	}
+}
