@@ -6,7 +6,11 @@ func init() {
 	Registry["print"] = func(args Msg) Gadgetry {
 		g := new(Gadget)
 		g.AddInlet(func(m Msg) {
-			fmt.Fprint(Debug, m)
+			if args.IsBang() {
+				fmt.Fprintln(Debug, m)
+			} else {
+				fmt.Fprintln(Debug, args, m)
+			}
 		})
 		return g
 	}
@@ -19,12 +23,7 @@ func init() {
 		})
 		return g
 	}
-	/*
-		Registry["circuit"] = func(args Msg) Gadgetry {
-			g := new(Circuit)
-			return g
-		}
-	*/
+
 	Registry["inlet~"] = func(args Msg) Gadgetry {
 		g := new(Gadget)
 		g.AddOutlets(1)
@@ -44,6 +43,20 @@ func init() {
 				c.Emit(o, m)
 			})
 		}
+		return g
+	}
+
+	Registry["swap"] = func(args Msg) Gadgetry {
+		g := new(Gadget)
+		val := args.At(0)
+		g.AddOutlets(2)
+		g.AddInlet(func(m Msg) {
+			g.Emit(1, m)
+			g.Emit(0, val)
+		})
+		g.AddInlet(func(m Msg) {
+			val = m
+		})
 		return g
 	}
 }
