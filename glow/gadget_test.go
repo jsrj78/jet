@@ -8,7 +8,7 @@ import (
 func TestPrintGadgetExists(t *testing.T) {
 	f, ok := Registry["print"]
 	if !ok {
-		t.Errorf("could not find [print] gadget")
+		t.Fatalf("could not find [print] gadget")
 	}
 	g := f()
 	_, ok = g.(*Gadget)
@@ -34,7 +34,7 @@ func TestPrintGadget(t *testing.T) {
 func TestPassGadgetExists(t *testing.T) {
 	f, ok := Registry["pass"]
 	if !ok {
-		t.Errorf("could not find [pass] gadget")
+		t.Fatalf("could not find [pass] gadget")
 	}
 	g := f()
 	_, ok = g.(*Gadget)
