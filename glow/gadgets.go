@@ -22,4 +22,15 @@ func init() {
 		g := new(Circuit)
 		return g
 	}
+
+	Registry["inlet~"] = func() Gadgetry {
+		g := new(Gadget)
+		g.NumOutlets(1)
+		g.onAdded = func(c *Circuit) {
+			c.AddInlet(func(m Msg) {
+				g.Emit(0, m)
+			})
+		}
+		return g
+	}
 }

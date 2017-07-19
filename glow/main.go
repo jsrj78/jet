@@ -113,15 +113,17 @@ var Registry = map[string]func() Gadgetry{}
 
 // Gadgetry is the common interface to gadgets.
 type Gadgetry interface {
-	Connect(o int, d Gadgetry, i int)
-	Feed(i int, m Msg)
-	Emit(o int, m Msg)
+	AddedTo(*Circuit)
+	Connect(int, Gadgetry, int)
+	Feed(int, Msg)
+	Emit(int, Msg)
 }
 
 // A Gadget is the base type for all gadgets.
 type Gadget struct {
 	inlets  []Inlet
 	outlets []Outlet
+	onAdded func(*Circuit)
 }
 
 // An Endpoint is a reference to a specific inlet or outlet in a gadget.
@@ -148,6 +150,13 @@ func (g *Gadget) NumOutlets(n int) {
 	g.outlets = make([]Outlet, n)
 }
 
+// AddedTo is called when a gadget has been added to a circuit.
+func (g *Gadget) AddedTo(c *Circuit) {
+	if g.onAdded != nil {
+		g.onAdded(c)
+	}
+}
+
 // Connect adds a connection from a gadget output to a gadget input.
 func (g *Gadget) Connect(o int, d Gadgetry, i int) {
 	g.outlets[o] = append(g.outlets[o], Endpoint{d, i})
@@ -171,12 +180,13 @@ type Circuit struct {
 	gadgets []Gadgetry
 }
 
-// Add a new gadget (or circuit) to a circuit.
+// Add a new gadget (or sub-circuit) to a circuit.
 func (c *Circuit) Add(g Gadgetry) {
 	c.gadgets = append(c.gadgets, g)
+	g.AddedTo(c)
 }
 
-// Wire adds a connection from one gadget to another
-func (c *Circuit) Wire(srcg, srco, dstg, dsti int) {
+// AddWire adds a connection from one gadget's outlet to another's inlet.
+func (c *Circuit) AddWire(srcg, srco, dstg, dsti int) {
 	c.gadgets[srcg].Connect(srco, c.gadgets[dstg], dsti)
 }
