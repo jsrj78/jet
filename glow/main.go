@@ -138,6 +138,17 @@ type Inlet struct {
 // An Outlet is an endpoint which publishes messages.
 type Outlet []Endpoint
 
+// NewGadget instantiates a gadget from the registry, with optional args.
+func NewGadget(args ...interface{}) Gadgetry {
+	name := args[0].(string)
+	r, ok := Registry[name]
+	if !ok {
+		//fmt.Println("unknown gadget:", args)
+		return nil
+	}
+	return r(Msg(args[1:]))
+}
+
 // AddInlet sets up a new gadget inlet.
 func (g *Gadget) AddInlet(f func(m Msg)) {
 	g.inlets = append(g.inlets, Inlet{handler: f})

@@ -5,13 +5,19 @@ import (
 	"testing"
 )
 
+func TestUnknownGadget(t *testing.T) {
+	g := NewGadget("blah")
+	if g != nil {
+		t.Errorf("expected nil, got: %T", g)
+	}
+}
+
 func TestPrintGadgetExists(t *testing.T) {
-	f, ok := Registry["print"]
-	if !ok {
+	g := NewGadget("print")
+	if g == nil {
 		t.Fatalf("could not find [print] gadget")
 	}
-	g := f(nil)
-	_, ok = g.(*Gadget)
+	_, ok := g.(*Gadget)
 	if !ok {
 		t.Errorf("not a gadget: %v", g)
 	}
@@ -23,7 +29,7 @@ func TestPrintGadget(t *testing.T) {
 	b := &bytes.Buffer{}
 	Debug = b
 
-	g := Registry["print"](nil)
+	g := NewGadget("print")
 	g.Feed(0, NewMsg("hello"))
 
 	if b.String() != "hello" {
@@ -49,8 +55,8 @@ func TestPassAndPrintGadget(t *testing.T) {
 	var b bytes.Buffer
 	Debug = &b
 
-	g1 := Registry["pass"](nil)
-	g2 := Registry["print"](nil)
+	g1 := NewGadget("pass")
+	g2 := NewGadget("print")
 	g1.Connect(0, g2, 0) // g1.out[0] => g2.in[0]
 
 	g1.Feed(0, NewMsg("howdy"))
@@ -62,7 +68,7 @@ func TestPassAndPrintGadget(t *testing.T) {
 
 /*
 func TestEmptyCircuit(t *testing.T) {
-	g := Registry["circuit"](nil)
+	g := NewGadget("circuit")
 	_, ok := g.(*Circuit)
 	if !ok {
 		t.Errorf("expected circuit, got %T", g)
@@ -77,9 +83,9 @@ func TestBuildCircuit(t *testing.T) {
 	Debug = b
 
 	c := new(Circuit)
-	g := Registry["pass"](nil)
+	g := NewGadget("pass")
 	c.Add(g)
-	c.Add(Registry["print"](nil))
+	c.Add(NewGadget("print"))
 	c.AddWire(0, 0, 1, 0)
 
 	g.Feed(0, NewMsg("bingo"))
@@ -96,8 +102,8 @@ func TestCircuitInlet(t *testing.T) {
 	Debug = b
 
 	c := new(Circuit)
-	c.Add(Registry["inlet~"](nil))
-	c.Add(Registry["print"](nil))
+	c.Add(NewGadget("inlet~"))
+	c.Add(NewGadget("print"))
 	c.AddWire(0, 0, 1, 0)
 
 	c.Feed(0, NewMsg("foo"))
@@ -114,11 +120,11 @@ func TestCircuitOutlet(t *testing.T) {
 	Debug = b
 
 	c := new(Circuit)
-	c.Add(Registry["inlet~"](nil))
-	c.Add(Registry["outlet~"](nil))
+	c.Add(NewGadget("inlet~"))
+	c.Add(NewGadget("outlet~"))
 	c.AddWire(0, 0, 1, 0)
 
-	g := Registry["print"](nil)
+	g := NewGadget("print")
 	c.Connect(0, g, 0) // c.out[0] => g.in[0]
 
 	c.Feed(0, NewMsg("bar"))
