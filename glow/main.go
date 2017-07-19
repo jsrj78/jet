@@ -221,7 +221,6 @@ func NewCircuitFromText(text string) Gadgetry {
 	for _, s := range strings.Split(text, "\n") {
 		if strings.HasPrefix(s, "#X ") && strings.HasSuffix(s, ";") {
 			m := MsgFromString(s[3 : len(s)-1])
-			fmt.Println(12345, m)
 			switch m[0] {
 			case "obj":
 				c.Add(NewGadget(m[3:]...))
