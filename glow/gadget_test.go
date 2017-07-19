@@ -27,7 +27,7 @@ func TestPrintGadget(t *testing.T) {
 	g.Feed(0, NewMsg("hello"))
 
 	if b.String() != "hello" {
-		t.Errorf("expected \"hello\", got: %v", b)
+		t.Errorf("expected 'hello', got: %v", b)
 	}
 }
 
@@ -56,6 +56,33 @@ func TestPassAndPrintGadget(t *testing.T) {
 	g1.Feed(0, NewMsg("howdy"))
 
 	if b.String() != "howdy" {
-		t.Errorf("expected \"howdy\", got: %v", b)
+		t.Errorf("expected 'howdy', got: %v", b)
+	}
+}
+
+func TestEmptyCircuit(t *testing.T) {
+	g := Registry["circuit"]()
+	_, ok := g.(*Circuit)
+	if !ok {
+		t.Errorf("expected circuit, got %T", g)
+	}
+}
+
+func TestBuildCircuit(t *testing.T) {
+	tmp := Debug
+	defer func() { Debug = tmp }()
+	b := &bytes.Buffer{}
+	Debug = b
+
+	c := new(Circuit)
+	g := Registry["pass"]()
+	c.Add(g)
+	c.Add(Registry["print"]())
+	c.Wire(0, 0, 1, 0)
+
+	g.Feed(0, NewMsg("bingo"))
+
+	if b.String() != "bingo" {
+		t.Errorf("expected 'bingo', got: %v", b)
 	}
 }

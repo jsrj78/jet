@@ -164,3 +164,19 @@ func (g *Gadget) Emit(o int, m Msg) {
 		ep.gadget.Feed(ep.index, m)
 	}
 }
+
+// A Circuit is a composition of gadgets, including sub-circuits.
+type Circuit struct {
+	Gadget
+	gadgets []Gadgetry
+}
+
+// Add a new gadget (or circuit) to a circuit.
+func (c *Circuit) Add(g Gadgetry) {
+	c.gadgets = append(c.gadgets, g)
+}
+
+// Wire adds a connection from one gadget to another
+func (c *Circuit) Wire(srcg, srco, dstg, dsti int) {
+	c.gadgets[srcg].Connect(srco, c.gadgets[dstg], dsti)
+}

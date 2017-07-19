@@ -17,4 +17,9 @@ func init() {
 		})
 		return g
 	}
+
+	Registry["circuit"] = func() Gadgetry {
+		g := new(Circuit)
+		return g
+	}
 }
