@@ -1,0 +1,5 @@
+matrix:
+  include:
+    - language: go
+      script:
+        - go test ./glow
