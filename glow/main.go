@@ -201,3 +201,34 @@ func (c *Circuit) Add(g Gadgetry) {
 func (c *Circuit) AddWire(srcg, srco, dstg, dsti int) {
 	c.gadgets[srcg].Connect(srco, c.gadgets[dstg], dsti)
 }
+
+// MsgFromString parses a string and returns a message constructed from it.
+func MsgFromString(s string) Msg {
+	m := Msg{}
+	for _, x := range strings.Split(s, " ") {
+		if v, e := strconv.Atoi(x); e == nil {
+			m = append(m, v)
+		} else {
+			m = append(m, x)
+		}
+	}
+	return m
+}
+
+// NewCircuitFromText constructs a circuit from a Pd text representation.
+func NewCircuitFromText(text string) Gadgetry {
+	c := new(Circuit)
+	for _, s := range strings.Split(text, "\n") {
+		if strings.HasPrefix(s, "#X ") && strings.HasSuffix(s, ";") {
+			m := MsgFromString(s[3 : len(s)-1])
+			fmt.Println(12345, m)
+			switch m[0] {
+			case "obj":
+				c.Add(NewGadget(m[3:]...))
+			case "connect":
+				c.AddWire(m[1].(int), m[2].(int), m[3].(int), m[4].(int))
+			}
+		}
+	}
+	return c
+}

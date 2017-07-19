@@ -160,3 +160,31 @@ func TestSwapGadget(t *testing.T) {
 		t.Errorf("expected 4 lines', got: %q", b)
 	}
 }
+
+// this came straight out of the Pd-extended patch editor:
+var swapPatch = `
+#N canvas 673 402 450 300 10;
+#X obj 75 101 swap 123;
+#X obj 75 142 print 1;
+#X obj 146 142 print 2;
+#X obj 75 60 inlet;
+#X connect 0 0 1 0;
+#X connect 0 1 2 0;
+#X connect 3 0 0 0;
+`
+
+func TestSwapPatch(t *testing.T) {
+	tmp := Debug
+	defer func() { Debug = tmp }()
+	b := &bytes.Buffer{}
+	Debug = b
+
+	c := NewCircuitFromText(swapPatch)
+
+	c.Feed(0, NewMsg(11))
+	c.Feed(0, NewMsg(22))
+
+	if b.String() != "2 11\n1 123\n2 22\n1 123\n" {
+		t.Errorf("expected 4 lines', got: %q", b)
+	}
+}
