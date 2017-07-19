@@ -60,6 +60,7 @@ func TestPassAndPrintGadget(t *testing.T) {
 	}
 }
 
+/*
 func TestEmptyCircuit(t *testing.T) {
 	g := Registry["circuit"]()
 	_, ok := g.(*Circuit)
@@ -67,6 +68,7 @@ func TestEmptyCircuit(t *testing.T) {
 		t.Errorf("expected circuit, got %T", g)
 	}
 }
+*/
 
 func TestBuildCircuit(t *testing.T) {
 	tmp := Debug

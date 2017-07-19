@@ -17,12 +17,12 @@ func init() {
 		})
 		return g
 	}
-
+/*
 	Registry["circuit"] = func() Gadgetry {
 		g := new(Circuit)
 		return g
 	}
-
+*/
 	Registry["inlet~"] = func() Gadgetry {
 		g := new(Gadget)
 		g.AddOutlet()
