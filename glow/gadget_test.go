@@ -106,7 +106,7 @@ func TestCircuitInlet(t *testing.T) {
 	Debug = b
 
 	c := new(Circuit)
-	c.Add(NewGadget("inlet~"))
+	c.Add(NewGadget("inlet"))
 	c.Add(NewGadget("print"))
 	c.AddWire(0, 0, 1, 0)
 
@@ -124,8 +124,8 @@ func TestCircuitOutlet(t *testing.T) {
 	Debug = b
 
 	c := new(Circuit)
-	c.Add(NewGadget("inlet~"))
-	c.Add(NewGadget("outlet~"))
+	c.Add(NewGadget("inlet"))
+	c.Add(NewGadget("outlet"))
 	c.AddWire(0, 0, 1, 0)
 
 	g := NewGadget("print")
@@ -145,7 +145,7 @@ func TestSwapGadget(t *testing.T) {
 	Debug = b
 
 	c := new(Circuit)
-	c.Add(NewGadget("inlet~"))
+	c.Add(NewGadget("inlet"))
 	c.Add(NewGadget("swap", 123))
 	c.Add(NewGadget("print", 1))
 	c.Add(NewGadget("print", 2))

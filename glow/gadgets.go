@@ -24,7 +24,7 @@ func init() {
 		return g
 	}
 
-	Registry["inlet~"] = func(args Msg) Gadgetry {
+	Registry["inlet"] = func(args Msg) Gadgetry {
 		g := new(Gadget)
 		g.AddOutlets(1)
 		g.onAdded = func(c *Circuit) {
@@ -35,7 +35,7 @@ func init() {
 		return g
 	}
 
-	Registry["outlet~"] = func(args Msg) Gadgetry {
+	Registry["outlet"] = func(args Msg) Gadgetry {
 		g := new(Gadget)
 		g.onAdded = func(c *Circuit) {
 			o := c.AddOutlets(1)
