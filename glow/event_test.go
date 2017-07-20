@@ -74,9 +74,9 @@ func TestNotificationWithArgs(t *testing.T) {
 	nf := make(Notifier)
 	nf.On("ping", func(m Message) { args = m })
 
-	nf.Notify("ping", 1, "a", 2)
+	nf.Notify("ping", 1, "a", nil)
 
-	if args.String() != "1 a 2" {
-		t.Error("expected '1 a 2', got:", args)
+	if args.String() != "1 a []" {
+		t.Error("expected '1 a []', got:", args)
 	}
 }

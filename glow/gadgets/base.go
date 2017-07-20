@@ -62,4 +62,29 @@ func init() {
 		})
 		return g
 	}
+
+	glow.Registry["send"] = func(args glow.Message) glow.Gadgetry {
+		var parent *glow.Circuit
+		g := glow.NewGadget()
+		g.OnAdded = func(c *glow.Circuit) {
+			parent = c
+		}
+		g.AddInlet(func(m glow.Message) {
+			parent.Notify("msg:"+args.AsString(), m...)
+		})
+		return g
+	}
+	glow.Registry["s"] = glow.Registry["send"]
+
+	glow.Registry["receive"] = func(args glow.Message) glow.Gadgetry {
+		g := glow.NewGadget()
+		g.AddOutlets(1)
+		g.OnAdded = func(c *glow.Circuit) {
+			c.On("msg:"+args.AsString(), func(m glow.Message) {
+				g.Emit(0, m)
+			})
+		}
+		return g
+	}
+	glow.Registry["r"] = glow.Registry["receive"]
 }

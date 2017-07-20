@@ -190,3 +190,40 @@ func TestSwapPatch(t *testing.T) {
 		t.Errorf("expected 4 lines', got: %q", b)
 	}
 }
+
+func TestSendGadget(t *testing.T) {
+	c := glow.NewCircuit()
+	c.Add(glow.LookupGadget("inlet"))
+	c.Add(glow.LookupGadget("s", "abc"))
+	c.AddWire(0, 0, 1, 0)
+
+	var reply glow.Message
+	c.On("msg:abc", func(m glow.Message) { reply = m })
+
+	c.Feed(0, glow.Message{1, 2, 3})
+
+	if reply.String() != "1 2 3" {
+		t.Error("expected '1 2 3', got:", reply)
+	}
+}
+
+func TestSendReceiveGadgets(t *testing.T) {
+	tmp := glow.Debug
+	defer func() { glow.Debug = tmp }()
+	b := &bytes.Buffer{}
+	glow.Debug = b
+
+	c := glow.NewCircuit()
+	c.Add(glow.LookupGadget("inlet"))
+	c.Add(glow.LookupGadget("s", "abc"))
+	c.Add(glow.LookupGadget("r", "abc"))
+	c.Add(glow.LookupGadget("print"))
+	c.AddWire(0, 0, 1, 0)
+	c.AddWire(2, 0, 3, 0)
+
+	c.Feed(0, glow.Message{4, 5, 6})
+
+	if b.String() != "4 5 6\n" {
+		t.Error("expected '4 5 6', got:", b)
+	}
+}

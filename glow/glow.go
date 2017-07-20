@@ -201,6 +201,7 @@ type Circuit struct {
 // NewCircuit creates a new empty circuit
 func NewCircuit() *Circuit {
 	c := new(Circuit)
+	c.Notifier = make(Notifier)
 	return c
 }
 
