@@ -1,6 +1,7 @@
 package glow
 
 import (
+	"fmt"
 	"testing"
 	"time"
 )
@@ -104,51 +105,89 @@ func TestNotificationOff(t *testing.T) {
 	}
 }
 
-func TestSleep(t *testing.T) {
+func TestRunning(t *testing.T) {
+	Now = 0
 	now := time.Now()
-	t0 := Now
-	Sleep(10)
-	diff := Now - t0
+	Run(10)
 	elapsed := time.Since(now)
 
-	if diff != 10 {
-		t.Error("expected 10, got:", diff)
+	if Now != 10 {
+		t.Error("expected 10, got:", Now)
 	}
 	if elapsed > time.Millisecond {
 		t.Error("simulated time should be instant, was:", elapsed)
 	}
 }
 
-func TestNoNextTimeout(t *testing.T) {
-	if NextTimeout >= 0 {
+func TestNoNextTimer(t *testing.T) {
+	if NextTimer >= 0 {
 		t.Error("there should be no timeouts pending")
 	}
 }
 
-func TestMultipleTimeouts(t *testing.T) {
-	t0, t1, t2, t3 := Now, -1, -1, -1
-	SetTimeout(123, func() { t1 = Now })
-	SetTimeout(789, func() { t2 = Now })
-	SetTimeout(456, func() { t3 = Now })
+func TestMultipleTimers(t *testing.T) {
+	Now = 0
+	t1, t2, t3 := -1, -1, -1
+	SetTimer(123, func() { t1 = Now })
+	SetTimer(789, func() { t2 = Now })
+	SetTimer(456, func() { t3 = Now })
 
-	if NextTimeout != t0+123 {
-		t.Error("expected", t0+123, "got:", NextTimeout)
+	if NextTimer != 123 {
+		t.Error("expected", 123, "got:", NextTimer)
 	}
 
-	Sleep(1000)
+	Run(1000)
 
-	diff := Now - t0
-	if diff != 1000 {
-		t.Error("expected 1000, got:", diff)
+	if Now != 1000 {
+		t.Error("expected 1000, got:", Now)
 	}
 
-	if t1 != t0+123 {
-		t.Error("expected", t0+123, "got:", t1)
+	if t1 != 123 {
+		t.Error("expected", 123, "got:", t1)
 	}
-	if t2 != t0+789 {
-		t.Error("expected", t0+789, "got:", t2)
+	if t2 != 789 {
+		t.Error("expected", 789, "got:", t2)
 	}
-	if t3 != t0+456 {
-		t.Error("expected", t0+456, "got:", t3)
+	if t3 != 456 {
+		t.Error("expected", 456, "got:", t3)
+	}
+
+	if NextTimer >= 0 {
+		t.Error("there should be no timeouts pending")
+	}
+}
+
+func TestCancelledNextTimer(t *testing.T) {
+	Now = 0
+	l := SetTimer(123, func() {})
+
+	if NextTimer != 123 {
+		t.Error("expected", 123, "got:", NextTimer)
+	}
+
+	CancelTimer(l)
+
+	if NextTimer >= 0 {
+		t.Error("there should be no timeouts pending")
+	}
+}
+
+func TestPeriodicimer(t *testing.T) {
+	Now = 0
+	v := []int{}
+	SetPeriodic(123, func() { v = append(v, Now) })
+
+	if NextTimer != 123 {
+		t.Error("expected", 123, "got:", NextTimer)
+	}
+
+	Run(500)
+
+	if fmt.Sprint(v) != "[123 246 369 492]" {
+		t.Error("expected '[123 246 369 492]', got:", fmt.Sprint(v))
+	}
+
+	if NextTimer != 615 {
+		t.Error("expected 615, got:", NextTimer)
 	}
 }

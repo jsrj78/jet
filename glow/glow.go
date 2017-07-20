@@ -8,7 +8,6 @@ import (
 	"os"
 	"strconv"
 	"strings"
-	"time"
 )
 
 // A Message is what gets passed around: a "bang", int, string, or vector.
@@ -249,7 +248,7 @@ func NewCircuitFromText(text string) Gadgetry {
 type listener struct {
 	callback func(Message)
 	topic    string
-	period   time.Duration
+	periodic bool
 }
 
 // A Notifier calls listeners interested in a topic or after a timeout.
@@ -257,7 +256,7 @@ type Notifier map[string][]*listener
 
 // On subscribes to a specific topic.
 func (nf Notifier) On(s string, f func(Message)) *listener {
-	e := &listener{callback: f, topic: s, period: 0}
+	e := &listener{callback: f, topic: s}
 	lv, _ := nf[s]
 	nf[s] = append(lv, e)
 	return e
@@ -293,40 +292,70 @@ var Now int
 // The timers map keeps track of all global timeout listeners.
 var timers = make(Notifier)
 
-// NextTimeout is set to the lowest pending timer value.
-var NextTimeout = -1
+// NextTimer is set to the lowest pending timer value.
+var NextTimer = -1
 
-// Sleep moves time forward (but not necessarily for real).
-func Sleep(ms int) {
+// TODO could use a string and fixed-length numbers to avoid many conversions
+// listeners could even be combined with another notifier if prefixed by "t:"
+
+// Run advances (real or simulated) time and triggers all timers as scheduled.
+func Run(ms int) {
 	tlimit := Now + ms
-	for NextTimeout >= 0 && NextTimeout <= tlimit {
-		// this is where simulated time will advance
-		Now = NextTimeout
-		timers.Notify(fmt.Sprint(Now))
-		NextTimeout = -1
-		for topic := range timers {
-			t, _ := strconv.Atoi(topic)
-			fixNextTimeout(t)
-		}
+	for NextTimer >= 0 && NextTimer <= tlimit {
+		Now = NextTimer                // this is where simulated time advances
+		timers.Notify(fmt.Sprint(Now)) // fire all the matching pending timers
+		lookForNextTimer()             // figure out when next timer must run
 	}
 	Now = tlimit // final time jump
 }
 
-// adjustNextTimeout updates the next timeout we need to process
-func fixNextTimeout(t int) {
-	if t < NextTimeout || NextTimeout < 0 {
-		NextTimeout = t
+// lookForNextTimer scans the timers to find the first pending one.
+func lookForNextTimer() {
+	NextTimer = -1
+	for topic := range timers {
+		t, _ := strconv.Atoi(topic)
+		fixNextTimer(t)
 	}
 }
 
-// SetTimeout schedules a new notification, some milliseconds in the future.
-func SetTimeout(ms int, f func()) *listener {
+// adjustNextTimer updates the next timeout we need to process.
+func fixNextTimer(t int) {
+	if t < NextTimer || NextTimer < 0 {
+		NextTimer = t
+	}
+}
+
+// use a separate type for timer listeners to avoid mixups
+type timer listener
+
+// SetTimer schedules a one-shot notification.
+func SetTimer(ms int, f func()) *timer {
 	tsched := Now + ms
-	var l *listener
-	l = timers.On(fmt.Sprint(tsched), func(Message) {
-		timers.Off(l)
+	var t *timer
+	t = (*timer)(timers.On(fmt.Sprint(tsched), func(Message) {
+		CancelTimer(t)
+		if t.periodic {
+			SetPeriodic(ms, f)
+		}
 		f()
-	})
-	fixNextTimeout(tsched)
-	return l
+	}))
+	fixNextTimer(tsched)
+	return t
+}
+
+// SetPeriodic schedules a repeating notification.
+func SetPeriodic(ms int, f func()) *timer {
+	t := SetTimer(ms, f)
+	t.periodic = true
+	return t
+}
+
+// CancelTimer drops a pending timer notification.
+func CancelTimer(t *timer) {
+	timers.Off((*listener)(t))
+	// make sure NextTimer remains valid
+	t1, _ := strconv.Atoi(t.topic)
+	if t1 == NextTimer {
+		lookForNextTimer()
+	}
 }
