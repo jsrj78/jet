@@ -200,7 +200,7 @@ type Circuit struct {
 // NewCircuit creates a new empty circuit
 func NewCircuit() *Circuit {
 	c := new(Circuit)
-	c.Notifier = make(Notifier)
+	c.Notifier = MakeNotifier()
 	return c
 }
 
@@ -253,6 +253,11 @@ type listener struct {
 
 // A Notifier calls listeners interested in a topic or after a timeout.
 type Notifier map[string][]*listener
+
+// MakeNotifier returns a freshly initialised notifier.
+func MakeNotifier() Notifier {
+	return make(Notifier)
+}
 
 // On subscribes to a specific topic.
 func (nf Notifier) On(s string, f func(Message)) *listener {
@@ -311,7 +316,7 @@ func Run(ms int) {
 
 // Stop will cancel all pending timers, used to simplify testing
 func Stop() {
-	timers = make(Notifier)
+	timers = MakeNotifier()
 	NextTimer = -1
 }
 

@@ -10,7 +10,7 @@ import (
 
 func TestOneNotification(t *testing.T) {
 	called := false
-	nf := make(glow.Notifier)
+	nf := glow.MakeNotifier()
 	nf.On("ping", func(glow.Message) { called = true })
 
 	if called {
@@ -26,7 +26,7 @@ func TestOneNotification(t *testing.T) {
 
 func TestMultipleNotificationHandlers(t *testing.T) {
 	calls := 0
-	nf := make(glow.Notifier)
+	nf := glow.MakeNotifier()
 	nf.On("ping", func(glow.Message) { calls += 1 })
 	nf.On("ping", func(glow.Message) { calls += 10 })
 
@@ -39,7 +39,7 @@ func TestMultipleNotificationHandlers(t *testing.T) {
 
 func TestDifferentNotifications(t *testing.T) {
 	calls := 0
-	nf := make(glow.Notifier)
+	nf := glow.MakeNotifier()
 	nf.On("ping", func(glow.Message) { calls += 1 })
 	nf.On("pong", func(glow.Message) { calls += 10 })
 	nf.On("blah", func(glow.Message) { calls += 100 })
@@ -59,7 +59,7 @@ func TestDifferentNotifications(t *testing.T) {
 
 func TestDifferentAndMultipleNotifications(t *testing.T) {
 	calls := 0
-	nf := make(glow.Notifier)
+	nf := glow.MakeNotifier()
 	nf.On("ping", func(glow.Message) { calls += 1 })
 	nf.On("pong", func(glow.Message) { calls += 10 })
 	nf.On("pong", func(glow.Message) { calls += 100 })
@@ -77,7 +77,7 @@ func TestDifferentAndMultipleNotifications(t *testing.T) {
 
 func TestNotificationWithArgs(t *testing.T) {
 	var args glow.Message
-	nf := make(glow.Notifier)
+	nf := glow.MakeNotifier()
 	nf.On("ping", func(m glow.Message) { args = m })
 
 	nf.Notify("ping", 1, "a", nil)
@@ -89,7 +89,7 @@ func TestNotificationWithArgs(t *testing.T) {
 
 func TestNotificationOff(t *testing.T) {
 	called := false
-	nf := make(glow.Notifier)
+	nf := glow.MakeNotifier()
 	l := nf.On("ping", func(glow.Message) { called = true })
 
 	nf.Notify("ping")
