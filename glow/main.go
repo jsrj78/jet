@@ -11,11 +11,6 @@ import (
 	"time"
 )
 
-// NewMsg constructs a new message object.
-func NewMsg(args ...interface{}) Msg {
-	return Msg(args)
-}
-
 // A Msg is what gets passed around: a "bang", int, string, or vector.
 type Msg []interface{}
 
@@ -62,7 +57,7 @@ func (m Msg) At(indices ...int) Msg {
 		} else if m2, ok := mi.(Msg); ok {
 			m = m2
 		} else {
-			m = NewMsg(mi)
+			m = Msg{mi}
 		}
 	}
 	return m
@@ -128,8 +123,8 @@ type Gadget struct {
 	onAdded func(*Circuit)
 }
 
-// An Endpoint is a reference to a specific inlet or outlet in a gadget.
-type Endpoint struct {
+// An endpoint is a reference to a specific inlet or outlet in a gadget.
+type endpoint struct {
 	gadget Gadgetry
 	index  int
 }
@@ -140,7 +135,7 @@ type Inlet struct {
 }
 
 // An Outlet is an endpoint which publishes messages.
-type Outlet []Endpoint
+type Outlet []endpoint
 
 // NewGadget instantiates a gadget from the registry, with optional args.
 func NewGadget(args ...interface{}) Gadgetry {
@@ -174,7 +169,7 @@ func (g *Gadget) AddedTo(c *Circuit) {
 
 // Connect adds a connection from a gadget output to a gadget input.
 func (g *Gadget) Connect(o int, d Gadgetry, i int) {
-	g.outlets[o] = append(g.outlets[o], Endpoint{d, i})
+	g.outlets[o] = append(g.outlets[o], endpoint{d, i})
 }
 
 // Feed accepts a message for a specific inlet (indexed from 0 upwards).
@@ -258,6 +253,6 @@ func (ee EventEmitter) On(s string, f func(Msg)) *Event {
 func (ee EventEmitter) Emit(s string, args ...interface{}) {
 	handlers, _ := ee[s]
 	for _, e := range handlers {
-		e.callback(NewMsg(args...))
+		e.callback(Msg(args))
 	}
 }

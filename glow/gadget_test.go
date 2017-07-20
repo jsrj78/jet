@@ -30,7 +30,7 @@ func TestPrintGadget(t *testing.T) {
 	Debug = b
 
 	g := NewGadget("print")
-	g.Feed(0, NewMsg("hello"))
+	g.Feed(0, Msg{"hello"})
 
 	if b.String() != "hello\n" {
 		t.Errorf("expected 'hello', got: %q", b)
@@ -44,7 +44,7 @@ func TestPrintGadgetArg(t *testing.T) {
 	Debug = b
 
 	g := NewGadget("print", 123)
-	g.Feed(0, NewMsg("hello"))
+	g.Feed(0, Msg{"hello"})
 
 	if b.String() != "123 hello\n" {
 		t.Errorf("expected '123 hello', got: %q", b)
@@ -73,7 +73,7 @@ func TestPassAndPrintGadget(t *testing.T) {
 	g2 := NewGadget("print")
 	g1.Connect(0, g2, 0) // g1.out[0] => g2.in[0]
 
-	g1.Feed(0, NewMsg("howdy"))
+	g1.Feed(0, Msg{"howdy"})
 
 	if b.String() != "howdy\n" {
 		t.Errorf("expected 'howdy', got: %q", b)
@@ -92,7 +92,7 @@ func TestBuildCircuit(t *testing.T) {
 	c.Add(NewGadget("print"))
 	c.AddWire(0, 0, 1, 0)
 
-	g.Feed(0, NewMsg("bingo"))
+	g.Feed(0, Msg{"bingo"})
 
 	if b.String() != "bingo\n" {
 		t.Errorf("expected 'bingo', got: %q", b)
@@ -110,7 +110,7 @@ func TestCircuitInlet(t *testing.T) {
 	c.Add(NewGadget("print"))
 	c.AddWire(0, 0, 1, 0)
 
-	c.Feed(0, NewMsg("foo"))
+	c.Feed(0, Msg{"foo"})
 
 	if b.String() != "foo\n" {
 		t.Errorf("expected 'foo', got: %q", b)
@@ -131,7 +131,7 @@ func TestCircuitOutlet(t *testing.T) {
 	g := NewGadget("print")
 	c.Connect(0, g, 0) // c.out[0] => g.in[0]
 
-	c.Feed(0, NewMsg("bar"))
+	c.Feed(0, Msg{"bar"})
 
 	if b.String() != "bar\n" {
 		t.Errorf("expected 'bar', got: %q", b)
@@ -153,8 +153,8 @@ func TestSwapGadget(t *testing.T) {
 	c.AddWire(1, 0, 2, 0)
 	c.AddWire(1, 1, 3, 0)
 
-	c.Feed(0, NewMsg(111))
-	c.Feed(0, NewMsg(222))
+	c.Feed(0, Msg{111})
+	c.Feed(0, Msg{222})
 
 	if b.String() != "2 111\n1 123\n2 222\n1 123\n" {
 		t.Errorf("expected 4 lines', got: %q", b)
@@ -181,8 +181,8 @@ func TestSwapPatch(t *testing.T) {
 
 	c := NewCircuitFromText(swapPatch)
 
-	c.Feed(0, NewMsg(11))
-	c.Feed(0, NewMsg(22))
+	c.Feed(0, Msg{11})
+	c.Feed(0, Msg{22})
 
 	if b.String() != "2 11\n1 123\n2 22\n1 123\n" {
 		t.Errorf("expected 4 lines', got: %q", b)
