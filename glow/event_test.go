@@ -68,3 +68,15 @@ func TestMultipleEventsAndHandlers(t *testing.T) {
 		t.Error("expected 223, got:", calls)
 	}
 }
+
+func TestEventWithArgs(t *testing.T) {
+	var args Msg
+	ee := make(EventEmitter)
+	ee.On("ping", func(m Msg) { args = m })
+
+	ee.Emit("ping", 1, "a", 2)
+
+	if args.String() != "1 a 2" {
+		t.Error("expected '1 a 2', got:", args)
+	}
+}

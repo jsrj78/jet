@@ -140,3 +140,10 @@ func TestNestedMsgAsString(t *testing.T) {
 		t.Errorf("wrong string, got: %s", s)
 	}
 }
+
+func TestNilInMsg(t *testing.T) {
+	m := NewMsg(nil)
+	if m.String() != "[]" {
+		t.Error("expected [], got:", m.String())
+	}
+}

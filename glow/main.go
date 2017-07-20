@@ -56,10 +56,13 @@ func (m Msg) At(indices ...int) Msg {
 		if index >= len(m) {
 			return Msg{}
 		}
-		if m2, ok := m[index].(Msg); ok {
+		mi := m[index]
+		if mi == nil {
+			m = Msg{}
+		} else if m2, ok := mi.(Msg); ok {
 			m = m2
 		} else {
-			m = NewMsg(m[index])
+			m = NewMsg(mi)
 		}
 	}
 	return m
@@ -252,9 +255,9 @@ func (ee EventEmitter) On(s string, f func(Msg)) *Event {
 }
 
 // Emit triggers the specified topic.
-func (ee EventEmitter) Emit(s string) {
+func (ee EventEmitter) Emit(s string, args ...interface{}) {
 	handlers, _ := ee[s]
 	for _, e := range handlers {
-		e.callback(nil)
+		e.callback(NewMsg(args...))
 	}
 }
