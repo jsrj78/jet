@@ -99,4 +99,48 @@ func init() {
 		}
 		return g
 	}
+
+	glow.Registry["smooth"] = func(args glow.Message) glow.Gadgetry {
+		state, weight := 0, 0
+		g := glow.NewGadget()
+		g.AddOutlets(1)
+		g.AddInlet(func(m glow.Message) {
+			state = (weight*state + m.AsInt()) / (weight + 1)
+			weight = args.AsInt()
+			g.Emit(0, glow.Message{state})
+		})
+		g.AddInlet(func(m glow.Message) {
+			args = m
+		})
+		return g
+	}
+
+	glow.Registry["change"] = func(args glow.Message) glow.Gadgetry {
+		var last glow.Message
+		g := glow.NewGadget()
+		g.AddOutlets(1)
+		g.AddInlet(func(m glow.Message) {
+			if last == nil || m.AsInt() != last.AsInt() {
+				last = m
+				g.Emit(0, last)
+			}
+		})
+		return g
+	}
+
+	glow.Registry["moses"] = func(args glow.Message) glow.Gadgetry {
+		g := glow.NewGadget()
+		g.AddOutlets(2)
+		g.AddInlet(func(m glow.Message) {
+			if m.AsInt() < args.AsInt() {
+				g.Emit(0, m)
+			} else {
+				g.Emit(1, m)
+			}
+		})
+		g.AddInlet(func(m glow.Message) {
+			args = m
+		})
+		return g
+	}
 }

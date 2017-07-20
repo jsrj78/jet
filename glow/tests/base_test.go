@@ -247,3 +247,76 @@ func TestMetroGadget(t *testing.T) {
 		t.Error("expected '[]\n[]\n[]\n[]\n', got:", b)
 	}
 }
+
+func TestSmoothGadget(t *testing.T) {
+	tmp := glow.Debug
+	defer func() { glow.Debug = tmp }()
+	b := &bytes.Buffer{}
+	glow.Debug = b
+
+	c := glow.NewCircuit()
+	c.Add(glow.LookupGadget("inlet"))
+	c.Add(glow.LookupGadget("smooth", 3))
+	c.Add(glow.LookupGadget("print"))
+	c.AddWire(0, 0, 1, 0)
+	c.AddWire(1, 0, 2, 0)
+
+	c.Feed(0, glow.Message{10})
+	for i := 0; i < 10; i++ {
+		c.Feed(0, glow.Message{100})
+	}
+
+	if b.String() != "10\n32\n49\n61\n70\n77\n82\n86\n89\n91\n93\n" {
+		t.Errorf("expected '10 32 49 61 70 77 82 86 89 91 93', got: %q", b)
+	}
+}
+
+func TestChangeGadget(t *testing.T) {
+	tmp := glow.Debug
+	defer func() { glow.Debug = tmp }()
+	b := &bytes.Buffer{}
+	glow.Debug = b
+
+	c := glow.NewCircuit()
+	c.Add(glow.LookupGadget("inlet"))
+	c.Add(glow.LookupGadget("change"))
+	c.Add(glow.LookupGadget("print"))
+	c.AddWire(0, 0, 1, 0)
+	c.AddWire(1, 0, 2, 0)
+
+	c.Feed(0, glow.Message{0})
+	c.Feed(0, glow.Message{1})
+	c.Feed(0, glow.Message{1})
+	c.Feed(0, glow.Message{2})
+	c.Feed(0, glow.Message{2})
+	c.Feed(0, glow.Message{3})
+	c.Feed(0, glow.Message{0})
+
+	if b.String() != "0\n1\n2\n3\n0\n" {
+		t.Errorf("expected '0 1 2 3 0', got: %q", b)
+	}
+}
+
+func TestMosesGadget(t *testing.T) {
+	tmp := glow.Debug
+	defer func() { glow.Debug = tmp }()
+	b := &bytes.Buffer{}
+	glow.Debug = b
+
+	c := glow.NewCircuit()
+	c.Add(glow.LookupGadget("inlet"))
+	c.Add(glow.LookupGadget("moses", 5))
+	c.Add(glow.LookupGadget("print", 1))
+	c.Add(glow.LookupGadget("print", 2))
+	c.AddWire(0, 0, 1, 0)
+	c.AddWire(1, 0, 2, 0)
+	c.AddWire(1, 1, 3, 0)
+
+	c.Feed(0, glow.Message{4})
+	c.Feed(0, glow.Message{5})
+	c.Feed(0, glow.Message{6})
+
+	if b.String() != "1 4\n2 5\n2 6\n" {
+		t.Errorf("expected '1 4, 2 5, 2 6', got: %q", b)
+	}
+}
