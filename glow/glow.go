@@ -110,7 +110,7 @@ var Registry = map[string]func(args Message) Gadgetry{}
 
 // Gadgetry is the common interface for all gadgets and circuits.
 type Gadgetry interface {
-	AddedTo(*Circuit)
+	addedTo(*Circuit)
 	Connect(int, Gadgetry, int)
 	Feed(int, Message)
 	Emit(int, Message)
@@ -165,8 +165,8 @@ func (g *Gadget) AddOutlets(n int) int {
 	return i
 }
 
-// AddedTo is called when a gadget has been added to a circuit.
-func (g *Gadget) AddedTo(c *Circuit) {
+// addedTo is called when a gadget has been added to a circuit.
+func (g *Gadget) addedTo(c *Circuit) {
 	if g.OnAdded != nil {
 		g.OnAdded(c)
 	}
@@ -207,7 +207,7 @@ func NewCircuit() *Circuit {
 // Add a new gadget (or sub-circuit) to a circuit.
 func (c *Circuit) Add(g Gadgetry) {
 	c.gadgets = append(c.gadgets, g)
-	g.AddedTo(c)
+	g.addedTo(c)
 }
 
 // AddWire adds a connection from one gadget's outlet to another's inlet.
