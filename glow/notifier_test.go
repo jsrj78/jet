@@ -181,12 +181,12 @@ func TestPeriodicimer(t *testing.T) {
 		t.Error("expected", 123, "got:", NextTimer)
 	}
 
+	defer Stop() // TODO manually stop all timers
 	Run(500)
 
 	if fmt.Sprint(v) != "[123 246 369 492]" {
 		t.Error("expected '[123 246 369 492]', got:", fmt.Sprint(v))
 	}
-
 	if NextTimer != 615 {
 		t.Error("expected 615, got:", NextTimer)
 	}

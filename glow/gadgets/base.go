@@ -87,4 +87,16 @@ func init() {
 		return g
 	}
 	glow.Registry["r"] = glow.Registry["receive"]
+
+	glow.Registry["metro"] = func(args glow.Message) glow.Gadgetry {
+		// TODO start on hot inlet, add 2nd inlet for changing period
+		g := glow.NewGadget()
+		g.AddOutlets(1)
+		g.OnAdded = func(c *glow.Circuit) {
+			glow.SetPeriodic(args.AsInt(), func() {
+				g.Emit(0, nil)
+			})
+		}
+		return g
+	}
 }

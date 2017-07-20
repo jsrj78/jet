@@ -227,3 +227,22 @@ func TestSendReceiveGadgets(t *testing.T) {
 		t.Error("expected '4 5 6', got:", b)
 	}
 }
+
+func TestMetroGadget(t *testing.T) {
+	tmp := glow.Debug
+	defer func() { glow.Debug = tmp }()
+	b := &bytes.Buffer{}
+	glow.Debug = b
+
+	c := glow.NewCircuit()
+	c.Add(glow.LookupGadget("metro", 123))
+	c.Add(glow.LookupGadget("print"))
+	c.AddWire(0, 0, 1, 0)
+
+	defer glow.Stop() // TODO manually stop all timers
+	glow.Run(500)
+
+	if b.String() != "[]\n[]\n[]\n[]\n" {
+		t.Error("expected '[]\n[]\n[]\n[]\n', got:", b)
+	}
+}

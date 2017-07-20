@@ -290,10 +290,10 @@ func (nf Notifier) Notify(s string, args ...interface{}) {
 var Now int
 
 // The timers map keeps track of all global timeout listeners.
-var timers = make(Notifier)
+var timers Notifier
 
-// NextTimer is set to the lowest pending timer value.
-var NextTimer = -1
+// NextTimer is set to the lowest pending timer value, else -1.
+var NextTimer int
 
 // TODO could use a string and fixed-length numbers to avoid many conversions
 // listeners could even be combined with another notifier if prefixed by "t:"
@@ -307,6 +307,16 @@ func Run(ms int) {
 		lookForNextTimer()             // figure out when next timer must run
 	}
 	Now = tlimit // final time jump
+}
+
+// Stop will cancel all pending timers, used to simplify testing
+func Stop() {
+	timers = make(Notifier)
+	NextTimer = -1
+}
+
+func init() {
+	Stop()
 }
 
 // lookForNextTimer scans the timers to find the first pending one.
