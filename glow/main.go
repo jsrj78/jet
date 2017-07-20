@@ -8,6 +8,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 )
 
 // NewMsg constructs a new message object.
@@ -230,4 +231,30 @@ func NewCircuitFromText(text string) Gadgetry {
 		}
 	}
 	return c
+}
+
+// An Event represents the state of a single registered event handler.
+type Event struct {
+	callback func(Msg)
+	topic    string
+	period   time.Duration
+}
+
+// An EventEmitter can be used as local pubsub mechanism.
+type EventEmitter map[string][]*Event
+
+// On subscribes to a specific topic.
+func (ee EventEmitter) On(s string, f func(Msg)) *Event {
+	e := &Event{callback: f, topic: s, period: 0}
+	handlers, _ := ee[s]
+	ee[s] = append(handlers, e)
+	return e
+}
+
+// Emit triggers the specified topic.
+func (ee EventEmitter) Emit(s string) {
+	handlers, _ := ee[s]
+	for _, e := range handlers {
+		e.callback(nil)
+	}
 }
