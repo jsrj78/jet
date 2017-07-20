@@ -70,7 +70,7 @@ func init() {
 			parent = c
 		}
 		g.AddInlet(func(m glow.Message) {
-			parent.Notify("msg:"+args.AsString(), m...)
+			parent.Notify("msg:"+args.String(), m...)
 		})
 		return g
 	}
@@ -80,7 +80,7 @@ func init() {
 		g := glow.NewGadget()
 		g.AddOutlets(1)
 		g.OnAdded = func(c *glow.Circuit) {
-			c.On("msg:"+args.AsString(), func(m glow.Message) {
+			c.On("msg:"+args.String(), func(m glow.Message) {
 				g.Emit(0, m)
 			})
 		}

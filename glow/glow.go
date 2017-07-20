@@ -245,28 +245,44 @@ func NewCircuitFromText(text string) Gadgetry {
 	return c
 }
 
-// A NotificationHandler handles notification triggers.
-type NotificationHandler struct {
+// A listener responds to notifications.
+type listener struct {
 	callback func(Message)
 	topic    string
 	period   time.Duration
 }
 
-// A Notifier calls handlers interested in a topic or after a timeout.
-type Notifier map[string][]*NotificationHandler
+// A Notifier calls listeners interested in a topic or after a timeout.
+type Notifier map[string][]*listener
 
 // On subscribes to a specific topic.
-func (nf Notifier) On(s string, f func(Message)) *NotificationHandler {
-	e := &NotificationHandler{callback: f, topic: s, period: 0}
-	handlers, _ := nf[s]
-	nf[s] = append(handlers, e)
+func (nf Notifier) On(s string, f func(Message)) *listener {
+	e := &listener{callback: f, topic: s, period: 0}
+	lv, _ := nf[s]
+	nf[s] = append(lv, e)
 	return e
 }
 
-// Notify triggers the specified topic.
+// Off unsubscribes an existing listener.
+func (nf Notifier) Off(l *listener) {
+	lv := nf[l.topic]
+	for i, x := range lv {
+		if l == x {
+			n := copy(lv[i+1:], lv[i:])
+			lv = lv[:i+n]
+		}
+	}
+	if len(lv) > 0 {
+		nf[l.topic] = lv
+	} else {
+		delete(nf, l.topic)
+	}
+}
+
+// Notify informs all listeners of a specific topic.
 func (nf Notifier) Notify(s string, args ...interface{}) {
-	handlers, _ := nf[s]
-	for _, e := range handlers {
+	l, _ := nf[s]
+	for _, e := range l {
 		e.callback(args)
 	}
 }

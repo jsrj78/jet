@@ -80,3 +80,23 @@ func TestNotificationWithArgs(t *testing.T) {
 		t.Error("expected '1 a []', got:", args)
 	}
 }
+
+func TestNotificationOff(t *testing.T) {
+	called := false
+	nf := make(Notifier)
+	l := nf.On("ping", func(Message) { called = true })
+
+	nf.Notify("ping")
+
+	if !called {
+		t.Error("event did not fire")
+	}
+
+	nf.Off(l)
+	called = false
+	nf.Notify("ping")
+
+	if called {
+		t.Error("event fired again")
+	}
+}
