@@ -286,3 +286,35 @@ func (nf Notifier) Notify(s string, args ...interface{}) {
 		e.callback(args)
 	}
 }
+
+// Now is the current time, either real or simulated.
+var Now int
+
+// The timers notifier keeps track of all global timeout listeners.
+var timers = make(Notifier)
+
+// nextTime is set to the lowest pending timer value.
+var nextTime = -1
+
+// Sleep moves time forward (but not necessarily for real).
+func Sleep(ms int) {
+	Now += ms
+}
+
+// NextTimeout returns the time of the earliest next timout, or -1 if none.
+func NextTimeout() int {
+	return nextTime
+}
+
+// SetTimeout schedules a new notification, some milliseconds in the future.
+func SetTimeout(ms int, f func(Message)) *listener {
+	tsched := Now + ms
+	topic := fmt.Sprintf("%d", tsched)
+	l := timers.On(topic, f)
+
+	if tsched < nextTime || nextTime < 0 {
+		nextTime = tsched
+	}
+
+	return l
+}

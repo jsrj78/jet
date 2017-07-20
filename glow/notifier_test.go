@@ -1,6 +1,9 @@
 package glow
 
-import "testing"
+import (
+	"testing"
+	"time"
+)
 
 func TestOneNotification(t *testing.T) {
 	called := false
@@ -98,5 +101,35 @@ func TestNotificationOff(t *testing.T) {
 
 	if called {
 		t.Error("event fired again")
+	}
+}
+
+func TestSleep(t *testing.T) {
+	now := time.Now()
+	t0 := Now
+	Sleep(10)
+	diff := Now - t0
+	elapsed := time.Since(now)
+
+	if diff != 10 {
+		t.Error("expected 10, got:", diff)
+	}
+	if elapsed > time.Millisecond {
+		t.Error("simulated time should be instant, was:", elapsed)
+	}
+}
+
+func TestNoNextTimeout(t *testing.T) {
+	if NextTimeout() >= 0 {
+		t.Error("there should be no timeouts pending")
+	}
+}
+
+func TestNextTimeout(t *testing.T) {
+	t0 := Now
+	SetTimeout(123, func(Message) { t.Error("should not happen") })
+
+	if NextTimeout() != t0+123 {
+		t.Error("expected", t0+123, "got:", NextTimeout())
 	}
 }
