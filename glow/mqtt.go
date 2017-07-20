@@ -6,7 +6,7 @@ import (
 )
 
 func init() {
-	Registry["mqtt"] = func(args Msg) Gadgetry {
+	Registry["mqtt"] = func(args Message) Gadgetry {
 		pattern := args.At(0).AsString()
 		if pattern == "" {
 			pattern = "#"
@@ -28,7 +28,7 @@ func init() {
 		}
 
 		var f mqtt.MessageHandler = func(c mqtt.Client, m mqtt.Message) {
-			g.Emit(0, Msg{string(m.Topic()), string(m.Payload())})
+			g.Emit(0, Message{string(m.Topic()), string(m.Payload())})
 		}
 		if t := c.Subscribe(pattern, 0, f); t.Wait() && t.Error() != nil {
 			panic(t.Error())

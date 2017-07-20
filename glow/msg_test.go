@@ -2,22 +2,22 @@ package glow
 
 import "testing"
 
-func TestDefaultMsgIsBang(t *testing.T) {
-	m := Msg{}
+func TestDefaultMessageIsBang(t *testing.T) {
+	var m Message
 	if !m.IsBang() {
 		t.Errorf("should be bang")
 	}
 }
 
 func TestAtOutOfRangeIsBang(t *testing.T) {
-	m := Msg{}
+	var m Message
 	if !m.At(123).IsBang() {
 		t.Errorf("should be bang")
 	}
 }
 
-func TestIntMsg(t *testing.T) {
-	m := Msg{123}
+func TestIntMessage(t *testing.T) {
+	m := Message{123}
 	if m.IsBang() {
 		t.Errorf("should not be bang")
 	}
@@ -29,15 +29,15 @@ func TestIntMsg(t *testing.T) {
 	}
 }
 
-func TestNotIntMsg(t *testing.T) {
-	m := Msg{123, 456}
+func TestNotIntMessage(t *testing.T) {
+	m := Message{123, 456}
 	if m.IsInt() {
 		t.Errorf("should not be int")
 	}
 }
 
-func TestStringMsg(t *testing.T) {
-	m := Msg{"abc"}
+func TestStringMessage(t *testing.T) {
+	m := Message{"abc"}
 	if m.IsBang() {
 		t.Errorf("should not be bang")
 	}
@@ -52,45 +52,45 @@ func TestStringMsg(t *testing.T) {
 	}
 }
 
-func TestNotStringMsg(t *testing.T) {
-	m := Msg{"abc", "def"}
+func TestNotStringMessage(t *testing.T) {
+	m := Message{"abc", "def"}
 	if m.IsString() {
 		t.Errorf("should not be string")
 	}
 }
 
 func TestAsInt(t *testing.T) {
-	m := Msg{12345}
+	m := Message{12345}
 	if m.AsInt() != 12345 {
 		t.Errorf("expected 12345, got: %d", m.AsInt())
 	}
 }
 
 func TestAsNotInt(t *testing.T) {
-	m := Msg{"abc"}
+	m := Message{"abc"}
 	if m.AsInt() != 0 {
 		t.Errorf("expected 0, got: %d", m.AsInt())
 	}
 }
 
 func TestAsString(t *testing.T) {
-	m := Msg{"abcde"}
+	m := Message{"abcde"}
 	if m.AsString() != "abcde" {
 		t.Errorf("expected \"abcde\", got: %s", m.AsString())
 	}
 }
 
 func TestAsNotString(t *testing.T) {
-	m := Msg{123}
+	m := Message{123}
 	if m.AsString() != "" {
 		t.Errorf("expected \"\", got: %s", m.AsString())
 	}
 }
 
-var nestedMsg = Msg{123, "abc", Msg{4, Msg{}, 6}, "d e", 789, "f\ng"}
+var nestedMessage = Message{123, "abc", Message{4, nil, 6}, "d e", 789, "f\ng"}
 
-func TestNestedMsg(t *testing.T) {
-	m := nestedMsg
+func TestNestedMessage(t *testing.T) {
+	m := nestedMessage
 	if len(m) != 6 {
 		t.Errorf("expected length 6, got: %d", len(m))
 	}
@@ -114,35 +114,35 @@ func TestNestedMsg(t *testing.T) {
 	}
 }
 
-func TestMsgAsString(t *testing.T) {
+func TestMessageAsString(t *testing.T) {
 	var s string
-	s = Msg{}.String()
+	s = Message{}.String()
 	if s != "[]" {
 		t.Errorf("wrong string, got: %s", s)
 	}
-	s = Msg{"abc"}.String()
+	s = Message{"abc"}.String()
 	if s != "abc" {
 		t.Errorf("wrong string, got: %s", s)
 	}
-	s = Msg{""}.String()
+	s = Message{""}.String()
 	if s != `""` {
 		t.Errorf("wrong string, got: %s", s)
 	}
-	s = Msg{"123"}.String()
+	s = Message{"123"}.String()
 	if s != `"123"` {
 		t.Errorf("wrong string, got: %s", s)
 	}
 }
 
-func TestNestedMsgAsString(t *testing.T) {
-	s := nestedMsg.String()
+func TestNestedMessageAsString(t *testing.T) {
+	s := nestedMessage.String()
 	if s != `123 abc [4 [] 6] "d e" 789 "f\ng"` {
 		t.Errorf("wrong string, got: %s", s)
 	}
 }
 
-func TestNilInMsg(t *testing.T) {
-	m := Msg{nil}
+func TestNilInMessage(t *testing.T) {
+	m := Message{nil}
 	if m.String() != "[]" {
 		t.Error("expected [], got:", m.String())
 	}

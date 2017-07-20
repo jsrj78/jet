@@ -11,11 +11,11 @@ import (
 	"time"
 )
 
-// A Msg is what gets passed around: a "bang", int, string, or vector.
-type Msg []interface{}
+// A Message is what gets passed around: a "bang", int, string, or vector.
+type Message []interface{}
 
 // String returns a nice string representation of a message.
-func (m Msg) String() string {
+func (m Message) String() string {
 	if m.IsBang() {
 		return "[]"
 	}
@@ -46,30 +46,31 @@ func (m Msg) String() string {
 }
 
 // At indexes arbitrarily-deeply-nested message structures.
-func (m Msg) At(indices ...int) Msg {
+func (m Message) At(indices ...int) Message {
 	for _, index := range indices {
 		if index >= len(m) {
-			return Msg{}
+			return nil
 		}
 		mi := m[index]
 		if mi == nil {
-			m = Msg{}
-		} else if m2, ok := mi.(Msg); ok {
+			return nil
+		}
+		if m2, ok := mi.(Message); ok {
 			m = m2
 		} else {
-			m = Msg{mi}
+			m = Message{mi}
 		}
 	}
 	return m
 }
 
 // IsBang returns true if m is a "bang".
-func (m Msg) IsBang() bool {
+func (m Message) IsBang() bool {
 	return len(m) == 0
 }
 
 // IsInt returns true if m is an int.
-func (m Msg) IsInt() (ok bool) {
+func (m Message) IsInt() (ok bool) {
 	if len(m) == 1 {
 		_, ok = m[0].(int)
 	}
@@ -77,7 +78,7 @@ func (m Msg) IsInt() (ok bool) {
 }
 
 // IsString returns true if m is a string.
-func (m Msg) IsString() (ok bool) {
+func (m Message) IsString() (ok bool) {
 	if len(m) == 1 {
 		_, ok = m[0].(string)
 	}
@@ -85,7 +86,7 @@ func (m Msg) IsString() (ok bool) {
 }
 
 // AsInt returns the int in m, else 0.
-func (m Msg) AsInt() int {
+func (m Message) AsInt() int {
 	if m.IsInt() {
 		return m[0].(int)
 	}
@@ -94,7 +95,7 @@ func (m Msg) AsInt() int {
 }
 
 // AsString returns the string in m, else "".
-func (m Msg) AsString() string {
+func (m Message) AsString() string {
 	if m.IsString() {
 		return m[0].(string)
 	}
@@ -106,14 +107,14 @@ func (m Msg) AsString() string {
 var Debug io.Writer = os.Stdout
 
 // The Registry is a collection of named gadget constructors.
-var Registry = map[string]func(args Msg) Gadgetry{}
+var Registry = map[string]func(args Message) Gadgetry{}
 
 // Gadgetry is the common interface for all gadgets and circuits.
 type Gadgetry interface {
 	AddedTo(*Circuit)
 	Connect(int, Gadgetry, int)
-	Feed(int, Msg)
-	Emit(int, Msg)
+	Feed(int, Message)
+	Emit(int, Message)
 }
 
 // A Gadget is the base type for all gadgets.
@@ -131,7 +132,7 @@ type endpoint struct {
 
 // An Inlet is an endpoint which accepts messages.
 type Inlet struct {
-	handler func(m Msg)
+	handler func(m Message)
 }
 
 // An Outlet is an endpoint which publishes messages.
@@ -145,11 +146,11 @@ func NewGadget(args ...interface{}) Gadgetry {
 		//fmt.Println("unknown gadget:", args)
 		return nil
 	}
-	return r(Msg(args[1:]))
+	return r(Message(args[1:]))
 }
 
 // AddInlet sets up a new gadget inlet.
-func (g *Gadget) AddInlet(f func(m Msg)) {
+func (g *Gadget) AddInlet(f func(m Message)) {
 	g.inlets = append(g.inlets, Inlet{handler: f})
 }
 
@@ -173,12 +174,12 @@ func (g *Gadget) Connect(o int, d Gadgetry, i int) {
 }
 
 // Feed accepts a message for a specific inlet (indexed from 0 upwards).
-func (g *Gadget) Feed(i int, m Msg) {
+func (g *Gadget) Feed(i int, m Message) {
 	g.inlets[i].handler(m)
 }
 
 // Emit sends a message to a specific outlet (indexed from 0 upwards).
-func (g *Gadget) Emit(o int, m Msg) {
+func (g *Gadget) Emit(o int, m Message) {
 	for _, ep := range g.outlets[o] {
 		ep.gadget.Feed(ep.index, m)
 	}
@@ -201,9 +202,8 @@ func (c *Circuit) AddWire(srcg, srco, dstg, dsti int) {
 	c.gadgets[srcg].Connect(srco, c.gadgets[dstg], dsti)
 }
 
-// MsgFromString parses a string and returns a message constructed from it.
-func MsgFromString(s string) Msg {
-	m := Msg{}
+// ParseAsMessage parses a string and returns a message constructed from it.
+func ParseAsMessage(s string) (m Message) {
 	for _, x := range strings.Split(s, " ") {
 		if v, e := strconv.Atoi(x); e == nil {
 			m = append(m, v)
@@ -211,7 +211,7 @@ func MsgFromString(s string) Msg {
 			m = append(m, x)
 		}
 	}
-	return m
+	return
 }
 
 // NewCircuitFromText constructs a circuit from a Pd text representation.
@@ -219,7 +219,7 @@ func NewCircuitFromText(text string) Gadgetry {
 	c := new(Circuit)
 	for _, s := range strings.Split(text, "\n") {
 		if strings.HasPrefix(s, "#X ") && strings.HasSuffix(s, ";") {
-			m := MsgFromString(s[3 : len(s)-1])
+			m := ParseAsMessage(s[3 : len(s)-1])
 			switch m[0] {
 			case "obj":
 				c.Add(NewGadget(m[3:]...))
@@ -233,7 +233,7 @@ func NewCircuitFromText(text string) Gadgetry {
 
 // An Event represents the state of a single registered event handler.
 type Event struct {
-	callback func(Msg)
+	callback func(Message)
 	topic    string
 	period   time.Duration
 }
@@ -242,7 +242,7 @@ type Event struct {
 type EventEmitter map[string][]*Event
 
 // On subscribes to a specific topic.
-func (ee EventEmitter) On(s string, f func(Msg)) *Event {
+func (ee EventEmitter) On(s string, f func(Message)) *Event {
 	e := &Event{callback: f, topic: s, period: 0}
 	handlers, _ := ee[s]
 	ee[s] = append(handlers, e)
@@ -253,6 +253,6 @@ func (ee EventEmitter) On(s string, f func(Msg)) *Event {
 func (ee EventEmitter) Emit(s string, args ...interface{}) {
 	handlers, _ := ee[s]
 	for _, e := range handlers {
-		e.callback(Msg(args))
+		e.callback(Message(args))
 	}
 }

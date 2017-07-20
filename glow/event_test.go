@@ -5,7 +5,7 @@ import "testing"
 func TestOneEvent(t *testing.T) {
 	called := false
 	ee := make(EventEmitter)
-	ee.On("ping", func(Msg) { called = true })
+	ee.On("ping", func(Message) { called = true })
 
 	if called {
 		t.Error("event fired too soon")
@@ -21,8 +21,8 @@ func TestOneEvent(t *testing.T) {
 func TestMultipleEventHandlers(t *testing.T) {
 	calls := 0
 	ee := make(EventEmitter)
-	ee.On("ping", func(Msg) { calls += 1 })
-	ee.On("ping", func(Msg) { calls += 10 })
+	ee.On("ping", func(Message) { calls += 1 })
+	ee.On("ping", func(Message) { calls += 10 })
 
 	ee.Emit("ping")
 
@@ -34,9 +34,9 @@ func TestMultipleEventHandlers(t *testing.T) {
 func TestMultipleEvents(t *testing.T) {
 	calls := 0
 	ee := make(EventEmitter)
-	ee.On("ping", func(Msg) { calls += 1 })
-	ee.On("pong", func(Msg) { calls += 10 })
-	ee.On("blah", func(Msg) { calls += 100 })
+	ee.On("ping", func(Message) { calls += 1 })
+	ee.On("pong", func(Message) { calls += 10 })
+	ee.On("blah", func(Message) { calls += 100 })
 
 	ee.Emit("ping")
 
@@ -54,9 +54,9 @@ func TestMultipleEvents(t *testing.T) {
 func TestMultipleEventsAndHandlers(t *testing.T) {
 	calls := 0
 	ee := make(EventEmitter)
-	ee.On("ping", func(Msg) { calls += 1 })
-	ee.On("pong", func(Msg) { calls += 10 })
-	ee.On("pong", func(Msg) { calls += 100 })
+	ee.On("ping", func(Message) { calls += 1 })
+	ee.On("pong", func(Message) { calls += 10 })
+	ee.On("pong", func(Message) { calls += 100 })
 
 	ee.Emit("ping")
 	ee.Emit("pong")
@@ -70,9 +70,9 @@ func TestMultipleEventsAndHandlers(t *testing.T) {
 }
 
 func TestEventWithArgs(t *testing.T) {
-	var args Msg
+	var args Message
 	ee := make(EventEmitter)
-	ee.On("ping", func(m Msg) { args = m })
+	ee.On("ping", func(m Message) { args = m })
 
 	ee.Emit("ping", 1, "a", 2)
 
