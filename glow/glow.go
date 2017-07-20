@@ -290,31 +290,43 @@ func (nf Notifier) Notify(s string, args ...interface{}) {
 // Now is the current time, either real or simulated.
 var Now int
 
-// The timers notifier keeps track of all global timeout listeners.
+// The timers map keeps track of all global timeout listeners.
 var timers = make(Notifier)
 
-// nextTime is set to the lowest pending timer value.
-var nextTime = -1
+// NextTimeout is set to the lowest pending timer value.
+var NextTimeout = -1
 
 // Sleep moves time forward (but not necessarily for real).
 func Sleep(ms int) {
-	Now += ms
+	tlimit := Now + ms
+	for NextTimeout >= 0 && NextTimeout <= tlimit {
+		// this is where simulated time will advance
+		Now = NextTimeout
+		timers.Notify(fmt.Sprint(Now))
+		NextTimeout = -1
+		for topic := range timers {
+			t, _ := strconv.Atoi(topic)
+			fixNextTimeout(t)
+		}
+	}
+	Now = tlimit // final time jump
 }
 
-// NextTimeout returns the time of the earliest next timout, or -1 if none.
-func NextTimeout() int {
-	return nextTime
+// adjustNextTimeout updates the next timeout we need to process
+func fixNextTimeout(t int) {
+	if t < NextTimeout || NextTimeout < 0 {
+		NextTimeout = t
+	}
 }
 
 // SetTimeout schedules a new notification, some milliseconds in the future.
-func SetTimeout(ms int, f func(Message)) *listener {
+func SetTimeout(ms int, f func()) *listener {
 	tsched := Now + ms
-	topic := fmt.Sprintf("%d", tsched)
-	l := timers.On(topic, f)
-
-	if tsched < nextTime || nextTime < 0 {
-		nextTime = tsched
-	}
-
+	var l *listener
+	l = timers.On(fmt.Sprint(tsched), func(Message) {
+		timers.Off(l)
+		f()
+	})
+	fixNextTimeout(tsched)
 	return l
 }

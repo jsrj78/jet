@@ -120,16 +120,35 @@ func TestSleep(t *testing.T) {
 }
 
 func TestNoNextTimeout(t *testing.T) {
-	if NextTimeout() >= 0 {
+	if NextTimeout >= 0 {
 		t.Error("there should be no timeouts pending")
 	}
 }
 
-func TestNextTimeout(t *testing.T) {
-	t0 := Now
-	SetTimeout(123, func(Message) { t.Error("should not happen") })
+func TestMultipleTimeouts(t *testing.T) {
+	t0, t1, t2, t3 := Now, -1, -1, -1
+	SetTimeout(123, func() { t1 = Now })
+	SetTimeout(789, func() { t2 = Now })
+	SetTimeout(456, func() { t3 = Now })
 
-	if NextTimeout() != t0+123 {
-		t.Error("expected", t0+123, "got:", NextTimeout())
+	if NextTimeout != t0+123 {
+		t.Error("expected", t0+123, "got:", NextTimeout)
+	}
+
+	Sleep(1000)
+
+	diff := Now - t0
+	if diff != 1000 {
+		t.Error("expected 1000, got:", diff)
+	}
+
+	if t1 != t0+123 {
+		t.Error("expected", t0+123, "got:", t1)
+	}
+	if t2 != t0+789 {
+		t.Error("expected", t0+789, "got:", t2)
+	}
+	if t3 != t0+456 {
+		t.Error("expected", t0+456, "got:", t3)
 	}
 }
