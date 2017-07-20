@@ -20,9 +20,9 @@ func TestMqttConnect(t *testing.T) {
 		b := &bytes.Buffer{}
 		glow.Debug = b
 
-		c := new(glow.Circuit)
-		c.Add(glow.NewGadget("mqtt", "hub/1hz", "tcp://mohse:1883"))
-		c.Add(glow.NewGadget("print"))
+		c := glow.NewCircuit()
+		c.Add(glow.LookupGadget("mqtt", "hub/1hz", "tcp://mohse:1883"))
+		c.Add(glow.LookupGadget("print"))
 		c.AddWire(0, 0, 1, 0)
 
 		time.Sleep(3 * time.Second)

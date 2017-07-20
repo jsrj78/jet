@@ -1,8 +1,8 @@
 package gadgets
 
 import (
-	"github.com/jeelabs/jet/glow"
 	"github.com/eclipse/paho.mqtt.golang"
+	"github.com/jeelabs/jet/glow"
 )
 
 func init() {
@@ -16,7 +16,7 @@ func init() {
 			broker = "tcp://localhost:1883"
 		}
 
-		g := new(glow.Gadget)
+		g := glow.NewGadget()
 		g.AddOutlets(1)
 
 		opts := mqtt.NewClientOptions()

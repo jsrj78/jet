@@ -8,14 +8,14 @@ import (
 )
 
 func TestUnknownGadget(t *testing.T) {
-	g := glow.NewGadget("blah")
+	g := glow.LookupGadget("blah")
 	if g != nil {
 		t.Errorf("expected nil, got: %T", g)
 	}
 }
 
 func TestPrintGadgetExists(t *testing.T) {
-	g := glow.NewGadget("print")
+	g := glow.LookupGadget("print")
 	if g == nil {
 		t.Fatalf("could not find [print] gadget")
 	}
@@ -31,7 +31,7 @@ func TestPrintGadget(t *testing.T) {
 	b := &bytes.Buffer{}
 	glow.Debug = b
 
-	g := glow.NewGadget("print")
+	g := glow.LookupGadget("print")
 	g.Feed(0, glow.Message{"hello"})
 
 	if b.String() != "hello\n" {
@@ -45,7 +45,7 @@ func TestPrintGadgetArg(t *testing.T) {
 	b := &bytes.Buffer{}
 	glow.Debug = b
 
-	g := glow.NewGadget("print", 123)
+	g := glow.LookupGadget("print", 123)
 	g.Feed(0, glow.Message{"hello"})
 
 	if b.String() != "123 hello\n" {
@@ -71,8 +71,8 @@ func TestPassAndPrintGadget(t *testing.T) {
 	var b bytes.Buffer
 	glow.Debug = &b
 
-	g1 := glow.NewGadget("pass")
-	g2 := glow.NewGadget("print")
+	g1 := glow.LookupGadget("pass")
+	g2 := glow.LookupGadget("print")
 	g1.Connect(0, g2, 0) // g1.out[0] => g2.in[0]
 
 	g1.Feed(0, glow.Message{"howdy"})
@@ -88,10 +88,10 @@ func TestBuildCircuit(t *testing.T) {
 	b := &bytes.Buffer{}
 	glow.Debug = b
 
-	c := new(glow.Circuit)
-	g := glow.NewGadget("pass")
+	c := glow.NewCircuit()
+	g := glow.LookupGadget("pass")
 	c.Add(g)
-	c.Add(glow.NewGadget("print"))
+	c.Add(glow.LookupGadget("print"))
 	c.AddWire(0, 0, 1, 0)
 
 	g.Feed(0, glow.Message{"bingo"})
@@ -107,9 +107,9 @@ func TestCircuitInlet(t *testing.T) {
 	b := &bytes.Buffer{}
 	glow.Debug = b
 
-	c := new(glow.Circuit)
-	c.Add(glow.NewGadget("inlet"))
-	c.Add(glow.NewGadget("print"))
+	c := glow.NewCircuit()
+	c.Add(glow.LookupGadget("inlet"))
+	c.Add(glow.LookupGadget("print"))
 	c.AddWire(0, 0, 1, 0)
 
 	c.Feed(0, glow.Message{"foo"})
@@ -125,12 +125,12 @@ func TestCircuitOutlet(t *testing.T) {
 	b := &bytes.Buffer{}
 	glow.Debug = b
 
-	c := new(glow.Circuit)
-	c.Add(glow.NewGadget("inlet"))
-	c.Add(glow.NewGadget("outlet"))
+	c := glow.NewCircuit()
+	c.Add(glow.LookupGadget("inlet"))
+	c.Add(glow.LookupGadget("outlet"))
 	c.AddWire(0, 0, 1, 0)
 
-	g := glow.NewGadget("print")
+	g := glow.LookupGadget("print")
 	c.Connect(0, g, 0) // c.out[0] => g.in[0]
 
 	c.Feed(0, glow.Message{"bar"})
@@ -146,11 +146,11 @@ func TestSwapGadget(t *testing.T) {
 	b := &bytes.Buffer{}
 	glow.Debug = b
 
-	c := new(glow.Circuit)
-	c.Add(glow.NewGadget("inlet"))
-	c.Add(glow.NewGadget("swap", 123))
-	c.Add(glow.NewGadget("print", 1))
-	c.Add(glow.NewGadget("print", 2))
+	c := glow.NewCircuit()
+	c.Add(glow.LookupGadget("inlet"))
+	c.Add(glow.LookupGadget("swap", 123))
+	c.Add(glow.LookupGadget("print", 1))
+	c.Add(glow.LookupGadget("print", 2))
 	c.AddWire(0, 0, 1, 0)
 	c.AddWire(1, 0, 2, 0)
 	c.AddWire(1, 1, 3, 0)

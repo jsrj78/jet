@@ -119,10 +119,10 @@ type Gadgetry interface {
 
 // A Gadget is the base type for all gadgets.
 type Gadget struct {
-	OnAdded func(*Circuit)
+	OnAdded func(*Circuit) // called when we've been added to a circuit
 
-	inlets  []Inlet
-	outlets []Outlet
+	ins  []Inlet
+	outs []Outlet
 }
 
 // An endpoint is a reference to a specific inlet or outlet in a gadget.
@@ -139,26 +139,30 @@ type Inlet struct {
 // An Outlet is an endpoint which publishes messages.
 type Outlet []endpoint
 
-// NewGadget instantiates a gadget from the registry, with optional args.
-func NewGadget(args ...interface{}) Gadgetry {
-	name := args[0].(string)
+// NewGadget creates a new gadget with default settings.
+func NewGadget() *Gadget {
+	return new(Gadget)
+}
+
+// LookupGadget instantiates a gadget from the registry, with optional args.
+func LookupGadget(name string, args ...interface{}) Gadgetry {
 	r, ok := Registry[name]
 	if !ok {
 		//fmt.Println("unknown gadget:", args)
 		return nil
 	}
-	return r(Message(args[1:]))
+	return r(args)
 }
 
 // AddInlet sets up a new gadget inlet.
 func (g *Gadget) AddInlet(f func(m Message)) {
-	g.inlets = append(g.inlets, Inlet{handler: f})
+	g.ins = append(g.ins, Inlet{handler: f})
 }
 
 // AddOutlets sets up new gadget outlets.
 func (g *Gadget) AddOutlets(n int) int {
-	i := len(g.outlets)
-	g.outlets = append(g.outlets, make([]Outlet, n)...)
+	i := len(g.outs)
+	g.outs = append(g.outs, make([]Outlet, n)...)
 	return i
 }
 
@@ -171,17 +175,17 @@ func (g *Gadget) AddedTo(c *Circuit) {
 
 // Connect adds a connection from a gadget output to a gadget input.
 func (g *Gadget) Connect(o int, d Gadgetry, i int) {
-	g.outlets[o] = append(g.outlets[o], endpoint{d, i})
+	g.outs[o] = append(g.outs[o], endpoint{d, i})
 }
 
 // Feed accepts a message for a specific inlet (indexed from 0 upwards).
 func (g *Gadget) Feed(i int, m Message) {
-	g.inlets[i].handler(m)
+	g.ins[i].handler(m)
 }
 
 // Emit sends a message to a specific outlet (indexed from 0 upwards).
 func (g *Gadget) Emit(o int, m Message) {
-	for _, ep := range g.outlets[o] {
+	for _, ep := range g.outs[o] {
 		ep.gadget.Feed(ep.index, m)
 	}
 }
@@ -189,7 +193,15 @@ func (g *Gadget) Emit(o int, m Message) {
 // A Circuit is a composition of gadgets, including sub-circuits.
 type Circuit struct {
 	Gadget
+	Notifier
+
 	gadgets []Gadgetry
+}
+
+// NewCircuit creates a new empty circuit
+func NewCircuit() *Circuit {
+	c := new(Circuit)
+	return c
 }
 
 // Add a new gadget (or sub-circuit) to a circuit.
@@ -217,13 +229,13 @@ func ParseAsMessage(s string) (m Message) {
 
 // NewCircuitFromText constructs a circuit from a Pd text representation.
 func NewCircuitFromText(text string) Gadgetry {
-	c := new(Circuit)
+	c := NewCircuit()
 	for _, s := range strings.Split(text, "\n") {
 		if strings.HasPrefix(s, "#X ") && strings.HasSuffix(s, ";") {
 			m := ParseAsMessage(s[3 : len(s)-1])
 			switch m[0] {
 			case "obj":
-				c.Add(NewGadget(m[3:]...))
+				c.Add(LookupGadget(m[3].(string), m[4:]...))
 			case "connect":
 				c.AddWire(m[1].(int), m[2].(int), m[3].(int), m[4].(int))
 			}
@@ -232,28 +244,28 @@ func NewCircuitFromText(text string) Gadgetry {
 	return c
 }
 
-// An Event represents the state of a single registered event handler.
-type Event struct {
+// A NotificationHandler handles notification triggers.
+type NotificationHandler struct {
 	callback func(Message)
 	topic    string
 	period   time.Duration
 }
 
-// An EventEmitter can be used as local pubsub mechanism.
-type EventEmitter map[string][]*Event
+// A Notifier calls handlers interested in a topic or after a timeout.
+type Notifier map[string][]*NotificationHandler
 
 // On subscribes to a specific topic.
-func (ee EventEmitter) On(s string, f func(Message)) *Event {
-	e := &Event{callback: f, topic: s, period: 0}
-	handlers, _ := ee[s]
-	ee[s] = append(handlers, e)
+func (nf Notifier) On(s string, f func(Message)) *NotificationHandler {
+	e := &NotificationHandler{callback: f, topic: s, period: 0}
+	handlers, _ := nf[s]
+	nf[s] = append(handlers, e)
 	return e
 }
 
-// Emit triggers the specified topic.
-func (ee EventEmitter) Emit(s string, args ...interface{}) {
-	handlers, _ := ee[s]
+// Notify triggers the specified topic.
+func (nf Notifier) Notify(s string, args ...interface{}) {
+	handlers, _ := nf[s]
 	for _, e := range handlers {
-		e.callback(Message(args))
+		e.callback(args)
 	}
 }

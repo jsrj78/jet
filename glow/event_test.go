@@ -2,79 +2,79 @@ package glow
 
 import "testing"
 
-func TestOneEvent(t *testing.T) {
+func TestOneNotification(t *testing.T) {
 	called := false
-	ee := make(EventEmitter)
-	ee.On("ping", func(Message) { called = true })
+	nf := make(Notifier)
+	nf.On("ping", func(Message) { called = true })
 
 	if called {
 		t.Error("event fired too soon")
 	}
 
-	ee.Emit("ping")
+	nf.Notify("ping")
 
 	if !called {
 		t.Error("event did not fire")
 	}
 }
 
-func TestMultipleEventHandlers(t *testing.T) {
+func TestMultipleNotificationHandlers(t *testing.T) {
 	calls := 0
-	ee := make(EventEmitter)
-	ee.On("ping", func(Message) { calls += 1 })
-	ee.On("ping", func(Message) { calls += 10 })
+	nf := make(Notifier)
+	nf.On("ping", func(Message) { calls += 1 })
+	nf.On("ping", func(Message) { calls += 10 })
 
-	ee.Emit("ping")
+	nf.Notify("ping")
 
 	if calls != 11 {
 		t.Error("expected 11, got:", calls)
 	}
 }
 
-func TestMultipleEvents(t *testing.T) {
+func TestDifferentNotifications(t *testing.T) {
 	calls := 0
-	ee := make(EventEmitter)
-	ee.On("ping", func(Message) { calls += 1 })
-	ee.On("pong", func(Message) { calls += 10 })
-	ee.On("blah", func(Message) { calls += 100 })
+	nf := make(Notifier)
+	nf.On("ping", func(Message) { calls += 1 })
+	nf.On("pong", func(Message) { calls += 10 })
+	nf.On("blah", func(Message) { calls += 100 })
 
-	ee.Emit("ping")
+	nf.Notify("ping")
 
 	if calls != 1 {
 		t.Error("expected 1, got:", calls)
 	}
 
-	ee.Emit("pong")
+	nf.Notify("pong")
 
 	if calls != 11 {
 		t.Error("expected 11, got:", calls)
 	}
 }
 
-func TestMultipleEventsAndHandlers(t *testing.T) {
+func TestDifferentAndMultipleNotifications(t *testing.T) {
 	calls := 0
-	ee := make(EventEmitter)
-	ee.On("ping", func(Message) { calls += 1 })
-	ee.On("pong", func(Message) { calls += 10 })
-	ee.On("pong", func(Message) { calls += 100 })
+	nf := make(Notifier)
+	nf.On("ping", func(Message) { calls += 1 })
+	nf.On("pong", func(Message) { calls += 10 })
+	nf.On("pong", func(Message) { calls += 100 })
 
-	ee.Emit("ping")
-	ee.Emit("pong")
-	ee.Emit("ping")
-	ee.Emit("pong")
-	ee.Emit("ping")
+	nf.Notify("ping")
+	nf.Notify("pong")
+	nf.Notify("ping")
+	nf.Notify("pong")
+	nf.Notify("ping")
 
 	if calls != 223 {
 		t.Error("expected 223, got:", calls)
 	}
 }
 
-func TestEventWithArgs(t *testing.T) {
+func TestNotificationWithArgs(t *testing.T) {
 	var args Message
-	ee := make(EventEmitter)
-	ee.On("ping", func(m Message) { args = m })
+	nf := make(Notifier)
+	nf.On("ping", func(m Message) { args = m })
 
-	ee.Emit("ping", 1, "a", 2)
+	nf.Notify("ping", 1, "a", 2)
 
 	if args.String() != "1 a 2" {
 		t.Error("expected '1 a 2', got:", args)
