@@ -120,8 +120,8 @@ type Gadgetry interface {
 type Gadget struct {
 	OnAdded func(*Circuit) // called when we've been added to a circuit
 
-	ins  []Inlet
-	outs []Outlet
+	ins  []inlet
+	outs []outlet
 }
 
 // An endpoint is a reference to a specific inlet or outlet in a gadget.
@@ -130,13 +130,13 @@ type endpoint struct {
 	index  int
 }
 
-// An Inlet is an endpoint which accepts messages.
-type Inlet struct {
+// An inlet is an endpoint which accepts messages.
+type inlet struct {
 	handler func(m Message)
 }
 
-// An Outlet is an endpoint which publishes messages.
-type Outlet []endpoint
+// An outlet is an endpoint which publishes messages.
+type outlet []endpoint
 
 // NewGadget creates a new gadget with default settings.
 func NewGadget() *Gadget {
@@ -155,13 +155,13 @@ func LookupGadget(name string, args ...interface{}) Gadgetry {
 
 // AddInlet sets up a new gadget inlet.
 func (g *Gadget) AddInlet(f func(m Message)) {
-	g.ins = append(g.ins, Inlet{handler: f})
+	g.ins = append(g.ins, inlet{handler: f})
 }
 
 // AddOutlets sets up new gadget outlets.
 func (g *Gadget) AddOutlets(n int) int {
 	i := len(g.outs)
-	g.outs = append(g.outs, make([]Outlet, n)...)
+	g.outs = append(g.outs, make([]outlet, n)...)
 	return i
 }
 
