@@ -1,15 +1,17 @@
-package glow
+package tests
 
 import (
 	"fmt"
 	"testing"
 	"time"
+
+	"github.com/jeelabs/jet/glow"
 )
 
 func TestOneNotification(t *testing.T) {
 	called := false
-	nf := make(Notifier)
-	nf.On("ping", func(Message) { called = true })
+	nf := make(glow.Notifier)
+	nf.On("ping", func(glow.Message) { called = true })
 
 	if called {
 		t.Error("event fired too soon")
@@ -24,9 +26,9 @@ func TestOneNotification(t *testing.T) {
 
 func TestMultipleNotificationHandlers(t *testing.T) {
 	calls := 0
-	nf := make(Notifier)
-	nf.On("ping", func(Message) { calls += 1 })
-	nf.On("ping", func(Message) { calls += 10 })
+	nf := make(glow.Notifier)
+	nf.On("ping", func(glow.Message) { calls += 1 })
+	nf.On("ping", func(glow.Message) { calls += 10 })
 
 	nf.Notify("ping")
 
@@ -37,10 +39,10 @@ func TestMultipleNotificationHandlers(t *testing.T) {
 
 func TestDifferentNotifications(t *testing.T) {
 	calls := 0
-	nf := make(Notifier)
-	nf.On("ping", func(Message) { calls += 1 })
-	nf.On("pong", func(Message) { calls += 10 })
-	nf.On("blah", func(Message) { calls += 100 })
+	nf := make(glow.Notifier)
+	nf.On("ping", func(glow.Message) { calls += 1 })
+	nf.On("pong", func(glow.Message) { calls += 10 })
+	nf.On("blah", func(glow.Message) { calls += 100 })
 
 	nf.Notify("ping")
 
@@ -57,10 +59,10 @@ func TestDifferentNotifications(t *testing.T) {
 
 func TestDifferentAndMultipleNotifications(t *testing.T) {
 	calls := 0
-	nf := make(Notifier)
-	nf.On("ping", func(Message) { calls += 1 })
-	nf.On("pong", func(Message) { calls += 10 })
-	nf.On("pong", func(Message) { calls += 100 })
+	nf := make(glow.Notifier)
+	nf.On("ping", func(glow.Message) { calls += 1 })
+	nf.On("pong", func(glow.Message) { calls += 10 })
+	nf.On("pong", func(glow.Message) { calls += 100 })
 
 	nf.Notify("ping")
 	nf.Notify("pong")
@@ -74,9 +76,9 @@ func TestDifferentAndMultipleNotifications(t *testing.T) {
 }
 
 func TestNotificationWithArgs(t *testing.T) {
-	var args Message
-	nf := make(Notifier)
-	nf.On("ping", func(m Message) { args = m })
+	var args glow.Message
+	nf := make(glow.Notifier)
+	nf.On("ping", func(m glow.Message) { args = m })
 
 	nf.Notify("ping", 1, "a", nil)
 
@@ -87,8 +89,8 @@ func TestNotificationWithArgs(t *testing.T) {
 
 func TestNotificationOff(t *testing.T) {
 	called := false
-	nf := make(Notifier)
-	l := nf.On("ping", func(Message) { called = true })
+	nf := make(glow.Notifier)
+	l := nf.On("ping", func(glow.Message) { called = true })
 
 	nf.Notify("ping")
 
@@ -106,13 +108,13 @@ func TestNotificationOff(t *testing.T) {
 }
 
 func TestRunning(t *testing.T) {
-	Now = 0
+	glow.Now = 0
 	now := time.Now()
-	Run(10)
+	glow.Run(10)
 	elapsed := time.Since(now)
 
-	if Now != 10 {
-		t.Error("expected 10, got:", Now)
+	if glow.Now != 10 {
+		t.Error("expected 10, got:", glow.Now)
 	}
 	if elapsed > time.Millisecond {
 		t.Error("simulated time should be instant, was:", elapsed)
@@ -120,26 +122,26 @@ func TestRunning(t *testing.T) {
 }
 
 func TestNoNextTimer(t *testing.T) {
-	if NextTimer >= 0 {
+	if glow.NextTimer >= 0 {
 		t.Error("there should be no timeouts pending")
 	}
 }
 
 func TestMultipleTimers(t *testing.T) {
-	Now = 0
+	glow.Now = 0
 	t1, t2, t3 := -1, -1, -1
-	SetTimer(123, func() { t1 = Now })
-	SetTimer(789, func() { t2 = Now })
-	SetTimer(456, func() { t3 = Now })
+	glow.SetTimer(123, func() { t1 = glow.Now })
+	glow.SetTimer(789, func() { t2 = glow.Now })
+	glow.SetTimer(456, func() { t3 = glow.Now })
 
-	if NextTimer != 123 {
-		t.Error("expected", 123, "got:", NextTimer)
+	if glow.NextTimer != 123 {
+		t.Error("expected", 123, "got:", glow.NextTimer)
 	}
 
-	Run(1000)
+	glow.Run(1000)
 
-	if Now != 1000 {
-		t.Error("expected 1000, got:", Now)
+	if glow.Now != 1000 {
+		t.Error("expected 1000, got:", glow.Now)
 	}
 
 	if t1 != 123 {
@@ -152,42 +154,42 @@ func TestMultipleTimers(t *testing.T) {
 		t.Error("expected", 456, "got:", t3)
 	}
 
-	if NextTimer >= 0 {
+	if glow.NextTimer >= 0 {
 		t.Error("there should be no timeouts pending")
 	}
 }
 
 func TestCancelledNextTimer(t *testing.T) {
-	Now = 0
-	l := SetTimer(123, func() {})
+	glow.Now = 0
+	l := glow.SetTimer(123, func() {})
 
-	if NextTimer != 123 {
-		t.Error("expected", 123, "got:", NextTimer)
+	if glow.NextTimer != 123 {
+		t.Error("expected", 123, "got:", glow.NextTimer)
 	}
 
-	CancelTimer(l)
+	glow.CancelTimer(l)
 
-	if NextTimer >= 0 {
+	if glow.NextTimer >= 0 {
 		t.Error("there should be no timeouts pending")
 	}
 }
 
 func TestPeriodicimer(t *testing.T) {
-	Now = 0
+	glow.Now = 0
 	v := []int{}
-	SetPeriodic(123, func() { v = append(v, Now) })
+	glow.SetPeriodic(123, func() { v = append(v, glow.Now) })
 
-	if NextTimer != 123 {
-		t.Error("expected", 123, "got:", NextTimer)
+	if glow.NextTimer != 123 {
+		t.Error("expected", 123, "got:", glow.NextTimer)
 	}
 
-	defer Stop() // TODO manually stop all timers
-	Run(500)
+	defer glow.Stop() // TODO manually stop all timers
+	glow.Run(500)
 
 	if fmt.Sprint(v) != "[123 246 369 492]" {
 		t.Error("expected '[123 246 369 492]', got:", fmt.Sprint(v))
 	}
-	if NextTimer != 615 {
-		t.Error("expected 615, got:", NextTimer)
+	if glow.NextTimer != 615 {
+		t.Error("expected 615, got:", glow.NextTimer)
 	}
 }

@@ -1,10 +1,11 @@
-package gadgets
+package tests
 
 import (
 	"bytes"
 	"testing"
 
 	"github.com/jeelabs/jet/glow"
+	_ "github.com/jeelabs/jet/glow/gadgets"
 )
 
 func TestUnknownGadget(t *testing.T) {

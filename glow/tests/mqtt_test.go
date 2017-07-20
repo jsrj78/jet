@@ -1,4 +1,4 @@
-package gadgets
+package tests
 
 import (
 	"bytes"
@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/jeelabs/jet/glow"
+	_ "github.com/jeelabs/jet/glow/gadgets"
 )
 
 const SKIP = true // skip this test by default, it depends on my local setup
