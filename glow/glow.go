@@ -119,9 +119,10 @@ type Gadgetry interface {
 
 // A Gadget is the base type for all gadgets.
 type Gadget struct {
+	OnAdded func(*Circuit)
+
 	inlets  []Inlet
 	outlets []Outlet
-	onAdded func(*Circuit)
 }
 
 // An endpoint is a reference to a specific inlet or outlet in a gadget.
@@ -163,8 +164,8 @@ func (g *Gadget) AddOutlets(n int) int {
 
 // AddedTo is called when a gadget has been added to a circuit.
 func (g *Gadget) AddedTo(c *Circuit) {
-	if g.onAdded != nil {
-		g.onAdded(c)
+	if g.OnAdded != nil {
+		g.OnAdded(c)
 	}
 }
 
