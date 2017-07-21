@@ -1,5 +1,5 @@
-matrix:
-  include:
-    - language: go
-      before_script:
-        - cd glow
+language: go
+install:
+    - go get -t ./glow
+script:
+    - go test ./glow/tests
