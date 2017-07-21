@@ -101,12 +101,12 @@ func init() {
 	}
 
 	glow.Registry["smooth"] = func(args glow.Message) glow.Gadgetry {
-		state, weight := 0, 0
+		state, order := 0, 0
 		g := glow.NewGadget()
 		g.AddOutlets(1)
 		g.AddInlet(func(m glow.Message) {
-			state = (weight*state + m.AsInt()) / (weight + 1)
-			weight = args.AsInt()
+			state = (order*state + m.AsInt()) / (order + 1)
+			order = args.AsInt()
 			g.Emit(0, glow.Message{state})
 		})
 		g.AddInlet(func(m glow.Message) {
