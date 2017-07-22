@@ -2,19 +2,16 @@
 ; https://github.com/gadfly361/reagent-figwheel
 
 (defproject slug "0.1.0-SNAPSHOT"
-  :dependencies [[org.clojure/clojure "1.8.0"]
-                 [org.clojure/clojurescript "1.9.229"]
-                 [reagent "0.6.1"]
-                 [devcards "0.2.2" :exclusions [cljsjs/react]]]
+  :dependencies [[org.clojure/clojure "1.8.0" :scope "provided"]
+                 [org.clojure/clojurescript "1.9.671" :scope "provided"]
+                 [reagent "0.7.0"]
+                 [devcards "0.2.3" :exclusions [cljsjs/react]]]
 
-  :min-lein-version "2.5.3"
+  :min-lein-version "2.7.1"
 
-  :source-paths ["src/clj"]
+  :plugins [[lein-cljsbuild "1.1.5"]]
 
-  :plugins [[lein-cljsbuild "1.1.4"]]
-
-  :clean-targets ^{:protect false} ["resources/public/js"
-                                    "target"]
+  :clean-targets ^{:protect false} ["resources/public/js" "target"]
 
   :figwheel {:css-dirs ["resources/public/css"]}
 
@@ -22,13 +19,13 @@
   {:dev
    {:dependencies []
 
-    :plugins      [[lein-figwheel "0.5.10"]]}}
+    :plugins      [[lein-figwheel "0.5.11"]]}}
     
 
   :cljsbuild
   {:builds
    [{:id           "dev"
-     :source-paths ["src/cljs"]
+     :source-paths ["src"]
      :figwheel     {:on-jsload "slug.core/reload"}
      :compiler     {:main                 slug.core
                     :optimizations        :none
@@ -38,7 +35,7 @@
                     :source-map-timestamp true}}
 
     {:id           "devcards"
-     :source-paths ["src/devcards" "src/cljs"]
+     :source-paths ["src"]
      :figwheel     {:devcards true}
      :compiler     {:main                 "slug.core-card"
                     :optimizations        :none
@@ -48,7 +45,7 @@
                     :source-map-timestamp true}}
 
     {:id           "hostedcards"
-     :source-paths ["src/devcards" "src/cljs"]
+     :source-paths ["src"]
      :compiler     {:main          "slug.core-card"
                     :optimizations :advanced
                     :devcards      true
@@ -56,7 +53,7 @@
                     :output-dir    "resources/public/js/hostedcards"}}
 
     {:id           "min"
-     :source-paths ["src/cljs"]
+     :source-paths ["src"]
      :compiler     {:main            slug.core
                     :optimizations   :advanced
                     :output-to       "resources/public/js/app.js"
