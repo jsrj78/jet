@@ -1,38 +1,19 @@
 (ns slug.core
   (:require
-   [reagent.core :as reagent]
-   ))
+   [reagent.core :as r]))
 
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Vars
-
-(defonce app-state
-  (reagent/atom {}))
-
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Page
+(defonce app-state (r/atom {}))
 
 (defn page [ratom]
-  [:div
-   "Welcome to reagent-figwheel."])
-
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Initialize App
+  [:h1 "Welcome to JET/Slug"])
 
 (defn dev-setup []
   (when ^boolean js/goog.DEBUG
     (enable-console-print!)
-    (println "dev mode")
-    ))
+    (println "dev mode")))
 
 (defn reload []
-  (reagent/render [page app-state]
-                  (.getElementById js/document "app")))
+  (r/render [page app-state] (.getElementById js/document "app")))
 
 (defn ^:export main []
   (dev-setup)
