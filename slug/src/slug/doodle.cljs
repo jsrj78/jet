@@ -6,9 +6,9 @@
                                           mkdn-pprint-source]]
                    [cljs.test :refer [testing is]])
   (:require [devcards.core]
-            [reagent.core :as reagent]))
+            [reagent.core :as r]))
 
-(defonce app-state (reagent/atom {:count 0}))
+(defonce app-state (r/atom {:count 0}))
 
 (defn on-click []
   (swap! app-state update-in [:count] inc))
