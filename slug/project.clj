@@ -18,9 +18,7 @@
   :profiles
   {:dev
    {:dependencies []
-
     :plugins      [[lein-figwheel "0.5.11"]]}}
-    
 
   :cljsbuild
   {:builds
@@ -61,5 +59,3 @@
                     :elide-asserts   true
                     :closure-defines {goog.DEBUG false}
                     :pretty-print    false}}]})
-
-    
