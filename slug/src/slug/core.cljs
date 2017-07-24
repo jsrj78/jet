@@ -10,11 +10,6 @@
                                      [:connect 1 0 2 0]
                                      [:connect 1 1 3 0]]}))
 
-(defn svg []
-  [:svg {:width "600" :height "400"
-         :style {:outline "1px solid black"}}
-   [:circle {:cx 300 :cy 200 :r 30 :fill "red"}]])
-
 (defn svg-obj [[x y & cmd]]
   [[:rect {:x x :y y :width 60 :height 20
            :style {:outline "1px solid black" :fill "white"}}]
@@ -23,38 +18,37 @@
 (defn svg-wire [ovec [src-pos src-outlet dst-pos dst-inlet]]
   (let [[sx sy] (get ovec src-pos)
         [dx dy] (get ovec dst-pos)]
-    [:line {:x1 (+ sx (* 60 src-outlet))
-            :y1 (+ sy 20)
-            :x2 (+ dx (* 60 dst-inlet))
-            :y2 (+ dy 0)
-            :stroke-width "1" :stroke "black"}]))
+    [[:line {:x1 (+ sx (* 60 src-outlet)) :y1 (+ sy 20)
+             :x2 (+ dx (* 60 dst-inlet))  :y2 (+ dy 0)
+             :stroke "black"}]]))
 
-(defn objects [design]
+(defn render [design]
   (let [obj-vec (atom [])
         results (atom [])]
     (doseq [[t & r] design]
       (case t
         :obj (do (swap! obj-vec conj r)
                  (swap! results into (svg-obj r)))
-        :connect (swap! results conj (svg-wire @obj-vec r))))
-    (.log js/console "obj-vec:" (str @obj-vec))
-    @results))
+        :connect (swap! results into (svg-wire @obj-vec r))))
+    (vec @results)))
+
+(defn svg [objs]
+  (into [:svg {:width "600" :height "400"
+               :style {:outline "1px solid black"}}]
+        objs))
 
 (defn page [ratom]
-  (let [o (objects (:design @app-state))]
+  (let [objs (render (:design @ratom))]
     [:div
-     [:h3 "Welcome to JET/Slug"]
      [:table
-      [:tbody
+      [:tbody {:style {:vertical-align "top"}}
        [:tr
-        [:td {:width "50%"
-              :style {:vertical-align "top"}} [into (svg) o]]
+        [:td {:width "50%"}
+         [:h3 "JET/Slug"]
+         (svg objs)]
         [:td {:width "1%"}]
-        [:td {:style {:vertical-align "top"}}
-         [:pre (with-out-str (cljs.pprint/pprint @app-state))]
-         [:hr]
-         [:pre (with-out-str (cljs.pprint/pprint o))]]]]]]))
-
+        [:td
+         [:pre (with-out-str (cljs.pprint/pprint objs))]]]]]]))
 
 (defn dev-setup []
   (when ^boolean js/goog.DEBUG
