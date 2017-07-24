@@ -16,19 +16,29 @@
    [:circle {:cx 300 :cy 200 :r 30 :fill "red"}]])
 
 (defn svg-obj [[x y & cmd]]
-  [:rect {:x x :y y :width 50 :height 20}])
+  [[:rect {:x x :y y :width 60 :height 20
+           :style {:outline "1px solid black" :fill "white"}}]
+   [:text {:x (+ x 1) :y (+ y 15)} (str cmd)]])
 
-(defn svg-wire [[from-obj from-outlet to-obj to-inlet]]
-  [:line {:x1 from-obj :y1 from-outlet :x2 to-obj :y2 to-inlet}])
+(defn svg-wire [ovec [src-pos src-outlet dst-pos dst-inlet]]
+  (let [[sx sy] (get ovec src-pos)
+        [dx dy] (get ovec dst-pos)]
+    [:line {:x1 (+ sx (* 60 src-outlet))
+            :y1 (+ sy 20)
+            :x2 (+ dx (* 60 dst-inlet))
+            :y2 (+ dy 0)
+            :stroke-width "1" :stroke "black"}]))
 
 (defn objects [design]
-  (let [gadgets (atom [])
-        wires   (atom [])]
+  (let [obj-vec (atom [])
+        results (atom [])]
     (doseq [[t & r] design]
       (case t
-        :obj     (swap! gadgets conj (svg-obj r))
-        :connect (swap! wires   conj (svg-wire r))))
-    (concat @gadgets @wires)))
+        :obj (do (swap! obj-vec conj r)
+                 (swap! results into (svg-obj r)))
+        :connect (swap! results conj (svg-wire @obj-vec r))))
+    (.log js/console "obj-vec:" (str @obj-vec))
+    @results))
 
 (defn page [ratom]
   (let [o (objects (:design @app-state))]
@@ -37,7 +47,8 @@
      [:table
       [:tbody
        [:tr
-        [:td {:width "50%"} (svg)]
+        [:td {:width "50%"
+              :style {:vertical-align "top"}} [into (svg) o]]
         [:td {:width "1%"}]
         [:td {:style {:vertical-align "top"}}
          [:pre (with-out-str (cljs.pprint/pprint @app-state))]
