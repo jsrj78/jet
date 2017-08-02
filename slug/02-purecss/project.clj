@@ -1,11 +1,11 @@
 (defproject purecss "0.1.0-SNAPSHOT"
   :dependencies [[org.clojure/clojure "1.8.0"]
-                 [org.clojure/clojurescript "1.9.229"]
-                 [reagent "0.6.1"]]
+                 [org.clojure/clojurescript "1.9.671" :scope "provided"]
+                 [reagent "0.7.0"]]
 
-  :min-lein-version "2.5.3"
+  :min-lein-version "2.7.1"
 
-  :plugins [[lein-cljsbuild "1.1.4"]]
+  :plugins [[lein-cljsbuild "1.1.5"]]
 
   :clean-targets ^{:protect false} ["resources/public/js"
                                     "target"]
@@ -15,9 +15,7 @@
   :profiles
   {:dev
    {:dependencies []
-
-    :plugins      [[lein-figwheel "0.5.10"]]
-    }}
+    :plugins      [[lein-figwheel "0.5.11"]]}}
 
   :cljsbuild
   {:builds
@@ -39,6 +37,4 @@
                     :output-dir      "resources/public/js/min"
                     :elide-asserts   true
                     :closure-defines {goog.DEBUG false}
-                    :pretty-print    false}}
-
-    ]})
+                    :pretty-print    false}}]})
