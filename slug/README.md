@@ -14,3 +14,7 @@ Each "slug" is a self-contained project where I _slowly_ try something new:
 * [04-rum](04-rum) - Simple [Rum](https://github.com/tonsky/rum) example, which
   is a wrapper around React similar to Reagent.  Project created with
   [Chestnut](https://github.com/plexus/chestnut).
+* [05-cljsjs](05-cljsjs) - Running the Paho MQTT client from ClojureScript,
+  using [this cljsjs
+  example](https://github.com/cljsjs/packages/tree/master/paho). Project created
+  with `lein new figwheel app`, which picked up all the latest packages.
