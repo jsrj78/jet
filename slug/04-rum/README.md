@@ -131,13 +131,6 @@ lein with-profile -dev,+production uberjar && foreman start
 Now your app is running at
 [http://localhost:5000](http://localhost:5000) in production mode.
 
-## License
-
-Copyright © 2016 FIXME
-
-Distributed under the Eclipse Public License either version 1.0 or (at
-your option) any later version.
-
 ## Chestnut
 
 Created with [Chestnut](http://plexus.github.io/chestnut/) 0.15.2 (e2759aff).
