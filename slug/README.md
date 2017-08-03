@@ -25,3 +25,9 @@ Each "slug" is a self-contained project where I _slowly_ try something new:
   package, to show much better debugging info in the JavaScript console.
 * [08-myapp](08-myapp) - A fairly comfortable dev setup with Reagent and
   Devtools.  Uses Boot, supports a browser REPL.
+* [09-mini](09-mini) - A Rum-based project in 5 files. Tweaked from `boot -d
+  boot/new new -t tenzing -n mini -a +rum`.
+* [10-testme](10-testme) - The "testme" app from this
+  [Reagent-Example](https://github.com/vallard/Reagent-Example) project.
+  Includes Reagent, Re-Frame, Secretary, Figwheel, and the Java-based Clojure
+  "Ring" server.
