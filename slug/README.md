@@ -20,3 +20,6 @@ Each "slug" is a self-contained project where I _slowly_ try something new:
   with `lein new figwheel app`, which picked up all the latest packages.
 * [06-boot](06-boot) - Set up a reagent app via [Boot](http://boot-clj.com),
   using `boot -d boot/new new -t tenzing -n your-app -a +reagent`.
+* [07-devtools](07-devtools) - Demo of the
+  [cljs-devtools](https://github.com/binaryage/cljs-devtools/blob/master/docs/installation.md)
+  package, to show much better debugging info in the JavaScript console.
