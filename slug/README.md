@@ -31,3 +31,6 @@ Each "slug" is a self-contained project where I _slowly_ try something new:
   [Reagent-Example](https://github.com/vallard/Reagent-Example) project.
   Includes Reagent, Re-Frame, Secretary, Figwheel, and the Java-based Clojure
   "Ring" server.
+* [11-frame](11-frame) - Basic Re-frame template w/ DevTools, created with `lein
+  new re-frame frame`. Supports several profiles, see the
+  [README](https://github.com/Day8/re-frame-template).
