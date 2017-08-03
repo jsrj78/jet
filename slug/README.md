@@ -18,3 +18,5 @@ Each "slug" is a self-contained project where I _slowly_ try something new:
   using [this cljsjs
   example](https://github.com/cljsjs/packages/tree/master/paho). Project created
   with `lein new figwheel app`, which picked up all the latest packages.
+* [06-boot](06-boot) - Set up a reagent app via [Boot](http://boot-clj.com),
+  using `boot -d boot/new new -t tenzing -n your-app -a +reagent`.
