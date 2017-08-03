@@ -23,3 +23,5 @@ Each "slug" is a self-contained project where I _slowly_ try something new:
 * [07-devtools](07-devtools) - Demo of the
   [cljs-devtools](https://github.com/binaryage/cljs-devtools/blob/master/docs/installation.md)
   package, to show much better debugging info in the JavaScript console.
+* [08-myapp](08-myapp) - A fairly comfortable dev setup with Reagent and
+  Devtools.  Uses Boot, supports a browser REPL.
