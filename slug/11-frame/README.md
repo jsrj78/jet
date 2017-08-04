@@ -1,6 +1,25 @@
 # 11-frame
 
-A [re-frame](https://github.com/Day8/re-frame) application designed to ... well, that part is up to you.
+A minimal [re-frame](https://github.com/Day8/re-frame) application:
+
+```
+$ tree
+.
+├── README.md
+├── project.clj
+├── public
+│   ├── app.css
+│   └── index.html
+└── src
+    └── app
+        ├── core.cljs
+        ├── db.cljs
+        ├── events.cljs
+        ├── subs.cljs
+        └── views.cljs
+
+3 directories, 9 files
+```
 
 ## Development Mode
 

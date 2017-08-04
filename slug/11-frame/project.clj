@@ -1,4 +1,4 @@
-(defproject frame "0.1.0-SNAPSHOT"
+(defproject app "0.1.0-SNAPSHOT"
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [org.clojure/clojurescript "1.9.854"]
                  [reagent "0.7.0"]
@@ -10,7 +10,7 @@
 
   :clean-targets ^{:protect false} ["public/js" "target"]
 
-  :figwheel {:css-dirs ["public/css"]}
+  :figwheel {:css-dirs ["public"]}
 
   :profiles {:dev {:dependencies [[binaryage/devtools "0.9.4"]]
                    :plugins      [[lein-figwheel "0.5.12"]]}}
@@ -21,9 +21,9 @@
   {:builds
    [{:id           "dev"
      :source-paths ["src"]
-     :figwheel     {:on-jsload "frame.core/mount-root"}
+     :figwheel     {:on-jsload "app.core/mount-root"}
 
-     :compiler     {:main                 frame.core
+     :compiler     {:main                 app.core
                     :output-to            "public/js/app.js"
                     :output-dir           "public/js/out"
                     :asset-path           "js/out"
@@ -34,7 +34,7 @@
 
     {:id           "min"
      :source-paths ["src"]
-     :compiler     {:main            frame.core
+     :compiler     {:main            app.core
                     :output-to       "public/js/app.js"
                     :optimizations   :advanced
                     :closure-defines {goog.DEBUG false}
