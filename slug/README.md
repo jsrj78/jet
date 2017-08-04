@@ -30,3 +30,5 @@ Each "slug" is a self-contained project where I _slowly_ try something new:
 * [11-frame](11-frame) - Re-frame template w/ DevTools, created with `lein new
   re-frame frame`. Could include other
   [profiles](https://github.com/Day8/re-frame-template).
+* [12-svg](12-svg) - Extend the `11-frame` example with some SVG rendering and
+  Pure CSS styling.
