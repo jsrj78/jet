@@ -12,16 +12,15 @@
 
   :figwheel {:css-dirs ["resources/public/css"]}
 
-  :profiles
-  {:dev
-   {:dependencies [[binaryage/devtools "0.9.4"]]
-    :plugins      [[lein-figwheel "0.5.9"]]}}
+  :profiles {:dev {:dependencies [[binaryage/devtools "0.9.4"]]
+                   :plugins      [[lein-figwheel "0.5.12"]]}}
 
   :cljsbuild
   {:builds
    [{:id           "dev"
      :source-paths ["src"]
      :figwheel     {:on-jsload "frame.core/mount-root"}
+
      :compiler     {:main                 frame.core
                     :output-to            "resources/public/js/compiled/app.js"
                     :output-dir           "resources/public/js/compiled/out"
