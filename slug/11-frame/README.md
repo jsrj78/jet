@@ -25,7 +25,7 @@ $ tree
 
 ```
 lein clean
-lein figwheel dev
+lein figwheel
 ```
 
 Figwheel will automatically push cljs changes to the browser.
