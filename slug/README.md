@@ -3,21 +3,18 @@
 My explorations into the world of ClojureScript, Figwheel, and Reagent.  
 Each "slug" is a self-contained project where I _slowly_ try something new:
 
-* [01-slug](01-slug) - Set up a Leiningen project with Figwheel (live coding),
-  Reagent (React wrapper), and DevCards (web-based test environment). Based on
-  the [reagent-figwheel](https://github.com/gadfly361/reagent-figwheel)
-  template.
-* [02-purecss](02-purecss) - A basic reagent setup with [Pure
+* [01-slug](01-slug) - First try with Leiningen + Figwheel + Reagent + DevCards.
+  Based on [reagent-figwheel](https://github.com/gadfly361/reagent-figwheel).
+* [02-purecss](02-purecss) - Minimal Reagent setup with [Pure
   CSS](https://purecss.io) as layout framework.
-* [03-paho](03-paho) - Minimal MQTT client in pure JavaScript, example from the
-  [Eclipse Paho](https://www.eclipse.org/paho/clients/js/) website.
+* [03-paho](03-paho) - MQTT client in pure JavaScript, example from the [Eclipse
+  Paho](https://www.eclipse.org/paho/clients/js/) website.
 * [04-rum](04-rum) - Simple [Rum](https://github.com/tonsky/rum) example, which
   is a wrapper around React similar to Reagent.  Project created with
   [Chestnut](https://github.com/plexus/chestnut).
-* [05-cljsjs](05-cljsjs) - Running the Paho MQTT client from ClojureScript,
-  using [this cljsjs
-  example](https://github.com/cljsjs/packages/tree/master/paho). Project created
-  with `lein new figwheel app`, which picked up all the latest packages.
+* [05-cljsjs](05-cljsjs) - Run Paho MQTT client from ClojureScript, using [this
+  cljsjs example](https://github.com/cljsjs/packages/tree/master/paho). Created
+  with `lein new figwheel app`.
 * [06-boot](06-boot) - Set up a reagent app via [Boot](http://boot-clj.com),
   using `boot -d boot/new new -t tenzing -n your-app -a +reagent`.
 * [07-devtools](07-devtools) - Demo of the
@@ -27,10 +24,9 @@ Each "slug" is a self-contained project where I _slowly_ try something new:
   Devtools.  Uses Boot, supports a browser REPL.
 * [09-mini](09-mini) - A Rum-based project in 5 files. Tweaked from `boot -d
   boot/new new -t tenzing -n mini -a +rum`.
-* [10-testme](10-testme) - The "testme" app from this
-  [Reagent-Example](https://github.com/vallard/Reagent-Example) project.
-  Includes Reagent, Re-Frame, Secretary, Figwheel, and the Java-based Clojure
-  "Ring" server.
-* [11-frame](11-frame) - Basic Re-frame template w/ DevTools, created with `lein
-  new re-frame frame`. Supports several profiles, see the
-  [README](https://github.com/Day8/re-frame-template).
+* [10-testme](10-testme) - Testme app from
+  [Reagent-Example](https://github.com/vallard/Reagent-Example) with Reagent,
+  Re-Frame, Secretary, Figwheel, and Compojure server.
+* [11-frame](11-frame) - Re-frame template w/ DevTools, created with `lein new
+  re-frame frame`. Could include other
+  [profiles](https://github.com/Day8/re-frame-template).

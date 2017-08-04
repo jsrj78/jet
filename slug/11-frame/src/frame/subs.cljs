@@ -3,5 +3,5 @@
 
 (rf/reg-sub
  :name
- (fn [db]
+ (fn [db _]
    (:name db)))
