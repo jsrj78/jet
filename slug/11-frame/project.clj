@@ -8,12 +8,14 @@
 
   :min-lein-version "2.7.1"
 
-  :clean-targets ^{:protect false} ["resources/public/js/compiled" "target"]
+  :clean-targets ^{:protect false} ["public/js" "target"]
 
-  :figwheel {:css-dirs ["resources/public/css"]}
+  :figwheel {:css-dirs ["public/css"]}
 
   :profiles {:dev {:dependencies [[binaryage/devtools "0.9.4"]]
                    :plugins      [[lein-figwheel "0.5.12"]]}}
+
+  :resource-paths ["."]
 
   :cljsbuild
   {:builds
@@ -22,9 +24,9 @@
      :figwheel     {:on-jsload "frame.core/mount-root"}
 
      :compiler     {:main                 frame.core
-                    :output-to            "resources/public/js/compiled/app.js"
-                    :output-dir           "resources/public/js/compiled/out"
-                    :asset-path           "js/compiled/out"
+                    :output-to            "public/js/app.js"
+                    :output-dir           "public/js/out"
+                    :asset-path           "js/out"
                     :source-map-timestamp true
                     :preloads             [devtools.preload]
                     :external-config      {:devtools/config
@@ -33,7 +35,7 @@
     {:id           "min"
      :source-paths ["src"]
      :compiler     {:main            frame.core
-                    :output-to       "resources/public/js/compiled/app.js"
+                    :output-to       "public/js/app.js"
                     :optimizations   :advanced
                     :closure-defines {goog.DEBUG false}
                     :pretty-print    false}}]})

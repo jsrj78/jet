@@ -8,7 +8,7 @@
 (defn main-panel []
   (let [name (<sub [:name])] 
     ;; this displays on the JavaScript console
-    #_(.log js/console "db:" (pr-str @re-frame.db/app-db))
+    ;(.log js/console "db:" (pr-str @re-frame.db/app-db))
 
     [:div
       [:h1 "Hello from: " name]
@@ -17,7 +17,7 @@
                :on-change #(rf/dispatch [:change-name (.. % -target -value)])}]
 
       ;; this displays as <pre> text in a verbose format
-      [:pre (with-out-str (cljs.pprint/pprint @re-frame.db/app-db))]
+      ;[:pre (with-out-str (cljs.pprint/pprint @re-frame.db/app-db))]
 
-      ;; this displays as <pre> text on a single line
-      [:pre (pr-str @re-frame.db/app-db)]]))
+      ;; this displays as text on a single line
+      [:p (pr-str @re-frame.db/app-db)]]))
