@@ -9,9 +9,8 @@
 
 (rf/reg-event-db
   :move-obj
-  (fn [db [_ x y dx dy]]
-    (let [mover (fn [[vhead vx vy & vtail :as v]]
-                  (if (and (= vx x) (= vy y))
-                      (into [vhead (+ x dx) (+ y dy)] vtail)
-                      v))]
-      (assoc db :design (mapv mover (:design db))))))
+  (fn [db [_ idx dx dy]]
+    (.log js/console "move:" idx dx dy)
+    (update-in db [:design idx]
+                  (fn [[vhead vx vy & vtail :as v]]
+                    (into [vhead (+ vx dx) (+ vy dy)] vtail)))))
