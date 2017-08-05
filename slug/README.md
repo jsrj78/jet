@@ -30,5 +30,7 @@ Each "slug" is a self-contained project where I _slowly_ try something new:
 * [11-frame](11-frame) - Re-frame template w/ DevTools, created with `lein new
   re-frame frame`. Could include other
   [profiles](https://github.com/Day8/re-frame-template).
-* [12-svg](12-svg) - Extend the `11-frame` example with some SVG rendering and
-  Pure CSS styling.
+* [12-svg](12-svg) - Extend the `11-frame` example with SVG rendering +
+  rubber-banded dragging, plus Pure CSS for layout.
+* [13-drag](13-drag) - Simplify `12-svg` drag demo, only using Reagent, and reduced to a
+  single source file with minimal code.
