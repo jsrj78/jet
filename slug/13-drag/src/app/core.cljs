@@ -55,16 +55,13 @@
     [:line.wire {:x1 (+ sx (* 65 src-out)) :y1 (+ sy 20)
                  :x2 (+ dx (* 65 dst-in))  :y2 (+ dy 0)}]))
 
-(defn design-as-svg []
-  [:svg {:width 300 :height 200}
-    (map-indexed obj-as-svg (:obj @app-db))
-    ; don't leave reactive refs inside a lazy sequence
-    (doall (map wire-as-svg (:wire @app-db)))])
-
 (defn main []
   [:div
     [:h1 "Hello SVG"]
-    [design-as-svg]])
+    [:svg {:width 300 :height 200}
+      (map-indexed obj-as-svg (:obj @app-db))
+      ; don't leave reactive refs inside a lazy sequence
+      (doall (map wire-as-svg (:wire @app-db)))]])
 
 (def debug? ^boolean goog.DEBUG)
 
