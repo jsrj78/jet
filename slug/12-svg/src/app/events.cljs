@@ -9,8 +9,7 @@
 
 (rf/reg-event-db
   :move-obj
-  (fn [db [_ idx dx dy]]
-    (.log js/console "move:" idx dx dy)
-    (update-in db [:design idx]
+  (fn [db [_ oid dx dy]]
+    (update-in db [:design oid]
                   (fn [[vhead vx vy & vtail :as v]]
                     (into [vhead (+ vx dx) (+ vy dy)] vtail)))))

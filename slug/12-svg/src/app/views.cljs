@@ -16,33 +16,29 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn bounding-client-xy [evt]
-  (let [rect (.getBoundingClientRect (.-target evt))]
-    [(.-left rect) (.-top rect)]))
-
 (defn client-xy [evt]
   [(.-clientX evt) (.-clientY evt)])
 
-(defn drag-move-fn [gid]
+(defn drag-move-fn [oid state]
   (fn [evt]
-    (let [[bx by] (bounding-client-xy evt)
-          [cx cy] (client-xy evt)]
-      (>evt [:move-obj gid (- cx bx) (- cy by)]))))
+    (let [[ox oy] (:pos @state)
+          [cx cy :as c] (client-xy evt)]
+      (swap! state assoc :pos c)
+      (>evt [:move-obj oid (- cx ox) (- cy oy)]))))
 
-(defn drag-end-fn [drag-move drag-end-atom]
+(defn drag-end-fn [move-fn state]
   (fn [evt]
-    (events/unlisten js/window EventType.MOUSEMOVE drag-move)
-    (events/unlisten js/window EventType.MOUSEUP @drag-end-atom)))
+    (events/unlisten js/window EventType.MOUSEMOVE move-fn)
+    (events/unlisten js/window EventType.MOUSEUP (:end @state))))
 
 (defn drag-start [x y evt]
-  (.log js/console "ds:" (client-xy evt) (.-id (.-target evt)))
-  (let [gid (js/parseInt (.-id (.-target evt)))
-        drag-move (drag-move-fn gid)
-        drag-end-atom (atom nil)
-        drag-end (drag-end-fn drag-move drag-end-atom)]
-    (reset! drag-end-atom drag-end)
-    (events/listen js/window EventType.MOUSEMOVE drag-move)
-    (events/listen js/window EventType.MOUSEUP drag-end)))
+  (let [state   (atom {:pos (client-xy evt)})
+        oid     (js/parseInt (.-id (.-target evt)))
+        move-fn (drag-move-fn oid state)
+        done-fn (drag-end-fn move-fn state)]
+    (swap! state assoc :end done-fn)
+    (events/listen js/window EventType.MOUSEMOVE move-fn)
+    (events/listen js/window EventType.MOUSEUP done-fn)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -73,13 +69,10 @@
 
 (defn main-panel []
   [:div#main
-
     [:p.pure-g.pure-u-1
       "Hello " [:b "SVG"]]
-
     [:div.pure-g.pure-u-1
       [design-as-svg]]
-
     [:p.pure-g.pure-u-1
       [:small (pr-str @re-frame.db/app-db)]]])
 
@@ -91,4 +84,9 @@
     (.getElementById js/document id))
 
   (defn obj-id-as-xy [id]
-    (mapv js/parseInt (s/split id ","))))
+    (mapv js/parseInt (s/split id ",")))
+
+  (defn bounding-client-xy [evt]
+    (let [rect (.getBoundingClientRect (.-target evt))]
+      [(.-left rect) (.-top rect)])))
+
