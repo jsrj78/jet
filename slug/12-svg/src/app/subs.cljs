@@ -5,3 +5,8 @@
  :design
  (fn [db _]
    (:design db)))
+
+(rf/reg-sub
+ :gadget-num
+ (fn [db [_ pos]]
+   (nth (:design db) pos)))
