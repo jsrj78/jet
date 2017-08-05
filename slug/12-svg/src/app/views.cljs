@@ -26,26 +26,26 @@
 (defn obj-id-as-xy [id]
   (mapv js/parseInt (s/split id ",")))
 
-(defn move-point-fn [id]
+(defn drag-move-fn [id]
   (fn [event]
     (let [[x y]   (obj-id-as-xy id)
           [bx by] (bounding-client-xy id)
-          dx      (- (.-clientX event) bx 59)
-          dy      (- (.-clientY event) by 11)]
-      (.log js/console "move: x" x bx dx "y" y by dy)
-      (>evt [:move-obj x y dx dy])
-      (atom id))))
+          dx      (- (.-clientX event) bx)
+          dy      (- (.-clientY event) by)]
+      (.log js/console "move: x" x bx dx "y" y by dy event)
+      (>evt [:move-obj x y dx dy]))))
 
 (defn drag-end-fn [drag-move drag-end-atom]
   (fn [evt]
     (events/unlisten js/window EventType.MOUSEMOVE drag-move)
     (events/unlisten js/window EventType.MOUSEUP @drag-end-atom)))
 
-(defn dragging [on-drag]
-  (let [drag-end-atom (atom nil)
-        drag-end (drag-end-fn on-drag drag-end-atom)]
+(defn drag-start [id]
+  (let [drag-move (drag-move-fn id)
+        drag-end-atom (atom nil)
+        drag-end (drag-end-fn drag-move drag-end-atom)]
     (reset! drag-end-atom drag-end)
-    (events/listen js/window EventType.MOUSEMOVE on-drag)
+    (events/listen js/window EventType.MOUSEMOVE drag-move)
     (events/listen js/window EventType.MOUSEUP drag-end)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -54,7 +54,7 @@
   (let [id (obj-id obj)] 
     ^{:key id}
     [:g.obj ;{:on-click #(.log js/console "click:" (.-target %))}
-      {:id id :on-mouse-down #(dragging (move-point-fn id))}
+      {:id id :on-mouse-down #(drag-start id)}
       [:rect.obj {:x x :y y :width 65 :height 20}]
       [:text.obj {:x (+ x 5) :y (+ y 15)} (obj-name obj)]]))
 
