@@ -2,10 +2,6 @@
 
 #main { margin: 0 20px; }
 
-circle.test { fill: red; }
-
-rect.test { fill: lightgreen; }
-
 rect.obj {
     stroke-width: 1;
     stroke: black;

@@ -5,16 +5,26 @@
 (def <sub (comp deref re-frame.core/subscribe))
 (def >evt re-frame.core/dispatch)
 
-(defn obj-as-svg [[_ x y]]
+(defn obj-as-svg [[_ x y & cmd]]
   ^{:key (+ (* x 10000) y)}
-  [:rect.obj {:x x :y y :width 30 :height 20}])
+  [:g
+    [:rect.obj {:x x :y y :width 70 :height 20}]
+    [:text {:x (+ x 2) :y (+ y 15)} (str cmd)]])
+
+(defn wire-as-svg [ovec [_ src-pos src-outlet dst-pos dst-inlet]]
+  (let [[_ sx sy] (get ovec src-pos)
+        [_ dx dy] (get ovec dst-pos)]
+    ^{:key (str src-pos "," src-outlet "," dst-pos "," dst-pos)}
+    [:line {:x1 (+ sx (* 70 src-outlet)) :y1 (+ sy 20)
+            :x2 (+ dx (* 70 dst-inlet))  :y2 (+ dy 0)
+            :stroke "black"}]))
 
 (defn design-as-svg [design]
-  (let [obj-v (filterv #(= (first %) :obj) design)] 
+  (let [obj-v (filterv #(= (first %) :obj) design)
+        wire-v (filterv #(= (first %) :connect) design)] 
     [:svg {:width 400 :height 200}
-      [:circle.test {:cx 180 :cy 80 :r 30}]
-      [:rect.test {:x 250 :y 50 :width 50 :height 30}]
-      (map obj-as-svg obj-v)]))
+      (map obj-as-svg obj-v)
+      (map #(wire-as-svg obj-v %) wire-v)]))
 
 (defn main-panel []
   (let [my-name (<sub [:name]) 
