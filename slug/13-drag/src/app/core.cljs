@@ -10,8 +10,8 @@
                                 [1 0 2 0]
                                 [1 1 3 0]]}))
 
-(defn obj-num [id]
-  (get-in @app-db [:obj id]))
+(defn get-obj [id]
+  (nth (:obj @app-db) id))
 
 (defn move-obj [id dx dy]
   (swap! app-db update-in [:obj id]
@@ -34,8 +34,8 @@
     (ev/unlisten js/window "mouseup" (:end @state))))
 
 (defn drag-start [x y evt]
-  (let [state   (atom {:pos (client-xy evt)})
-        id      (js/parseInt (.-id (.-target evt)))
+  (let [state   (atom {:pos (client-xy evt) :end nil})
+        id      (js/parseInt (.-target.id evt))
         move-fn (drag-move-fn id state)
         done-fn (drag-end-fn move-fn state)]
     (swap! state assoc :end done-fn)
@@ -49,8 +49,8 @@
     [:text.obj {:x (+ x 5) :y (+ y 15)} cmd]])
 
 (defn wire-as-svg [[src-id src-out dst-id dst-in :as wire]]
-  (let [[sx sy] (obj-num src-id)
-        [dx dy] (obj-num dst-id)]
+  (let [[sx sy] (get-obj src-id)
+        [dx dy] (get-obj dst-id)]
     ^{:key (str wire)}
     [:line.wire {:x1 (+ sx (* 65 src-out)) :y1 (+ sy 20)
                  :x2 (+ dx (* 65 dst-in))  :y2 (+ dy 0)}]))
