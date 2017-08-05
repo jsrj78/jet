@@ -1,8 +1,7 @@
 (ns app.db)
 
 (def default-db
-  {:name "SVG demo"
-   :design
+  {:design
    [[:obj 75 40 :inlet]
     [:obj 75 91 :swap 5]
     [:obj 75 142 :print 1]

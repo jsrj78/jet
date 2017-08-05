@@ -1,11 +1,20 @@
 /* application-specific styles */
 
-#main { margin: 0 20px; }
+#main {
+    margin: 0 20px;
+}
 
+line.wire {
+    stroke: red;
+}
+
+text.obj {
+}
 rect.obj {
-    stroke-width: 1;
     stroke: black;
     fill: white;
 }
 
-svg { border: 1px solid black; }
+svg {
+    border: 1px solid black;
+}
