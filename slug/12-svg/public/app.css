@@ -1,26 +1,9 @@
 /* application-specific styles */
 
-#main {
-    margin: 0 20px;
-}
+#main { margin: 0 20px; }
 
-.draggable {
-    cursor: move;
-}
-
-line.wire {
-    stroke: red;
-}
-
-text.obj {
-    pointer-events: none;
-}
-
-rect.obj {
-    stroke: black;
-    fill: white;
-}
-
-svg {
-    border: 1px solid black;
-}
+svg { background: lightgray; }
+.draggable { cursor: move; }
+line.wire { stroke: red; }
+text.obj { pointer-events: none; }
+rect.obj { stroke: black; fill: white; }
