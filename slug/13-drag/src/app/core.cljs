@@ -2,10 +2,10 @@
   (:require [reagent.core :as r]
             [goog.events :as ev]))
 
-(defonce app-db (r/atom {:obj [[50 40 "inlet # 0"]
-                               [50 90 "swap 25"]
-                               [50 140 "print 12"]
-                               [150 140 "print 34"]]
+(defonce app-db (r/atom {:obj [[50 40 "inlet #0"]
+                               [50 90 "swap 5"]
+                               [50 140 "print 1"]
+                               [150 140 "print 2"]]
                          :wire [[0 0 1 0]
                                 [1 0 2 0]
                                 [1 1 3 0]]}))
