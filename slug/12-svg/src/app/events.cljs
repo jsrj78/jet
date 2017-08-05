@@ -8,7 +8,7 @@
     db/default-db))
 
 (rf/reg-event-db
-  :move-obj
+  :move-gadget
   (fn [db [_ oid dx dy]]
     (update-in db [:design oid]
                   (fn [[vhead vx vy & vtail :as v]]

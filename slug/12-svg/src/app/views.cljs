@@ -1,8 +1,7 @@
 (ns app.views
   (:require [re-frame.core]
             [clojure.string :as s]
-            [goog.events :as events])
-  (:import [goog.events EventType]))
+            [goog.events :as ev]))
 
 ; see https://lambdaisland.com/blog/11-02-2017-re-frame-form-1-subscriptions
 (def <sub (comp deref re-frame.core/subscribe))
@@ -21,15 +20,15 @@
 
 (defn drag-move-fn [oid state]
   (fn [evt]
-    (let [[ox oy] (:pos @state)
+    (let [[ox oy]       (:pos @state)
           [cx cy :as c] (client-xy evt)]
       (swap! state assoc :pos c)
-      (>evt [:move-obj oid (- cx ox) (- cy oy)]))))
+      (>evt [:move-gadget oid (- cx ox) (- cy oy)]))))
 
 (defn drag-end-fn [move-fn state]
   (fn [evt]
-    (events/unlisten js/window EventType.MOUSEMOVE move-fn)
-    (events/unlisten js/window EventType.MOUSEUP (:end @state))))
+    (ev/unlisten js/window "mousemove" move-fn)
+    (ev/unlisten js/window "mouseup" (:end @state))))
 
 (defn drag-start [x y evt]
   (let [state   (atom {:pos (client-xy evt)})
@@ -37,15 +36,15 @@
         move-fn (drag-move-fn oid state)
         done-fn (drag-end-fn move-fn state)]
     (swap! state assoc :end done-fn)
-    (events/listen js/window EventType.MOUSEMOVE move-fn)
-    (events/listen js/window EventType.MOUSEUP done-fn)))
+    (ev/listen js/window "mousemove" move-fn)
+    (ev/listen js/window "mouseup" done-fn)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn obj-as-svg [idx [_ x y & cmd :as obj]]
-  ^{:key idx}
+(defn obj-as-svg [oid [_ x y & cmd :as obj]]
+  ^{:key oid}
   [:g.draggable {:on-mouse-down #(drag-start x y %)}
-    [:rect.obj {:id idx :x x :y y :width 65 :height 20}]
+    [:rect.obj {:id oid :x x :y y :width 65 :height 20}]
     [:text.obj {:x (+ x 5) :y (+ y 15)} (obj-name obj)]])
 
 (defn wire-id [[_ & args]]
@@ -75,18 +74,3 @@
       [design-as-svg]]
     [:p.pure-g.pure-u-1
       [:small (pr-str @re-frame.db/app-db)]]])
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(comment "unused code:"
-
-  (defn by-id [id]
-    (.getElementById js/document id))
-
-  (defn obj-id-as-xy [id]
-    (mapv js/parseInt (s/split id ",")))
-
-  (defn bounding-client-xy [evt]
-    (let [rect (.getBoundingClientRect (.-target evt))]
-      [(.-left rect) (.-top rect)])))
-
