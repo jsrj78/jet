@@ -11,3 +11,5 @@ rect.obj {
     stroke: black;
     fill: white;
 }
+
+svg { border: 1px solid black; }
