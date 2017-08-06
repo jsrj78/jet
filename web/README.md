@@ -1,20 +1,37 @@
 # JET web interface
 
-The web interface is built with [ClojureScript][CLJS] (which compiles to
-JavaScript) and [Reagent][REAG] (which is a lightweight wrapper around ReactJS).
+Derived from `slug/12-frame`.
 
-This application was created using `lein new figwheel web -- --reagent`.
+### Development mode
 
-To launch this code in development mode, you need [Leiningen][LEIN] and a JVM:
+Once [Leiningen](https://leiningen.org) has been installed, run:
 
-    lein figwheel
+```
+lein figwheel
+```
 
-The following command generates an optimised client-side-only build:
+Wait for the `Prompt will show ...` message, then click on this link:
+<http://localhost:3449](http://localhost:3449/>.
 
-    lein do clean, cljsbuild once min
+### Production build
 
-The result will be a static set of files in `resources/public/`.
+To generate a self-contained production release:
 
-   [CLJS]: https://clojurescript.org
-   [REAG]: https://reagent-project.github.io
-   [LEIN]: https://leiningen.org
+```
+lein clean
+lein cljsbuild once min
+```
+
+The result ends up in `public/` and can be used with any HTTP server:
+
+```
+tree public/
+public/
+├── app.css
+├── index.html
+├── js
+│   └── app.js
+└── pure-min.css
+
+1 directory, 4 files
+```
