@@ -2,11 +2,16 @@
   (:require [re-frame.core :as rf]))
 
 (rf/reg-sub
- :design
+ :gadgets
  (fn [db _]
-   (:design db)))
+   (:gadgets db)))
+
+(rf/reg-sub
+ :wires
+ (fn [db _]
+   (:wires db)))
 
 (rf/reg-sub
  :gadget-num
  (fn [db [_ pos]]
-   (nth (:design db) pos)))
+   (nth (:gadgets db) pos)))

@@ -47,14 +47,14 @@
     [:rect.obj {:id id :x x :y y :width 65 :height 20}]
     [:text.obj {:x (+ x 5) :y (+ y 15)} (obj-name obj)]])
 
-(defn wire-id [[_ & args]]
-  (s/join ":" args))
+(defn wire-id [wire]
+  (s/join ":" wire))
 
 (defn wire-path [x1 y1 x2 y2] ;; either straight line or cubic bezier
 ; (s/join " " ["M" x1 y1 "L" x2 y2])
   (s/join " " ["M" x1 y1 "C" x1 (+ y1 25) x2 (- y2 25) x2 y2]))
 
-(defn wire-as-svg [[_ src-pos src-out dst-pos dst-in :as wire]]
+(defn wire-as-svg [[src-pos src-out dst-pos dst-in :as wire]]
   (let [[_ sx sy] (<sub [:gadget-num src-pos])
         [_ dx dy] (<sub [:gadget-num dst-pos])]
     ^{:key (wire-id wire)}
@@ -62,9 +62,8 @@
                                (+ dx (* 65 dst-in))  (+ dy 0))}])) 
 
 (defn design-as-svg []
-  (let [design (<sub [:design])
-        objs   (filter #(= (first %) :obj) design)
-        wires  (filter #(= (first %) :connect) design)] 
+  (let [objs   (<sub [:gadgets])
+        wires  (<sub [:wires])]
     [:svg {:width 300 :height 200}
       (map-indexed obj-as-svg objs)
       ; can't leave reactive refs in a lazy sequence
