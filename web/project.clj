@@ -2,7 +2,8 @@
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [org.clojure/clojurescript "1.9.854"]
                  [reagent "0.7.0"]
-                 [re-frame "0.9.4"]]
+                 [re-frame "0.9.4"]
+                 [devcards "0.2.3" :exclusions [cljsjs/react]]]
 
   :plugins [[lein-cljsbuild "1.1.7"]]
 
@@ -31,6 +32,26 @@
                     :preloads             [devtools.preload]
                     :external-config      {:devtools/config
                                            {:features-to-install :all}}}}
+
+    {:id           "cards"
+     :source-paths ["src"]
+     :figwheel     {:devcards true}
+
+     :compiler     {:main                 cards.core
+                    :output-to            "public/js/cards.js"
+                    :output-dir           "public/js/cards"
+                    :asset-path           "js/cards"
+                    :source-map-timestamp true}}
+
+    {:id           "hosted"
+     :source-paths ["src"]
+     :compiler     {:main            cards.core
+                    :output-to       "public/js/cards.js"
+                    :output-dir      "public/js/hosted"
+                    :devcards        true
+                    :optimizations   :advanced
+                    :closure-defines {goog.DEBUG false}
+                    :pretty-print    false}}
 
     {:id           "min"
      :source-paths ["src"]
