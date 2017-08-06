@@ -9,7 +9,7 @@
 
 (rf/reg-event-db
   :move-gadget
-  (fn [db [_ oid dx dy]]
-    (update-in db [:gadgets oid]
-                  (fn [[vhead vx vy & vtail :as v]]
+  (fn [db [_ id dx dy]]
+    (update-in db [:gadgets id]
+                  (fn [[vhead vx vy & vtail]]
                     (into [vhead (+ vx dx) (+ vy dy)] vtail)))))
