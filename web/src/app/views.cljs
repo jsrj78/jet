@@ -69,11 +69,34 @@
       ; can't leave reactive refs in a lazy sequence
       (doall (map wire-as-svg wires))]))
 
-(defn main-panel []
-  [:div#main
+(defn main-menu []
+  [:div.custom-wrapper.pure-g {:id "menu"}
+      [:div.pure-u-1.pure-u-md-1-3
+          [:div.pure-menu
+              [:a.pure-menu-heading.custom-brand {:href "#"} "Brand"]
+              [:a.custom-toggle {:id "toggle" :href "#"} [:s.bar] [:s.bar]]]]
+      [:div.pure-u-1.pure-u-md-1-3
+          [:div.pure-menu.pure-menu-horizontal.custom-can-transform
+              [:ul.pure-menu-list
+                  [:li.pure-menu-item [:a.pure-menu-link {:href "#"} "Home"]]
+                  [:li.pure-menu-item [:a.pure-menu-link {:href "#"} "About"]]
+                  [:li.pure-menu-item [:a.pure-menu-link {:href "#"} "Blah"]]]]]
+      [:div.pure-u-1.pure-u-md-1-3
+          [:div.pure-menu.pure-menu-horizontal.custom-menu-3.custom-can-transform
+              [:ul.pure-menu-list
+                  [:li.pure-menu-item [:a.pure-menu-link {:href "#"} "Foo"]]
+                  [:li.pure-menu-item [:a.pure-menu-link {:href "#"} "Bar"]]]]]])
+
+(defn main-content []
+  [:div#content
     [:p.pure-g.pure-u-1
       "Hello " [:b "SVG"]]
     [:div.pure-g.pure-u-1
       [design-as-svg]]
     [:p.pure-g.pure-u-1
       [:small (pr-str @re-frame.db/app-db)]]])
+
+(defn app-page []
+  [:div
+    #_[main-menu]
+    [main-content]])

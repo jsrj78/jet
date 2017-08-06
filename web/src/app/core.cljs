@@ -15,7 +15,7 @@
 
 (defn mount-root []
   (rf/clear-subscription-cache!)
-  (r/render [views/main-panel] (.getElementById js/document "app")))
+  (r/render [views/app-page] (.getElementById js/document "app")))
 
 (defn ^:export init []
   (rf/dispatch-sync [:initialize-db])

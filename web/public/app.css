@@ -1,6 +1,6 @@
 /* application-specific styles */
 
-#main { margin: 0 20px; }
+#content { margin: 0 20px; }
 
 svg { background: #EEE; }
 .draggable { cursor: move; }
