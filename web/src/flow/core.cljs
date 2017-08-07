@@ -17,7 +17,7 @@
 
 (defn add-outlets [gob num]
   (swap! (:outlets gob) into (repeat num []))
-  (dec (count @(:outlets gob))))
+  (- (count @(:outlets gob)) num))
 
 (defn feed [gob inlet msg]
   ((get (:inlets gob) inlet) msg))
@@ -38,14 +38,14 @@
 
 (defn make-circuit []
   (-> (init-gadget)
-      (assoc :g [] :w [])))
+      (assoc :gadgets [] :wires [])))
 
 (defn add [cob gob]
   (-> ((:on-add gob) cob)
-      (update :g conj gob))) 
+      (update :gadgets conj gob))) 
 
 (defn add-wire [cob [src-id src-out dst-id dst-in :as wire]]
-  (let [src-gob (get-in cob [:g src-id])
-        dst-gob (get-in cob [:g dst-id])]
+  (let [src-gob (get-in cob [:gadgets src-id])
+        dst-gob (get-in cob [:gadgets dst-id])]
     (swap! (:outlets src-gob) update src-out conj [dst-gob dst-in])
-    (update cob :w conj wire))) 
+    (update cob :wires conj wire))) 
