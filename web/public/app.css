@@ -1,8 +1,10 @@
 /* application-specific styles */
 
-#content { margin: 0 20px; }
+#sidebar { padding: 0 1em; }
 
-svg { background: #EEE; }
+pre { white-space: pre-wrap; }
+
+svg { background: #eee; }
 .draggable { cursor: move; }
 path.wire { stroke: red; fill: none; }
 text.obj { pointer-events: none; }
