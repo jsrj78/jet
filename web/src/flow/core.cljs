@@ -7,24 +7,24 @@
 (defn defgadget [key fun]
   (swap! registry assoc key fun))
 
-(defn new-gadget []
-  {;:state (atom {})
-   :inlets []
-   :outlets []
-   :on-added identity})
+(defn init-gadget []
+  (atom {:inlets []
+         :outlets []
+         :on-added identity}))
 
-(defn add-inlet [gob f]
-  (update gob :inlets conj f))
+(defn add-inlet [gob inlet-fn]
+  (swap! gob update :inlets conj inlet-fn)
+  gob)
 
 (defn add-outlets [gob num]
-  (update gob :outlets into (repeat num [])))
+  (swap! gob update :outlets into (repeat num []))
+  gob)
 
 (defn feed [gob inlet msg]
-  ((get (:inlets gob) inlet) msg))
+  ((get (:inlets @gob) inlet) msg))
 
 (defn emit [gob outlet msg]
-  (.log js/console "emit:" gob (get-in gob [:outlets outlet]))
-  (doseq [[dst out] (get-in gob [:outlets outlet])]
+  (doseq [[dst out] (get-in @gob [:outlets outlet])]
     (feed dst out msg)))
 
 (defn emitter [gob outlet]
@@ -33,53 +33,54 @@
 
 (defgadget :print
   (fn [label]
-    (-> (new-gadget)
-        (add-inlet (fn [msg]
-                    (let [args (if label (cons label msg) msg)] 
-                      (apply pr args)))))))
+    (let [gob (init-gadget)]
+      (-> gob
+          (add-inlet (fn [msg]
+                      (let [args (if label (cons label msg) msg)] 
+                        (apply pr args))))))))
 
 (defgadget :pass
   (fn []
-    (let [gob (new-gadget)]
-      (-> gob
-          (add-outlets 1)
-          (add-inlet (emitter gob 0))))))
+    (let [gob (init-gadget)]
+      (add-outlets gob 1)
+      (add-inlet gob (emitter gob 0)))))
 
 (defgadget :inlet
   (fn []
-    (let [gob (new-gadget)]
-      (-> gob
-          (add-outlets 1)
-          (assoc :on-added #(add-inlet % (emitter gob 0)))))))
+    (let [gob (init-gadget)]
+      (add-outlets gob 1)
+      (swap! gob assoc :on-added (fn [cob]
+                                  (add-inlet cob (emitter gob 0))))
+      gob)))
 
 (defgadget :outlet
   (fn []
-    (let [gob (new-gadget)]
-      (-> gob
-          (assoc :on-added #(let [n (count (:outlets %))
-                                  nobj (add-inlet gob (emitter % n))]
-                              (-> %
-                                  ;;; FIXME
-                                  (add-outlets 1))))))))
+    (let [gob (init-gadget)]
+      (swap! gob assoc :on-added #(let [n (count (:outlets @%))
+                                        nobj (add-inlet gob (emitter % n))]
+                                    (-> %
+                                        ;;; FIXME
+                                        (add-outlets 1))))
+      gob)))
 
-(defn lookup-gadget [key & args]
-  (let [f (key @registry)] 
-    (if f
-      (apply f args)
-      (.log js/console "no such gadget:" key))))
+(defn make-gadget [k & args]
+  (let [g-fn (k @registry)] 
+    (if g-fn
+      (apply g-fn args)
+      (.error js/console "no such gadget:" key))))
 
-(defn new-circuit []
-  (assoc (new-gadget) :g [] :w []))
+(defn make-circuit []
+  (let [cob (init-gadget)]
+    (swap! cob assoc :g [] :w [])
+    cob))
 
 (defn add [cob gob]
-  (.log js/console "oa:" gob)
-  (-> cob
-      (update :g conj gob) 
-      ((:on-added gob))))
+  (swap! cob update :g conj gob) 
+  ((:on-added @gob) cob))
 
 (defn add-wire [cob [srcg srco dstg dsti :as wire]]
-  (let [src (get-in cob [:g srcg]) 
-        dst (get-in cob [:g dstg])]
-    (-> cob
-        (update :w conj [wire])
-        (update-in [:g srcg :outlets] conj [dst dsti]))))
+  (let [src (get-in @cob [:g srcg])
+        dst (get-in @cob [:g dstg])]
+    (swap! cob update :w conj wire) 
+    (swap! src update-in [:outlets srco] conj [dst dsti])
+    cob))
