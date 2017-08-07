@@ -17,4 +17,5 @@
                     (f/add (f/make-gadget :inlet))
                     (f/add (f/make-gadget :print))
                     (f/add-wire [0 0 1 0]))]
+    (.log js/console "iap:" circuit)
     (is (= "1 2 3" (with-out-str (f/feed circuit 0 [1 2 3]))))))
