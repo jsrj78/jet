@@ -30,34 +30,6 @@
   (fn [msg]
     (emit gob outlet msg)))
 
-(defgadget :print
-  (fn [label]
-    (-> (init-gadget)
-        (add-inlet (fn [msg]
-                    (let [args (if label (cons label msg) msg)] 
-                      (apply prn args)))))))
-
-(defgadget :pass
-  (fn []
-    (let [gob (init-gadget)]
-      (add-outlets gob 1)
-      (add-inlet gob (emitter gob 0)))))
-
-(defgadget :inlet
-  (fn []
-    (let [gob (init-gadget)]
-      (add-outlets gob 1)
-      (assoc gob :on-add #(add-inlet % (emitter gob 0))))))
-
-(defgadget :outlet
-  (fn []
-    (let [gob (init-gadget)]
-      (assoc gob :on-add (fn [cob]
-                          (let [off (add-outlets cob 1)
-                                gid (count (:g cob))
-                                nob (add-inlet gob (emitter cob off))]
-                            (assoc-in cob [:g gid] nob)))))))
-
 (defn make-gadget [k & args]
   (let [g-fn (k @registry)] 
     (if g-fn

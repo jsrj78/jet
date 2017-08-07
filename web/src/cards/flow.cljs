@@ -1,7 +1,8 @@
 (ns cards.flow
   (:require-macros [devcards.core :refer [defcard-rg deftest]]
                    [cljs.test :refer [testing is]])
-  (:require [flow.core :as f]))
+  (:require [flow.core :as f]
+            [flow.gadgets]))
 
 (deftest print-exists
   (let [f-print (f/make-gadget :print)] 
