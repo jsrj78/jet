@@ -13,9 +13,10 @@
     (is (= "\"hello\" 1 2 3" (with-out-str (f/feed f-print 0 [1 2 3]))))))
 
 (deftest pass-and-print
-  (let [f-pass  (f/lookup-gadget :pass)
-        f-print (f/lookup-gadget :print) 
-        circuit (f/new-circuit [f-pass f-print]
-                               [[0 0 1 0]])]
-    (is (and f-pass f-print))
-    (is (= "\"hello\" 1 2 3" (with-out-str (f/feed f-print 0 [1 2 3]))))))
+  (let [f-print (f/lookup-gadget :print) 
+        circuit (-> (f/new-circuit)
+                    (f/add (f/lookup-gadget :inlet))
+                    (f/add f-print)
+                    (f/add-wire [0 0 1 0]))]
+    (.log js/console circuit)
+    (is (= "1 2 3" (with-out-str (f/feed circuit 0 [1 2 3]))))))
