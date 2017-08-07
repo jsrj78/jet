@@ -38,7 +38,9 @@
 
 (defn make-circuit []
   (-> (init-gadget)
-      (assoc :gadgets [] :wires [])))
+      (assoc :gadgets []
+             :wires []
+             :notifiers (atom {}))))
 
 (defn add [cob gob]
   (-> ((:on-add gob) cob)
@@ -49,3 +51,11 @@
         dst-gob (get-in cob [:gadgets dst-id])]
     (swap! (:outlets src-gob) update src-out conj [dst-gob dst-in])
     (update cob :wires conj wire))) 
+
+(defn on [cob topic on-fn]
+  ; FIXME assoc should append to a vec, current code supports one fn per topic
+  (swap! (:notifiers cob) assoc topic [on-fn]))
+
+(defn notify [cob topic msg]
+  (doseq [on-fn (get @(:notifiers cob) topic)] 
+    (on-fn msg)))

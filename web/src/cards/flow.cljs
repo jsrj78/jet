@@ -79,3 +79,23 @@
            (with-out-str (f/feed c 0 [111]))))
     (is (= "[:b 222]\n[:a 1 2 3]\n"
            (with-out-str (f/feed c 0 [222]))))))
+
+(deftest bare-send-gadget
+  (let [c (-> (f/make-circuit)
+              (f/add (f/make-gadget :inlet))
+              (f/add (f/make-gadget :s :blah))
+              (f/add-wire [0 0 1 0]))]
+    (f/on c :blah prn)
+    (is (= "[1 2 3]\n"
+           (with-out-str (f/feed c 0 [1 2 3]))))))
+
+(deftest send-and-receive
+  (let [c (-> (f/make-circuit)
+              (f/add (f/make-gadget :inlet))
+              (f/add (f/make-gadget :s :blah))
+              (f/add (f/make-gadget :r :blah))
+              (f/add (f/make-gadget :print))
+              (f/add-wire [0 0 1 0])
+              (f/add-wire [2 0 3 0]))]
+    (is (= "[1 2 3]\n"
+           (with-out-str (f/feed c 0 [1 2 3]))))))

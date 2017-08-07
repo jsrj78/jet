@@ -40,5 +40,19 @@
         (f/add-inlet (fn [msg]
                       (f/emit gob 1 msg)
                       (f/emit gob 0 @val)))
-        (f/add-inlet (fn [msg]
-                      (reset! val msg)))))))
+        (f/add-inlet #(reset! val %))))))
+
+(f/defgadget :s
+  (fn [topic]
+    (let [parent (atom nil)]
+      (-> (f/init-gadget)
+          (f/add-inlet #(f/notify @parent topic %))
+          (assoc :on-add #(reset! parent %))))))
+
+(f/defgadget :r
+  (fn [topic]
+    (let [gob (f/init-gadget)]
+      (f/add-outlets gob 1)
+      (assoc gob :on-add (fn [cob]
+                           (f/on cob topic (f/emitter gob 0))
+                           cob)))))
