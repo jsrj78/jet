@@ -3,10 +3,10 @@
 
 (f/defgadget :print
   (fn [label]
-    (-> (f/init-gadget)
-        (f/add-inlet (fn [msg]
-                      (let [args (if label (cons label msg) msg)] 
-                        (apply prn args)))))))
+    (let [gob (f/init-gadget)]
+      (f/add-inlet gob (fn [msg]
+                        (let [args (if label (cons label msg) msg)] 
+                          (prn (vec args))))))))
 
 (f/defgadget :pass
   (fn []
@@ -30,3 +30,15 @@
                                  (f/emitter cob)
                                  (f/add-inlet gob)
                                  (assoc-in cob [:gadgets off]))))))))
+
+(f/defgadget :swap
+  (fn [args]
+    (let [val (atom args)
+          gob (f/init-gadget)]
+      (f/add-outlets gob 2)
+      (-> gob
+        (f/add-inlet (fn [msg]
+                      (f/emit gob 1 msg)
+                      (f/emit gob 0 @val)))
+        (f/add-inlet (fn [msg]
+                      (reset! val msg)))))))
