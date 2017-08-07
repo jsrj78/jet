@@ -16,15 +16,15 @@
   (update gob :inlets conj inlet-fn))
 
 (defn add-outlets [gob num]
-  (update gob :outlets swap! into (repeat num []))
-  gob)
+  (swap! (:outlets gob) into (repeat num []))
+  (dec (count @(:outlets gob))))
 
 (defn feed [gob inlet msg]
   ((get (:inlets gob) inlet) msg))
 
 (defn emit [gob outlet msg]
-  (doseq [[dst out] (get @(:outlets gob) outlet)]
-    (feed dst out msg)))
+  (doseq [[dst-gob dst-in] (get @(:outlets gob) outlet)]
+    (feed dst-gob dst-in msg)))
 
 (defn emitter [gob outlet]
   (fn [msg]
@@ -35,21 +35,28 @@
     (-> (init-gadget)
         (add-inlet (fn [msg]
                     (let [args (if label (cons label msg) msg)] 
-                      (apply pr args)))))))
+                      (apply prn args)))))))
 
 (defgadget :pass
   (fn []
     (let [gob (init-gadget)]
-      (-> gob
-          (add-outlets 1)
-          (add-inlet (emitter gob 0))))))
+      (add-outlets gob 1)
+      (add-inlet gob (emitter gob 0)))))
 
 (defgadget :inlet
   (fn []
     (let [gob (init-gadget)]
-      (-> gob
-          (add-outlets 1)
-          (assoc :on-add #(add-inlet % (emitter gob 0)))))))
+      (add-outlets gob 1)
+      (assoc gob :on-add #(add-inlet % (emitter gob 0))))))
+
+(defgadget :outlet
+  (fn []
+    (let [gob (init-gadget)]
+      (assoc gob :on-add (fn [cob]
+                          (let [off (add-outlets cob 1)
+                                gid (count (:g cob))
+                                nob (add-inlet gob (emitter cob off))]
+                            (assoc-in cob [:g gid] nob)))))))
 
 (defn make-gadget [k & args]
   (let [g-fn (k @registry)] 
@@ -65,8 +72,8 @@
   (-> ((:on-add gob) cob)
       (update :g conj gob))) 
 
-(defn add-wire [cob [srcg srco dstg dsti :as wire]]
-  (let [src (get-in cob [:g srcg])
-        dst (get-in cob [:g dstg])]
-    (swap! (:outlets src) update srco conj [dst dsti])
+(defn add-wire [cob [src-id src-out dst-id dst-in :as wire]]
+  (let [src-gob (get-in cob [:g src-id])
+        dst-gob (get-in cob [:g dst-id])]
+    (swap! (:outlets src-gob) update src-out conj [dst-gob dst-in])
     (update cob :w conj wire))) 
