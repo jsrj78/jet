@@ -15,3 +15,8 @@
  :gadget-num
  (fn [db [_ pos]]
    (nth (:gadgets db) pos)))
+
+(rf/reg-sub
+ :current-gadget
+ (fn [db _]
+   (:selected-gadget db)))

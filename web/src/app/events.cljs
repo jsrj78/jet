@@ -13,3 +13,8 @@
     (update-in db [:gadgets id]
                   (fn [[vhead vx vy & vtail]]
                     (into [vhead (+ vx dx) (+ vy dy)] vtail)))))
+
+(rf/reg-event-db
+  :select-gadget
+  (fn [db [_ id]]
+    (assoc db :selected-gadget id)))

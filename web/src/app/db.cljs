@@ -1,7 +1,8 @@
 (ns app.db)
 
 (def default-db
-  {:gadgets
+  {:selected-gadget nil
+   :gadgets
    [[:obj 50 40 :inlet]
     [:obj 50 90 :swap 5]
     [:obj 50 140 :print 1]

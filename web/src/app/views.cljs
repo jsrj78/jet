@@ -13,8 +13,6 @@
 (defn obj-id [[_ x y]]
   (str x "," y))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
 (defn client-xy [evt]
   [(.-clientX evt) (.-clientY evt)])
 
@@ -25,8 +23,9 @@
       (swap! state assoc :pos c)
       (>evt [:move-gadget id (- cx ox) (- cy oy)]))))
 
-(defn drag-end-fn [move-fn state]
+(defn drag-end-fn [id move-fn state]
   (fn [evt]
+    (>evt [:select-gadget id])
     (ev/unlisten js/window "mousemove" move-fn)
     (ev/unlisten js/window "mouseup" (:end @state))))
 
@@ -34,12 +33,11 @@
   (let [state   (atom {:pos (client-xy evt)})
         id      (js/parseInt (.-id (.-target evt)))
         move-fn (drag-move-fn id state)
-        done-fn (drag-end-fn move-fn state)]
+        done-fn (drag-end-fn id move-fn state)]
     (swap! state assoc :end done-fn)
     (ev/listen js/window "mousemove" move-fn)
-    (ev/listen js/window "mouseup" done-fn)))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    (ev/listen js/window "mouseup" done-fn)
+    (.stopPropagation evt)))
 
 (defn obj-as-svg [id [_ x y & cmd :as obj]]
   ^{:key id}
@@ -64,7 +62,8 @@
 (defn design-as-svg []
   (let [objs   (<sub [:gadgets])
         wires  (<sub [:wires])]
-    [:svg {:width "100%" :height 400}
+    [:svg {:width "100%" :height 500
+           :on-mouse-down #(>evt [:select-gadget nil])}
       (map-indexed obj-as-svg objs)
       ; can't leave reactive refs in a lazy sequence
       (doall (map wire-as-svg wires))]))
@@ -87,15 +86,28 @@
                   [:li.pure-menu-item [:a.pure-menu-link {:href "#"} "Foo"]]
                   [:li.pure-menu-item [:a.pure-menu-link {:href "#"} "Bar"]]]]]])
 
+(defn design-inspector []
+  [:p (count (<sub [:gadgets])) " gadgets, "
+      (count (<sub [:wires])) " wires"])
+
+(defn gadget-inspector [id]
+  [:div
+    [:p "gadget: " id]
+    [:pre (str (<sub [:gadget-num id]))]])
+
 (defn main-content []
   [:div
     [:div.pure-g.pure-u-3-5
      [:div#content
       [design-as-svg]
-      [:pre [:small (pr-str @re-frame.db/app-db)]]]]
+      ;[:pre [:small (pr-str @re-frame.db/app-db)]]
+      [:pre [:small (with-out-str (cljs.pprint/pprint @re-frame.db/app-db))]]]]
     [:div.pure-g.pure-u-2-5
      [:div#sidebar
-      [:p "haha"]]]])
+      (let [id (<sub [:current-gadget])] 
+        (if id
+          [gadget-inspector id]
+          [design-inspector]))]]])
 
 (defn app-page []
   [:div
