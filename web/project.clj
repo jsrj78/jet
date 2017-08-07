@@ -41,7 +41,10 @@
                     :output-to            "public/js/cards.js"
                     :output-dir           "public/js/cards"
                     :asset-path           "js/cards"
-                    :source-map-timestamp true}}
+                    :source-map-timestamp true
+                    :preloads             [devtools.preload]
+                    :external-config      {:devtools/config
+                                           {:features-to-install :all}}}}
 
     {:id           "hosted"
      :source-paths ["src"]
