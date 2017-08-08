@@ -37,10 +37,10 @@
           gob (f/init-gadget)]
       (f/add-outlets gob 2)
       (-> gob
-        (f/add-inlet (fn [msg]
-                      (f/emit gob 1 msg)
-                      (f/emit gob 0 @val)))
-        (f/add-inlet #(reset! val %))))))
+          (f/add-inlet (fn [msg]
+                        (f/emit gob 1 msg)
+                        (f/emit gob 0 @val)))
+          (f/add-inlet #(reset! val %))))))
 
 (f/defgadget :s
   (fn [topic]
@@ -64,11 +64,11 @@
           gob   (f/init-gadget)]
       (f/add-outlets gob 1)
       (-> gob
-        (f/add-inlet (fn [msg]
-                      (let [[o] @order]
-                        (reset! hist (int (/ (+ (* o @hist) msg) (inc o))))
-                        (f/emit gob 0 [@hist]))))
-        (f/add-inlet #(reset! order %))))))
+          (f/add-inlet (fn [msg]
+                        (let [[o] @order]
+                          (reset! hist (int (/ (+ (* o @hist) msg) (inc o))))
+                          (f/emit gob 0 [@hist]))))
+          (f/add-inlet #(reset! order %))))))
 
 (f/defgadget :change
   (fn []
@@ -87,8 +87,8 @@
           gob   (f/init-gadget)]
       (f/add-outlets gob 1)
       (-> gob
-        (f/add-inlet (fn [msg]
-                      (if (< msg (first @split))
-                        (f/emit gob 0 [msg])
-                        (f/emit gob 1 [msg]))))
-        (f/add-inlet #(reset! split %))))))
+          (f/add-inlet (fn [msg]
+                        (if (< msg (first @split))
+                          (f/emit gob 0 [msg])
+                          (f/emit gob 1 [msg]))))
+          (f/add-inlet #(reset! split %))))))
