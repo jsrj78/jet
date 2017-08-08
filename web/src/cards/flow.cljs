@@ -100,3 +100,14 @@
               (f/add-wire [2 0 3 0]))]
     (is (= "[1 2 3]\n"
            (with-out-str (f/feed c 0 [1 2 3]))))))
+
+(deftest smooth-gadget
+  (let [c (-> (f/make-circuit)
+              (f/add (f/make-gadget :inlet))
+              (f/add (f/make-gadget :smooth [3]))
+              (f/add (f/make-gadget :print))
+              (f/add-wire [0 0 1 0])
+              (f/add-wire [1 0 2 0]))]
+    (is (= "[0]\n[25]\n[43]\n[57]\n[67]\n[75]\n[81]\n[85]\n[88]\n[91]\n[93]\n"
+           (with-out-str (doseq [x (cons 0 (repeat 10 100))]
+                          (f/feed c 0 x)))))))

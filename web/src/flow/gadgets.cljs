@@ -56,3 +56,15 @@
       (assoc gob :on-add (fn [cob]
                            (f/on cob topic (f/emitter gob 0))
                            cob)))))
+(f/defgadget :smooth
+  (fn [arg]
+    (let [hist  (atom 0)
+          order (atom arg)
+          gob   (f/init-gadget)]
+      (f/add-outlets gob 1)
+      (-> gob
+        (f/add-inlet (fn [msg]
+                       (let [[o] @order]
+                        (reset! hist (int (/ (+ (* o @hist) msg) (inc o))))
+                        (f/emit gob 0 [@hist]))))
+        (f/add-inlet #(reset! order %))))))
