@@ -122,3 +122,16 @@
     (is (= "[0]\n[1]\n[2]\n[3]\n[0]\n"
            (with-out-str (doseq [x [0 1 1 2 2 3 0]]
                           (f/feed c 0 x)))))))
+
+(deftest moses-gadget
+  (let [c (-> (f/make-circuit)
+              (f/add (f/make-gadget :inlet))
+              (f/add (f/make-gadget :moses [5]))
+              (f/add (f/make-gadget :print :a))
+              (f/add (f/make-gadget :print :b))
+              (f/add-wire [0 0 1 0])
+              (f/add-wire [1 0 2 0])
+              (f/add-wire [1 1 3 0]))]
+    (is (= "[:a 4]\n[:b 5]\n[:b 6]\n[:b 5]\n[:a 4]\n"
+           (with-out-str (doseq [x [4 5 6 5 4]]
+                          (f/feed c 0 x)))))))
