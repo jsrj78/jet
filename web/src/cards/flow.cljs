@@ -1,7 +1,7 @@
 (ns cards.flow
-  (:require-macros [devcards.core :refer [defcard-rg deftest]]
-                   [cljs.test :refer [testing is]])
-  (:require [flow.core :as f]
+  (:require [cljs.test :refer-macros [is testing run-tests]]
+            [devcards.core :refer-macros [defcard-rg deftest]]
+            [flow.core :as f]
             [flow.gadgets]))
 
 (deftest print-exists
@@ -11,9 +11,10 @@
            (with-out-str (f/feed f-print 0 [1 2 3]))))))
 
 (deftest print-with-label
-  (let [f-print (f/make-gadget :print :hello)] 
-    (is (= "[:hello 1 2 3]\n"
-           (with-out-str (f/feed f-print 0 [1 2 3]))))))
+  (testing "haha"
+    (let [f-print (f/make-gadget :print :hello)] 
+      (is (= "[:hello 1 2 3]\n"
+            (with-out-str (f/feed f-print 0 [1 2 3])))))))
 
 (deftest inlet-and-print
   (let [c (-> (f/make-circuit)

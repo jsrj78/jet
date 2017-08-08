@@ -1,10 +1,6 @@
 (ns cards.smoke
-  (:require-macros [devcards.core :refer [defcard
-                                          defcard-doc
-                                          defcard-rg
-                                          deftest
-                                          mkdn-pprint-source]]
-                   [cljs.test :refer [testing is]]))
+  (:require [cljs.test :refer-macros [is testing]]
+            [devcards.core :refer-macros [defcard-rg deftest]]))
 
 (deftest smoke-test
   (testing "First tests"
