@@ -68,3 +68,14 @@
                         (reset! hist (int (/ (+ (* o @hist) msg) (inc o))))
                         (f/emit gob 0 [@hist]))))
         (f/add-inlet #(reset! order %))))))
+
+(f/defgadget :change
+  (fn []
+    (let [last  (atom nil)
+          gob   (f/init-gadget)]
+      (f/add-outlets gob 1)
+      (f/add-inlet gob (fn [msg]
+                        (if (not= msg @last)
+                          (do
+                            (reset! last msg)
+                            (f/emit gob 0 [msg]))))))))
