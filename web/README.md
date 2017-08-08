@@ -25,7 +25,7 @@ lein cljsbuild once min
 The result ends up in `public/` and can be used with any HTTP server:
 
 ```
-tree public/
+$ tree public/
 public/
 ├── app.css
 ├── index.html
