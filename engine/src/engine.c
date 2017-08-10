@@ -1,5 +1,6 @@
 #include "engine.h"
 
+#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -7,8 +8,10 @@ Message g_PrintBuffer[NMSGS];
 
 Gadget* LookupGadget (const char* name, Message arg) {
     for (struct Lookup_t* p = g_Gadgets; p->s != 0; ++p)
-        if (strcmp(name, p->s) == 0)
+        if (strcmp(name, p->s) == 0) {
+            assert(p->c != 0);
             return p->c(arg);
+        }
     return 0;
 }
 
@@ -27,15 +30,15 @@ void* ExtraData(Gadget *gp) {
 }
 
 void FreeGadget (Gadget* gp) {
-    if (gp != 0) {
-        if (gp->onFree != 0)
-            gp->onFree(gp);
-        free(gp);
-    }
+    if (gp == 0)
+        return;
+    if (gp->onFree != 0)
+        gp->onFree(gp);
+    free(gp);
 }
 
 static void CircuitHandler (Gadget* gp, int inlet, Message msg) {
-    // scan the gadgets to find the matching inlet
+    // scan the child gadgets to find the matching inlet
     Gadget **gpp = ExtraData(gp);
     while ((*gpp)->handler != 0 || --inlet >= 0)
         ++gpp;
@@ -44,9 +47,10 @@ static void CircuitHandler (Gadget* gp, int inlet, Message msg) {
 }
 
 static void FreeCircuit (Gadget* cp) {
-    if (cp != 0)
-        for (Gadget** gpp = (Gadget**) ExtraData(cp); *gpp != 0; ++gpp)
-            FreeGadget(*gpp);
+    if (cp == 0)
+        return;
+    for (Gadget** gpp = ExtraData(cp); *gpp != 0; ++gpp)
+        FreeGadget(*gpp);
 }
 
 Gadget* NewCircuit (uint8_t i, uint8_t o, uint8_t g) {
