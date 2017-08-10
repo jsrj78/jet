@@ -15,10 +15,16 @@ focus is on [Folie](http://folie.jeelabs.org).
 The remote "nodes" are based on microcontrollers, see the
 [Embello](http://embello.jeelabs.org) project.
 
-### Functional overview
+----
+
+## Functional overview
 
 ![](jet-conceptual.png)
 
-### Development setup
+----
+
+## Development setup
 
 ![](jet-setup.png)
+
+----
