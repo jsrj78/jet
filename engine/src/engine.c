@@ -35,11 +35,12 @@ void FreeGadget (Gadget* gp) {
 }
 
 static void CircuitHandler (Gadget* gp, int inlet, Message msg) {
+    // scan the gadgets to find the matching inlet
     Gadget **gpp = ExtraData(gp);
-    switch (inlet) {
-        case 0:
-            Emit(gpp[0], 0, msg); // FIXME only correct for first inlet
-    }
+    while ((*gpp)->handler != 0 || --inlet >= 0)
+        ++gpp;
+
+    Emit(*gpp, 0, msg);
 }
 
 static void FreeCircuit (Gadget* cp) {

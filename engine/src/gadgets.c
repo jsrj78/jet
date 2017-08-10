@@ -1,9 +1,12 @@
 #include "engine.h"
 
+#include <string.h>
+
 static int printIndex;
 
 void ResetPrint (void) {
     printIndex = 0;
+    memset(g_PrintBuffer, 0, NMSGS * sizeof(Message));
 }
 
 static void PrintHandler (Gadget* gp, int inlet, Message msg) {
@@ -35,21 +38,22 @@ static Gadget* MakePassGadget (Message msg) {
     return NewGadget(1, 1, 0, PassHandler);
 }
 
-static void InletHandler (Gadget* gp, int inlet, Message msg) {
-    (void) gp;
-    (void) inlet;
-    (void) msg;
-}
-
 static Gadget* MakeInletGadget (Message msg) {
     (void) msg;
-    return NewGadget(0, 1, sizeof(Wire), InletHandler);
+    return NewGadget(0, 1, sizeof(Wire), 0);
 }
 
 static void OutletHandler (Gadget* gp, int inlet, Message msg) {
+    // scan the gadgets to find the matching outlet
+    Gadget **gpp = ExtraData(gp->parent);
+    int outlet = 0;
+    while (*gpp != gp)
+        if ((*gpp++)->handler == OutletHandler)
+            ++outlet;
+
     switch (inlet) {
         case 0:
-            Emit(gp->parent, 0, msg); // FIXME only correct for first outlet
+            Emit(gp->parent, outlet, msg);
     }
 }
 

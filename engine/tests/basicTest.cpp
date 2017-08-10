@@ -21,6 +21,57 @@ TEST_GROUP(Printing)
 //------------------------------------------------------------------------------
 // add new tests in reverse order, below this comment
 
+TEST(Printing, TwoOutlets) {
+    static Wire w012[] = {
+        { 0, 1, 0 },    /* g0.0 -> g1.0 */
+        { 0, 2, 0 },    /* g0.0 -> g2.0 */
+        { 0, 255, 0 },  /* end marker */
+    };
+    static Wire w12x[] = {
+        { 0, 1, 0 },    /* g0.0 -> g1.0 */
+        { 1, 2, 0 },    /* g0.1 -> g2.0 */
+        { 0, 255, 0 },  /* end marker */
+    };
+
+    Gadget* gp = NewCircuit(1, 2, 3);
+    Add(gp, LookupGadget("inlet", 0), w012);
+    Add(gp, LookupGadget("outlet", 0), 0);
+    Add(gp, LookupGadget("outlet", 0), 0);
+
+    gp1 = NewCircuit(0, 0, 3);
+    Add(gp1, gp, w12x);
+    Add(gp1, LookupGadget("print", 1), 0);
+    Add(gp1, LookupGadget("print", 2), 0);
+
+    Feed(gp, 0, 19);
+
+    static Message result[] = { 1, 19, 2, 19 };
+    MEMCMP_EQUAL(result, g_PrintBuffer, sizeof result);
+}
+
+TEST(Printing, TwoInlets) {
+    static Wire w01[] = {
+        { 0, 1, 0 },    /* g0.0 -> g1.0 */
+        { 0, 255, 0 },  /* end marker */
+    };
+    static Wire w23[] = {
+        { 0, 3, 0 },    /* g2.0 -> g3.0 */
+        { 0, 255, 0 },  /* end marker */
+    };
+
+    gp1 = NewCircuit(2, 0, 4);
+    Add(gp1, LookupGadget("inlet", 0), w01);
+    Add(gp1, LookupGadget("print", 1), 0);
+    Add(gp1, LookupGadget("inlet", 0), w23);
+    Add(gp1, LookupGadget("print", 2), 0);
+
+    Feed(gp1, 0, 17);
+    Feed(gp1, 1, 18);
+
+    static Message result[] = { 1, 17, 2, 18 };
+    MEMCMP_EQUAL(result, g_PrintBuffer, sizeof result);
+}
+
 TEST(Printing, NestedGadgets) {
     static Wire w01[] = {
         { 0, 1, 0 },    /* g0.0 -> g1.0 */
