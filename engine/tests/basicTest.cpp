@@ -62,14 +62,12 @@ TEST(Printing, PassAndPrintGadget) {
     CHECK_EQUAL(0, cp1->child[0]);
     CHECK_EQUAL(0, cp1->child[1]);
     CHECK_EQUAL(0, cp1->child[2]);
-    Add(cp1, 0, g = LookupGadget("pass", 0));
-    Add(cp1, 1, LookupGadget("print", 0));
-
     static Wire w0[] = {
         { 0, 1, 0 },    /* g0.0 -> g1.0 */
         { 0, 255, 0 },  /* end marker */
     };
-    AddWires(g, w0);
+    Add(cp1, g = LookupGadget("pass", 0), w0);
+    Add(cp1, LookupGadget("print", 0), 0);
 
     Feed(g, 0, 12);
 
@@ -81,16 +79,14 @@ TEST(Printing, PassPrintTwiceGadget) {
     Gadget* g = 0;
 
     cp1 = NewCircuit(0, 0, 3);
-    Add(cp1, 0, g = LookupGadget("pass", 0));
-    Add(cp1, 1, LookupGadget("print", 1));
-    Add(cp1, 2, LookupGadget("print", 2));
-
     static Wire w0[] = {
         { 0, 1, 0 },    /* g0.0 -> g1.0 */
         { 0, 2, 0 },    /* g0.0 -> g2.0 */
         { 0, 255, 0 },  /* end marker */
     };
-    AddWires(g, w0);
+    Add(cp1, g = LookupGadget("pass", 0), w0);
+    Add(cp1, LookupGadget("print", 1), 0);
+    Add(cp1, LookupGadget("print", 2), 0);
 
     Feed(g, 0, 13);
 

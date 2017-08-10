@@ -14,7 +14,7 @@ typedef struct Gadget_t {
     void (*handler)(struct Gadget_t*,int,Message);
     struct Circuit_t *parent;
     const Wire* wires;
-    Message arg; // TODO should treat this as extra data
+    Message arg; // TODO treat this as extra data?
     // extra data stored here
 } Gadget;
 
@@ -39,9 +39,10 @@ extern Lookup g_Gadgets[];
 extern Gadget* LookupGadget (const char *name, Message msg);
 extern Gadget* NewGadget (uint8_t i, uint8_t o, uint16_t x,
                           void (*h)(Gadget*,int,Message));
+
 extern Circuit* NewCircuit (uint8_t i, uint8_t o, uint8_t g);
-extern void Add (Circuit* cp, int pos, Gadget* gp);
-extern void AddWires (Gadget* gp, const Wire* w);
+extern void Add (Circuit* cp, Gadget* gp, const Wire* w);
+
 extern void Feed (Gadget* gp, int inlet, Message msg);
 extern void Emit (Gadget* gp, int outlet, Message msg);
 

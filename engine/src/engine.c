@@ -36,12 +36,12 @@ Circuit* NewCircuit (uint8_t i, uint8_t o, uint8_t g) {
     return cp;
 }
 
-void Add (Circuit* cp, int pos, Gadget* gp) {
-    cp->child[pos] = gp;
+void Add (Circuit* cp, Gadget* gp, const Wire* w) {
+    int i = 0;
+    while (cp->child[i] != 0)
+        ++i;
+    cp->child[i] = gp;
     gp->parent = cp;
-}
-
-void AddWires (Gadget* gp, const Wire* w) {
     gp->wires = w;
 }
 
