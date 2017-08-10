@@ -12,11 +12,12 @@ Gadget* LookupGadget (const char* name, Message arg) {
     return 0;
 }
 
-Gadget* NewGadget (uint8_t i, uint8_t o, size_t x,
+Gadget* NewGadget (uint8_t i, uint8_t o, uint16_t x,
                    void (*h)(Gadget*,int,Message)) {
-    Gadget* gp = calloc(1, sizeof(Gadget) + (o+1) * sizeof(Wire*) + x);
+    Gadget* gp = calloc(1, sizeof(Gadget) + x);
     gp->inlets = i;
     gp->outlets = o;
+    gp->extra = x;
     gp->handler = h;
     return gp;
 }
@@ -30,14 +31,18 @@ static void CircuitHandler (Gadget* gp, int inlet, Message msg) {
 }
 
 Circuit* NewCircuit (uint8_t i, uint8_t o, uint8_t g) {
-    size_t extra = (g+1) * sizeof(Gadget*);
+    uint16_t extra = (g+1) * sizeof(Gadget*);
     Circuit *cp = (Circuit*) NewGadget(i, o, extra, CircuitHandler);
     return cp;
 }
 
 void Add (Circuit* cp, int pos, Gadget* gp) {
-    SetNthGadget(cp, pos, gp);
+    cp->child[pos] = gp;
     gp->parent = cp;
+}
+
+void AddWires (Gadget* gp, const Wire* w) {
+    gp->wires = w;
 }
 
 void Feed (Gadget* gp, int inlet, Message msg) {
@@ -48,4 +53,9 @@ void Emit (Gadget* gp, int outlet, Message msg) {
     (void) gp;
     (void) outlet;
     (void) msg;
+    for (const Wire* wp = gp->wires; wp != 0; ++wp)
+        if (wp->gid == 255)
+            break;
+        else if (outlet == wp->out)
+            Feed(gp->parent->child[wp->gid], wp->in, msg);
 }
