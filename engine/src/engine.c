@@ -22,8 +22,8 @@ Gadget* NewGadget (uint8_t i, uint8_t o, size_t x,
     return gp;
 }
 
-void* ExtraData(Gadget *cp) {
-    return cp + 1;
+void* ExtraData(Gadget *gp) {
+    return gp + 1;
 }
 
 void FreeGadget (Gadget* gp) {
@@ -35,17 +35,17 @@ void FreeGadget (Gadget* gp) {
 }
 
 static void CircuitHandler (Gadget* gp, int inlet, Message msg) {
+    Gadget **gpp = ExtraData(gp);
     switch (inlet) {
         case 0:
-            (void) gp;
-            (void) msg;
+            Emit(gpp[0], 0, msg); // FIXME only correct for first inlet
     }
 }
 
 static void FreeCircuit (Gadget* cp) {
     if (cp != 0)
         for (Gadget** gpp = (Gadget**) ExtraData(cp); *gpp != 0; ++gpp)
-            free(*gpp);
+            FreeGadget(*gpp);
 }
 
 Gadget* NewCircuit (uint8_t i, uint8_t o, uint8_t g) {
