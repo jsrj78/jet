@@ -8,40 +8,40 @@ typedef struct Wire_t {
     uint8_t in :4;  /* destination inlet */
 } Wire;
 
-typedef struct Gadget_t {
+typedef struct Gadget_t Gadget;
+
+struct Gadget_t {
     uint8_t inlets, outlets;
     uint16_t extra;
-    void (*handler)(struct Gadget_t*,int,Message);
-    struct Circuit_t *parent;
+    void (*handler)(Gadget*,int,Message);
+    void (*onAdded)(Gadget*);
+    void (*onFree)(Gadget*);
+    Gadget *parent;
     const Wire* wires;
-    Message arg; // TODO treat this as extra data?
     // extra data stored here
-} Gadget;
-
-typedef struct Circuit_t {
-    Gadget _;
-    Gadget* child[1]; // entries extend past end
-} Circuit;
+};
 
 typedef Gadget* (*Constructor)(Message msg);
 
-typedef struct Lookup_t {
+struct Lookup_t {
     const char* s;
     Constructor c;
-} Lookup;
+};
 
 // data structures
 
-extern Lookup g_Gadgets[];
+extern struct Lookup_t g_Gadgets[];
 
 // public API
 
 extern Gadget* LookupGadget (const char *name, Message msg);
-extern Gadget* NewGadget (uint8_t i, uint8_t o, uint16_t x,
+extern Gadget* NewGadget (uint8_t i, uint8_t o, size_t x,
                           void (*h)(Gadget*,int,Message));
+extern void* ExtraData(Gadget *cp);
+extern void FreeGadget (Gadget* gp);
 
-extern Circuit* NewCircuit (uint8_t i, uint8_t o, uint8_t g);
-extern void Add (Circuit* cp, Gadget* gp, const Wire* w);
+extern Gadget* NewCircuit (uint8_t i, uint8_t o, uint8_t g);
+extern void Add (Gadget* cp, Gadget* gp, const Wire* w);
 
 extern void Feed (Gadget* gp, int inlet, Message msg);
 extern void Emit (Gadget* gp, int outlet, Message msg);

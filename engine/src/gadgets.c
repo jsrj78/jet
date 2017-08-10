@@ -7,18 +7,19 @@ void ResetPrint (void) {
 }
 
 static void PrintHandler (Gadget* gp, int inlet, Message msg) {
+    Message arg = *((Message*) ExtraData(gp));
     switch (inlet) {
         case 0:
-            if (gp->arg != 0)
-                g_PrintBuffer[printIndex++] = gp->arg;
+            if (arg != 0)
+                g_PrintBuffer[printIndex++] = arg;
             if (printIndex < NMSGS)
                 g_PrintBuffer[printIndex++] = msg;
     }
 }
 
 static Gadget* MakePrintGadget (Message msg) {
-    Gadget* gp = NewGadget(1, 0, 0, PrintHandler);
-    gp->arg = msg;
+    Gadget* gp = NewGadget(1, 0, sizeof(Message), PrintHandler);
+    *((Message*) ExtraData(gp)) = msg;
     return gp;
 }
 

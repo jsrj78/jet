@@ -8,18 +8,30 @@ Message g_PrintBuffer[NMSGS];
 Gadget* LookupGadget (const char* name, Message arg) {
     for (struct Lookup_t* p = g_Gadgets; p->s != 0; ++p)
         if (strcmp(name, p->s) == 0)
-            return (p->c)(arg);
+            return p->c(arg);
     return 0;
 }
 
-Gadget* NewGadget (uint8_t i, uint8_t o, uint16_t x,
+Gadget* NewGadget (uint8_t i, uint8_t o, size_t x,
                    void (*h)(Gadget*,int,Message)) {
     Gadget* gp = calloc(1, sizeof(Gadget) + x);
     gp->inlets = i;
     gp->outlets = o;
-    gp->extra = x;
+    gp->extra = (uint16_t) x;
     gp->handler = h;
     return gp;
+}
+
+void* ExtraData(Gadget *cp) {
+    return cp + 1;
+}
+
+void FreeGadget (Gadget* gp) {
+    if (gp != 0) {
+        if (gp->onFree != 0)
+            gp->onFree(gp);
+        free(gp);
+    }
 }
 
 static void CircuitHandler (Gadget* gp, int inlet, Message msg) {
@@ -30,19 +42,28 @@ static void CircuitHandler (Gadget* gp, int inlet, Message msg) {
     }
 }
 
-Circuit* NewCircuit (uint8_t i, uint8_t o, uint8_t g) {
+static void FreeCircuit (Gadget* cp) {
+    if (cp != 0)
+        for (Gadget** gpp = (Gadget**) ExtraData(cp); *gpp != 0; ++gpp)
+            free(*gpp);
+}
+
+Gadget* NewCircuit (uint8_t i, uint8_t o, uint8_t g) {
     uint16_t extra = (g+1) * sizeof(Gadget*);
-    Circuit *cp = (Circuit*) NewGadget(i, o, extra, CircuitHandler);
+    Gadget *cp = NewGadget(i, o, extra, CircuitHandler);
+    cp->onFree = FreeCircuit;
     return cp;
 }
 
-void Add (Circuit* cp, Gadget* gp, const Wire* w) {
-    int i = 0;
-    while (cp->child[i] != 0)
-        ++i;
-    cp->child[i] = gp;
+void Add (Gadget* cp, Gadget* gp, const Wire* w) {
+    Gadget **gpp = ExtraData(cp);
+    while (*gpp != 0)
+        ++gpp;
+    *gpp = gp;
     gp->parent = cp;
     gp->wires = w;
+    if (gp->onAdded != 0)
+        gp->onAdded(gp);
 }
 
 void Feed (Gadget* gp, int inlet, Message msg) {
@@ -50,12 +71,8 @@ void Feed (Gadget* gp, int inlet, Message msg) {
 }
 
 void Emit (Gadget* gp, int outlet, Message msg) {
-    (void) gp;
-    (void) outlet;
-    (void) msg;
-    for (const Wire* wp = gp->wires; wp != 0; ++wp)
-        if (wp->gid == 255)
-            break;
-        else if (outlet == wp->out)
-            Feed(gp->parent->child[wp->gid], wp->in, msg);
+    Gadget **gpp = ExtraData(gp->parent);
+    for (const Wire* wp = gp->wires; wp != 0 && wp->gid != 255; ++wp)
+        if (outlet == wp->out)
+            Feed(gpp[wp->gid], wp->in, msg);
 }
