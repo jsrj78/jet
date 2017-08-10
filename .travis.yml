@@ -1,5 +1,0 @@
-language: go
-install:
-    - go get -t ./glow/...
-script:
-    - go test ./glow/tests
