@@ -1,0 +1,3 @@
+forgetram
+
+: go ." hi!" ;

@@ -33,7 +33,7 @@ static Gadget* MakePassGadget (Message msg) {
 
 static Gadget* MakeInletGadget (Message msg) {
     (void) msg;
-    return NewGadget(sizeof(Wire), 0);
+    return NewGadget(0, 0);
 }
 
 static void OutletHandler (Gadget* gp, int inlet, Message msg) {
@@ -51,7 +51,7 @@ static void OutletHandler (Gadget* gp, int inlet, Message msg) {
 
 static Gadget* MakeOutletGadget (Message msg) {
     (void) msg;
-    return NewGadget(sizeof(Wire), OutletHandler);
+    return NewGadget(0, OutletHandler);
 }
 
 static void SwapHandler (Gadget* gp, int inlet, Message msg) {
