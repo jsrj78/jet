@@ -13,7 +13,7 @@ typedef struct Gadget_t Gadget;
 struct Gadget_t {
     uint16_t extra;
     void (*handler)(Gadget*,int,Message);
-    void (*onAdded)(Gadget*);
+    //void (*onAdded)(Gadget*);
     void (*onFree)(Gadget*);
     Gadget *parent;
     const Wire* wires;

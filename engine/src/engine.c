@@ -64,8 +64,8 @@ void Add (Gadget* cp, Gadget* gp, const Wire* w) {
     *gpp = gp;
     gp->parent = cp;
     gp->wires = w;
-    if (gp->onAdded != 0)
-        gp->onAdded(gp);
+    //if (gp->onAdded != 0)
+    //    gp->onAdded(gp);
 }
 
 void Feed (Gadget* gp, int inlet, Message msg) {
