@@ -21,6 +21,29 @@ TEST_GROUP(Printing)
 //------------------------------------------------------------------------------
 // add new tests in reverse order, below this comment
 
+TEST(Printing, SwapGadget) {
+    static Wire w01[] = {
+        { 0, 1, 0 },    /* g0.0 -> g1.0 */
+        { 0, 255, 0 },  /* end marker */
+    };
+    static Wire w123[] = {
+        { 0, 2, 0 },    /* g1.0 -> g2.0 */
+        { 1, 3, 0 },    /* g1.1 -> g3.0 */
+        { 0, 255, 0 },  /* end marker */
+    };
+
+    gp1 = NewCircuit(0, 0, 4);
+    Add(gp1, LookupGadget("inlet", 0), w01);
+    Add(gp1, LookupGadget("swap", 123), w123);
+    Add(gp1, LookupGadget("print", 1), 0);
+    Add(gp1, LookupGadget("print", 2), 0);
+
+    Feed(gp1, 0, 20);
+
+    static Message result[] = { 2, 20, 1, 123 };
+    MEMCMP_EQUAL(result, g_PrintBuffer, sizeof result);
+}
+
 TEST(Printing, TwoOutlets) {
     static Wire w012[] = {
         { 0, 1, 0 },    /* g0.0 -> g1.0 */

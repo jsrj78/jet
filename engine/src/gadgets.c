@@ -54,10 +54,31 @@ static Gadget* MakeOutletGadget (Message msg) {
     return NewGadget(1, 1, sizeof(Wire), OutletHandler);
 }
 
+static void SwapHandler (Gadget* gp, int inlet, Message msg) {
+    switch (inlet) {
+        case 0:
+            Emit(gp, 1, msg);
+            Emit(gp, 0, *(Message*) ExtraData(gp));
+            break;
+        case 1:
+            *(Message*) ExtraData(gp) = msg;
+            break;
+        default:
+            assert(0);
+    }
+}
+
+static Gadget* MakeSwapGadget (Message msg) {
+    Gadget* gp = NewGadget(1, 1, sizeof(Message), SwapHandler);
+    *(Message*) ExtraData(gp) = msg;
+    return gp;
+}
+
 struct Lookup_t g_Gadgets[] = {
     { "print",  MakePrintGadget  },
     { "pass",   MakePassGadget   },
     { "inlet",  MakeInletGadget  },
     { "outlet", MakeOutletGadget },
+    { "swap",   MakeSwapGadget   },
     { 0, 0 }
 };
