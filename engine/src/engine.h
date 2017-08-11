@@ -11,7 +11,6 @@ typedef struct Wire_t {
 typedef struct Gadget_t Gadget;
 
 struct Gadget_t {
-    uint16_t extra;
     void (*handler)(Gadget*,int,Message);
     //void (*onAdded)(Gadget*);
     void (*onFree)(Gadget*);

@@ -234,7 +234,6 @@ TEST(Printing, PassAndPrintGadget) {
     };
 
     gp1 = NewCircuit(2);
-    CHECK_EQUAL(3 * sizeof(Gadget*), gp1->extra);
     Gadget* gp;
     Add(gp1, gp = LookupGadget("pass", 0), w01);
     Add(gp1, LookupGadget("print", 0), 0);
