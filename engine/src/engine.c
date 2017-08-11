@@ -49,8 +49,8 @@ static void FreeCircuit (Gadget* cp) {
         FreeGadget(*gpp);
 }
 
-Gadget* NewCircuit (uint8_t g) {
-    Gadget *cp = NewGadget((g+1) * sizeof(Gadget*), CircuitHandler);
+Gadget* NewCircuit (uint8_t numg) {
+    Gadget *cp = NewGadget((numg+1) * sizeof(Gadget*), CircuitHandler);
     cp->onFree = FreeCircuit;
     return cp;
 }

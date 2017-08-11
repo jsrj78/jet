@@ -1,5 +1,5 @@
-<<<engine>>>
-cr compiletoflash
+\ <<<engine>>>
+\ cr compiletoflash
 
 : m. ( m -- ) . ;
 
@@ -26,4 +26,3 @@ cr compiletoflash
 : :swap ( arg -- g )
   ['] swap-h 1 cell new-gadget ( arg g )
   tuck g-extra m! ;
-
