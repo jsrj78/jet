@@ -21,19 +21,19 @@ static void PrintHandler (Gadget* gp, int inlet, Message msg) {
 }
 
 static Gadget* MakePrintGadget (Message msg) {
-    Gadget* gp = NewGadget(1, 0, sizeof(Message), PrintHandler);
+    Gadget* gp = NewGadget(sizeof(Message), PrintHandler);
     *(Message*) ExtraData(gp) = msg;
     return gp;
 }
 
 static Gadget* MakePassGadget (Message msg) {
     (void) msg;
-    return NewGadget(1, 1, 0, Emit);
+    return NewGadget(0, Emit);
 }
 
 static Gadget* MakeInletGadget (Message msg) {
     (void) msg;
-    return NewGadget(0, 1, sizeof(Wire), 0);
+    return NewGadget(sizeof(Wire), 0);
 }
 
 static void OutletHandler (Gadget* gp, int inlet, Message msg) {
@@ -51,7 +51,7 @@ static void OutletHandler (Gadget* gp, int inlet, Message msg) {
 
 static Gadget* MakeOutletGadget (Message msg) {
     (void) msg;
-    return NewGadget(1, 1, sizeof(Wire), OutletHandler);
+    return NewGadget(sizeof(Wire), OutletHandler);
 }
 
 static void SwapHandler (Gadget* gp, int inlet, Message msg) {
@@ -69,7 +69,7 @@ static void SwapHandler (Gadget* gp, int inlet, Message msg) {
 }
 
 static Gadget* MakeSwapGadget (Message msg) {
-    Gadget* gp = NewGadget(2, 2, sizeof(Message), SwapHandler);
+    Gadget* gp = NewGadget(sizeof(Message), SwapHandler);
     *(Message*) ExtraData(gp) = msg;
     return gp;
 }
@@ -86,7 +86,7 @@ static void ChangeHandler (Gadget* gp, int inlet, Message msg) {
 
 static Gadget* MakeChangeGadget (Message msg) {
     (void) msg;
-    Gadget* gp = NewGadget(1, 1, sizeof(Message), ChangeHandler);
+    Gadget* gp = NewGadget(sizeof(Message), ChangeHandler);
     *(Message*) ExtraData(gp) = -1;
     return gp;
 }
@@ -99,7 +99,7 @@ static void MosesHandler (Gadget* gp, int inlet, Message msg) {
 }
 
 static Gadget* MakeMosesGadget (Message msg) {
-    Gadget* gp = NewGadget(1, 1, sizeof(Message), MosesHandler);
+    Gadget* gp = NewGadget(sizeof(Message), MosesHandler);
     *(Message*) ExtraData(gp) = msg;
     return gp;
 }

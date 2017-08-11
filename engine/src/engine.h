@@ -11,7 +11,6 @@ typedef struct Wire_t {
 typedef struct Gadget_t Gadget;
 
 struct Gadget_t {
-    uint8_t inlets, outlets;
     uint16_t extra;
     void (*handler)(Gadget*,int,Message);
     void (*onAdded)(Gadget*);
@@ -35,12 +34,11 @@ extern struct Lookup_t g_Gadgets[];
 // public API
 
 extern Gadget* LookupGadget (const char *name, Message msg);
-extern Gadget* NewGadget (uint8_t i, uint8_t o, size_t x,
-                          void (*h)(Gadget*,int,Message));
+extern Gadget* NewGadget (size_t x, void (*h)(Gadget*,int,Message));
 extern void* ExtraData(Gadget *cp);
 extern void FreeGadget (Gadget* gp);
 
-extern Gadget* NewCircuit (uint8_t i, uint8_t o, uint8_t g);
+extern Gadget* NewCircuit (uint8_t g);
 extern void Add (Gadget* cp, Gadget* gp, const Wire* w);
 
 extern void Feed (Gadget* gp, int inlet, Message msg);

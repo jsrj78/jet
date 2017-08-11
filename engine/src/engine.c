@@ -15,11 +15,8 @@ Gadget* LookupGadget (const char* name, Message arg) {
     return 0;
 }
 
-Gadget* NewGadget (uint8_t i, uint8_t o, size_t x,
-                   void (*h)(Gadget*,int,Message)) {
+Gadget* NewGadget (size_t x, void (*h)(Gadget*,int,Message)) {
     Gadget* gp = calloc(1, sizeof(Gadget) + x);
-    gp->inlets = i;
-    gp->outlets = o;
     gp->extra = (uint16_t) x;
     gp->handler = h;
     return gp;
@@ -53,9 +50,9 @@ static void FreeCircuit (Gadget* cp) {
         FreeGadget(*gpp);
 }
 
-Gadget* NewCircuit (uint8_t i, uint8_t o, uint8_t g) {
+Gadget* NewCircuit (uint8_t g) {
     uint16_t extra = (g+1) * sizeof(Gadget*);
-    Gadget *cp = NewGadget(i, o, extra, CircuitHandler);
+    Gadget *cp = NewGadget(extra, CircuitHandler);
     cp->onFree = FreeCircuit;
     return cp;
 }

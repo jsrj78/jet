@@ -32,7 +32,7 @@ TEST(Printing, MosesGadget) {
         { 0, 255, 0 },  /* end marker */
     };
 
-    gp1 = NewCircuit(1, 0, 4);
+    gp1 = NewCircuit(4);
     Add(gp1, LookupGadget("inlet", 0), w01);
     Add(gp1, LookupGadget("moses", 5), w123);
     Add(gp1, LookupGadget("print", 1), 0);
@@ -56,7 +56,7 @@ TEST(Printing, ChangeGadget) {
         { 0, 255, 0 },  /* end marker */
     };
 
-    gp1 = NewCircuit(1, 0, 3);
+    gp1 = NewCircuit(3);
     Add(gp1, LookupGadget("inlet", 0), w01);
     Add(gp1, LookupGadget("change", 0), w12);
     Add(gp1, LookupGadget("print", 0), 0);
@@ -84,7 +84,7 @@ TEST(Printing, SwapGadget) {
         { 0, 255, 0 },  /* end marker */
     };
 
-    gp1 = NewCircuit(1, 0, 4);
+    gp1 = NewCircuit(4);
     Add(gp1, LookupGadget("inlet", 0), w01);
     Add(gp1, LookupGadget("swap", 123), w123);
     Add(gp1, LookupGadget("print", 1), 0);
@@ -108,12 +108,12 @@ TEST(Printing, TwoOutlets) {
         { 0, 255, 0 },  /* end marker */
     };
 
-    Gadget* gp = NewCircuit(1, 2, 3);
+    Gadget* gp = NewCircuit(3);
     Add(gp, LookupGadget("inlet", 0), w012);
     Add(gp, LookupGadget("outlet", 0), 0);
     Add(gp, LookupGadget("outlet", 0), 0);
 
-    gp1 = NewCircuit(0, 0, 3);
+    gp1 = NewCircuit(3);
     Add(gp1, gp, w12x);
     Add(gp1, LookupGadget("print", 1), 0);
     Add(gp1, LookupGadget("print", 2), 0);
@@ -134,7 +134,7 @@ TEST(Printing, TwoInlets) {
         { 0, 255, 0 },  /* end marker */
     };
 
-    gp1 = NewCircuit(2, 0, 4);
+    gp1 = NewCircuit(4);
     Add(gp1, LookupGadget("inlet", 0), w01);
     Add(gp1, LookupGadget("print", 1), 0);
     Add(gp1, LookupGadget("inlet", 0), w23);
@@ -157,11 +157,11 @@ TEST(Printing, NestedGadgets) {
         { 0, 255, 0 },  /* end marker */
     };
 
-    Gadget* gp = NewCircuit(1, 1, 2);
+    Gadget* gp = NewCircuit(2);
     Add(gp, LookupGadget("inlet", 0), w01);
     Add(gp, LookupGadget("outlet", 0), 0);
 
-    gp1 = NewCircuit(0, 0, 3);
+    gp1 = NewCircuit(3);
     Add(gp1, LookupGadget("inlet", 0), w01);
     Add(gp1, gp, w12);
     Add(gp1, LookupGadget("print", 0), 0);
@@ -178,11 +178,11 @@ TEST(Printing, OutletPrintGadget) {
         { 0, 255, 0 },  /* end marker */
     };
 
-    Gadget* gp = NewCircuit(1, 1, 2);
+    Gadget* gp = NewCircuit(2);
     Add(gp, LookupGadget("inlet", 0), w01);
     Add(gp, LookupGadget("outlet", 0), 0);
 
-    gp1 = NewCircuit(0, 0, 2);
+    gp1 = NewCircuit(2);
     Add(gp1, gp, w01);
     Add(gp1, LookupGadget("print", 0), 0);
 
@@ -198,7 +198,7 @@ TEST(Printing, InletPrintGadget) {
         { 0, 255, 0 },  /* end marker */
     };
 
-    gp1 = NewCircuit(1, 0, 2);
+    gp1 = NewCircuit(2);
     Add(gp1, LookupGadget("inlet", 0), w01);
     Add(gp1, LookupGadget("print", 0), 0);
 
@@ -215,7 +215,7 @@ TEST(Printing, PassPrintTwiceGadget) {
         { 0, 255, 0 },  /* end marker */
     };
 
-    gp1 = NewCircuit(0, 0, 3);
+    gp1 = NewCircuit(3);
     Gadget* gp;
     Add(gp1, gp = LookupGadget("pass", 0), w012);
     Add(gp1, LookupGadget("print", 1), 0);
@@ -233,7 +233,7 @@ TEST(Printing, PassAndPrintGadget) {
         { 0, 255, 0 },  /* end marker */
     };
 
-    gp1 = NewCircuit(0, 0, 2);
+    gp1 = NewCircuit(2);
     CHECK_EQUAL(3 * sizeof(Gadget*), gp1->extra);
     Gadget* gp;
     Add(gp1, gp = LookupGadget("pass", 0), w01);
