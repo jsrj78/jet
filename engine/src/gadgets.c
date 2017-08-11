@@ -91,6 +91,19 @@ static Gadget* MakeChangeGadget (Message msg) {
     return gp;
 }
 
+static void MosesHandler (Gadget* gp, int inlet, Message msg) {
+    assert(inlet == 0);
+
+    Message arg = *(Message*) ExtraData(gp);
+    Emit(gp, msg >= arg, msg);
+}
+
+static Gadget* MakeMosesGadget (Message msg) {
+    Gadget* gp = NewGadget(1, 1, sizeof(Message), MosesHandler);
+    *(Message*) ExtraData(gp) = msg;
+    return gp;
+}
+
 struct Lookup_t g_Gadgets[] = {
     { "print",  MakePrintGadget  },
     { "pass",   MakePassGadget   },
@@ -98,5 +111,6 @@ struct Lookup_t g_Gadgets[] = {
     { "outlet", MakeOutletGadget },
     { "swap",   MakeSwapGadget   },
     { "change", MakeChangeGadget },
+    { "moses",  MakeMosesGadget  },
     { 0, 0 }
 };

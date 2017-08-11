@@ -21,6 +21,31 @@ TEST_GROUP(Printing)
 //------------------------------------------------------------------------------
 // add new tests in reverse order, below this comment
 
+TEST(Printing, MosesGadget) {
+    static Wire w01[] = {
+        { 0, 1, 0 },    /* g0.0 -> g1.0 */
+        { 0, 255, 0 },  /* end marker */
+    };
+    static Wire w123[] = {
+        { 0, 2, 0 },    /* g1.0 -> g2.0 */
+        { 1, 3, 0 },    /* g1.1 -> g3.0 */
+        { 0, 255, 0 },  /* end marker */
+    };
+
+    gp1 = NewCircuit(1, 0, 4);
+    Add(gp1, LookupGadget("inlet", 0), w01);
+    Add(gp1, LookupGadget("moses", 5), w123);
+    Add(gp1, LookupGadget("print", 1), 0);
+    Add(gp1, LookupGadget("print", 2), 0);
+
+    Feed(gp1, 0, 4);
+    Feed(gp1, 0, 5);
+    Feed(gp1, 0, 6);
+
+    static Message result[] = { 1, 4, 2, 5, 2, 6 };
+    MEMCMP_EQUAL(result, g_PrintBuffer, sizeof result);
+}
+
 TEST(Printing, ChangeGadget) {
     static Wire w01[] = {
         { 0, 1, 0 },    /* g0.0 -> g1.0 */
@@ -31,7 +56,7 @@ TEST(Printing, ChangeGadget) {
         { 0, 255, 0 },  /* end marker */
     };
 
-    gp1 = NewCircuit(0, 0, 4);
+    gp1 = NewCircuit(1, 0, 3);
     Add(gp1, LookupGadget("inlet", 0), w01);
     Add(gp1, LookupGadget("change", 0), w12);
     Add(gp1, LookupGadget("print", 0), 0);
@@ -59,7 +84,7 @@ TEST(Printing, SwapGadget) {
         { 0, 255, 0 },  /* end marker */
     };
 
-    gp1 = NewCircuit(0, 0, 4);
+    gp1 = NewCircuit(1, 0, 4);
     Add(gp1, LookupGadget("inlet", 0), w01);
     Add(gp1, LookupGadget("swap", 123), w123);
     Add(gp1, LookupGadget("print", 1), 0);
