@@ -1,4 +1,4 @@
-# JET web interface
+# JET/Web
 
 Derived from `slug/12-frame`.
 
