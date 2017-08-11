@@ -69,8 +69,25 @@ static void SwapHandler (Gadget* gp, int inlet, Message msg) {
 }
 
 static Gadget* MakeSwapGadget (Message msg) {
-    Gadget* gp = NewGadget(1, 1, sizeof(Message), SwapHandler);
+    Gadget* gp = NewGadget(2, 2, sizeof(Message), SwapHandler);
     *(Message*) ExtraData(gp) = msg;
+    return gp;
+}
+
+static void ChangeHandler (Gadget* gp, int inlet, Message msg) {
+    assert(inlet == 0);
+
+    Message arg = *(Message*) ExtraData(gp);
+    if (msg != arg) {
+        *(Message*) ExtraData(gp) = msg;
+        Emit(gp, 0, msg);
+    }
+}
+
+static Gadget* MakeChangeGadget (Message msg) {
+    (void) msg;
+    Gadget* gp = NewGadget(1, 1, sizeof(Message), ChangeHandler);
+    *(Message*) ExtraData(gp) = -1;
     return gp;
 }
 
@@ -80,5 +97,6 @@ struct Lookup_t g_Gadgets[] = {
     { "inlet",  MakeInletGadget  },
     { "outlet", MakeOutletGadget },
     { "swap",   MakeSwapGadget   },
+    { "change", MakeChangeGadget },
     { 0, 0 }
 };
