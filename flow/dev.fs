@@ -16,17 +16,15 @@ hex.
 
 
 
-\ new design, more behind-the-scenes magic:
-\
-\   c:begin
-\     _ :inlet  0 1 0 wire  eow
-\     c:begin
-\       _ :inlet  0 1 0 wire  eow
-\       _ :outlet
-\     c:end  0 2 0 wire  eow
-\     111 i>m :print  eow
-\   c:end  eow
-\   222 i>m 0 g-feed
+c:begin
+  _ :inlet  0 1 0 wire  eow
+  c:begin
+    _ :inlet  0 1 0 wire  eow
+    _ :outlet
+  c:end  0 2 0 wire  eow
+  111 i>m :print  eow
+c:end  eow
+222 i>m 0 g-feed
 
 
 

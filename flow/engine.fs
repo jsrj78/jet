@@ -52,6 +52,7 @@ mem 1000 $FF fill  \ for high-water mark debugging
 : c:end ( ogpos g* -- g )  \ construct a new circuit instance
   ['] circuit-h  c:count cells new-gadget ( ogpos g* g )
   c:count 1- 0 swap do
+    2dup swap cell+ !
     tuck g-extra i cells + !
   -1 +loop
   swap gpos ! ;
