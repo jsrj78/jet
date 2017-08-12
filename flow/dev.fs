@@ -71,7 +71,7 @@ c:end  eow
 ( 22 5 ) 5 i>m 0 cg @ feed
 ( 22 6 ) 6 i>m 0 cg @ feed
 
-h.s
+.s
 
 \ need to think about location of all data: flash vs ram
 \ make sure this can run from power-up, i.e. all flash-based
