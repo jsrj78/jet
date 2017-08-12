@@ -40,3 +40,20 @@
 : :swap ( arg -- g )
   ['] swap-h 1 cells new-gadget ( arg g )
   tuck g-extra m! ;
+
+: change-h ( msg in -- )
+  drop dup extra @ <> if
+    dup extra !
+    dup 0 g-emit
+  then drop ;
+
+: :change ( arg -- g )
+  drop  ['] change-h 1 cells new-gadget ( arg g )
+  -1 i>m extra m! ;
+
+: moses-h ( msg in -- )
+  drop dup extra @ < if 0 else 1 then g-emit ;
+
+: :moses ( arg -- g )
+  ['] moses-h 1 cells new-gadget ( arg g )
+  tuck g-extra m! ;
