@@ -1,8 +1,6 @@
 \ <<<core>>>
 \ cr compiletoflash
 
-: ...  cr cr h.s cr ." NOT-YET!" ct quit ;
-
 0 variable cg
 0 variable gpos
 
@@ -32,7 +30,6 @@ mem 1000 $FF fill  \ for high-water mark debugging
   cg @ >r  dup cg !  @ execute  r> cg ! ;
 
 : g-emit ( msg out -- )  \ send a message to an outlet of current g
-\ cg @ feed  \ TODO test code
   wires >r begin ( msg out r: wptr )
     r@ c@ 255 <> while
     r@ h@ 12 rshift ( msg out wout r: wptr )

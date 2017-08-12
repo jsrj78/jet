@@ -30,7 +30,13 @@
   drop  ['] outlet-h 0 new-gadget ;
 
 : swap-h ( msg in -- )
-  ... ;
+  0= if
+    1 g-emit
+    extra @ 0 g-emit
+  else
+    extra m!
+  then ;
+
 : :swap ( arg -- g )
   ['] swap-h 1 cells new-gadget ( arg g )
   tuck g-extra m! ;
