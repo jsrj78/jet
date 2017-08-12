@@ -2,15 +2,16 @@
 \ cr compiletoflash
 
 : m. ( m -- ) . ;
+: m! ( m a -- ) ! ;
 
 : :print ( arg -- g )
   [: ( msg in -- ) drop  extra @ ?dup if m. then m. ;]
-  1 cell new-gadget ( arg g )
+  1 cells new-gadget ( arg g )
   tuck g-extra m! ;
 
 : :pass ( arg -- g )
   drop
-  [: ( msg in -- ) cg @ emit ;]
+  [: ( msg in -- ) g-emit ;]
   0 new-gadget ;
 
 : :inlet ( arg -- g )
@@ -24,5 +25,5 @@
 : swap-h ( msg in -- )
   ... ;
 : :swap ( arg -- g )
-  ['] swap-h 1 cell new-gadget ( arg g )
+  ['] swap-h 1 cells new-gadget ( arg g )
   tuck g-extra m! ;
