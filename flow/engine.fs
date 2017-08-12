@@ -6,6 +6,8 @@
 0 variable cg
 0 variable gpos
 
+0 constant _
+
 1000 buffer: mem   \ memory pool for gadget state
 mem variable memp  \ next free pointer
 mem 1000 $FF fill  \ for high-water mark debugging
@@ -15,6 +17,8 @@ mem 1000 $FF fill  \ for high-water mark debugging
   3 cells +
   memp @ tuck over 0 fill
   memp +! ;
+
+: i>m ( n -- m ) ;
 
 : g-extra ( g -- a )  \ convert g ptr to its extra area
   3 cells + ;
@@ -27,12 +31,14 @@ mem 1000 $FF fill  \ for high-water mark debugging
 
 : feed ( msg in gadget -- )  \ feed a message to given gadget inlet
   cg @ >r  dup cg !  @ execute  r> cg ! ;
+: g-feed ( msg in -- )  \ feed a message to current gadget inlet
+  cg @ feed ;
 
 : g-emit ( msg out -- )  \ send a message to an outlet of current g
   cg @ feed ;  \ TODO test code
 
 : new-gadget ( h x -- g )  \ construct a new gadget instance
-  alloc tuck ! ;
+  alloc tuck !  dup cg ! ;
 
 : circuit-h ( msg in -- )
   cg @ g-extra cell+ @ feed ;  \ TODO hard-wired to send to gadget #1 for now
@@ -45,7 +51,6 @@ mem 1000 $FF fill  \ for high-water mark debugging
 
 : c:end ( ogpos g* -- g )  \ construct a new circuit instance
   ['] circuit-h  c:count cells new-gadget ( ogpos g* g )
-  cr
   c:count 1- 0 swap do
     tuck g-extra i cells + !
   -1 +loop
