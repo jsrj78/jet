@@ -18,7 +18,14 @@
   drop  0 0 new-gadget ;
 
 : outlet-h ( msg in -- )
-  ... ;
+  parent g-extra
+  begin ( msg n gpp )
+    dup @ cg @ <> while
+    swap 1+ swap
+    cell+
+  repeat drop
+  cg @ >r parent cg ! g-emit r> cg ! ;
+
 : :outlet ( arg -- g )
   drop  ['] outlet-h 0 new-gadget ;
 

@@ -14,7 +14,6 @@ mem 1000 $FF fill  \ for high-water mark debugging
 
 : alloc ( b - p )  \ allocate and clear specified number of bytes from mem pool
   3 + 3 bic  \ round up
-  3 cells +
   memp @ tuck over 0 fill
   memp +! ;
 
@@ -31,17 +30,25 @@ mem 1000 $FF fill  \ for high-water mark debugging
 
 : feed ( msg in gadget -- )  \ feed a message to given gadget inlet
   cg @ >r  dup cg !  @ execute  r> cg ! ;
-: g-feed ( msg in -- )  \ feed a message to current gadget inlet
-  cg @ feed ;
 
 : g-emit ( msg out -- )  \ send a message to an outlet of current g
-  cg @ feed ;  \ TODO test code
+\ cg @ feed  \ TODO test code
+  wires >r begin ( msg out r: wptr )
+    r@ c@ 255 <> while
+    r@ h@ 12 rshift ( msg out wout r: wptr )
+    over = if
+      over r@ 1+ c@ $F and ( msg out msg in r: wptr )
+      parent g-extra r@ c@ cells + @ feed
+    then
+    r> 2+ >r
+  repeat rdrop 2drop ;
 
 : new-gadget ( h x -- g )  \ construct a new gadget instance
-  alloc tuck !  dup cg ! ;
+  3 cells + alloc tuck !  dup cg !
+  here over 2 cells + ! ;  \ ptr to wiring (set up after new-gadget returns) 
 
 : circuit-h ( msg in -- )
-  cg @ g-extra cell+ @ feed ;  \ TODO hard-wired to send to gadget #1 for now
+  cells extra + @  cg @ >r cg ! 0 g-emit r> cg ! ;
 
 : c:begin ( -- ogpos )
   gpos @  sp@ gpos ! ;
@@ -52,13 +59,10 @@ mem 1000 $FF fill  \ for high-water mark debugging
 : c:end ( ogpos g* -- g )  \ construct a new circuit instance
   ['] circuit-h  c:count cells new-gadget ( ogpos g* g )
   c:count 1- 0 swap do
-    2dup swap cell+ !
+    2dup swap cell+ !  \ fill in parent
     tuck g-extra i cells + !
   -1 +loop
   swap gpos ! ;
-
-: add-g ( c g w -- c )  \ add a gadget to a circuit, including outlet wiring
-  ... ;
 
 : wire ( o g i -- )  \ encode a wire as 16-bit int: (o:4,i:4,g:8)
   8 lshift or swap 12 lshift or h, ;
