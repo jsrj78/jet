@@ -8,17 +8,12 @@ c:begin
   22 i>m :print  eow
 c:end  eow
 
-hex.
+hex. memp @ hex.
 456 i>m 0 cg @ feed
 789 i>m 0 cg @ feed
 
-
-
-
-
 c:begin
   _ :inlet  0 1 0 wire  eow
-\ dup hex. 32 dump
   c:begin
     _ :inlet  0 1 0 wire  eow
     _ :outlet
@@ -26,7 +21,7 @@ c:begin
   111 i>m :print  eow
 c:end  eow
 
-hex.
+hex. memp @ hex.
 222 i>m 0 cg @ feed
 
 h.s
