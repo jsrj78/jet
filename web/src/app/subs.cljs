@@ -22,6 +22,6 @@
    (:selected-gadget db)))
 
 (rf/reg-sub
- :label-width
+ :rect-width
  (fn [db [_ id]]
-   (get-in db [:label-widths id])))
+   (+ (get-in db [:label-widths id]) 10)))

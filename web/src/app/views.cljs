@@ -44,11 +44,11 @@
 
 (defn obj-as-svg [id [_ x y & cmd :as obj]]
   ; see https://stackoverflow.com/questions/27602592/reagent-component-did-mount
-  (let [new-width #(>evt [:set-label-width id (+ (get-dom-width %) 10)])
+  (let [new-width #(>evt [:set-label-width id (int (get-dom-width %))])
         did-mount (with-meta identity {:component-did-mount new-width})]
     ^{:key id}
     [:g.draggable {:on-mouse-down #(drag-start x y %)}
-      [:rect.obj {:id id :x x :y y :width (<sub [:label-width id]) :height 20}]
+      [:rect.obj {:id id :x x :y y :width (<sub [:rect-width id]) :height 20}]
       [did-mount
         [:text.obj {:x (+ x 5) :y (+ y 15)} (obj-name obj)]]]))
 
@@ -62,8 +62,8 @@
 (defn wire-as-svg [[src-pos src-out dst-pos dst-in :as wire]]
   (let [[_ sx sy] (<sub [:gadget-num src-pos])
         [_ dx dy] (<sub [:gadget-num dst-pos])
-        src-width (<sub [:label-width src-pos])
-        dst-width (<sub [:label-width dst-pos])]
+        src-width (<sub [:rect-width src-pos])
+        dst-width (<sub [:rect-width dst-pos])]
     ^{:key (wire-id wire)}
     [:path.wire {:d (wire-path (+ sx (* src-width src-out)) (+ sy 20)
                                (+ dx (* dst-width dst-in))  (+ dy 0))}])) 
