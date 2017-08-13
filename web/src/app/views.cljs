@@ -36,69 +36,40 @@
     (.stopPropagation evt)))
 
 (defn get-dom-width [elt]
-  (.. (reagent.core/dom-node elt) getBBox -width))
-
-(defn spread-xy [n x y w]
-  (let [s (/ (- w 5) (dec n))]
-    (mapv #(do [% y]) (range (+ x 2.5) (+ x w) s))))
-
-(defn num-iolets [cmd] ; TODO hard-coded for now
-  (case (first cmd)
-    :inlet  [0 1]
-    :r      [0 1]
-    :moses  [2 2]
-    :swap   [2 2]
-    :metro  [2 1]
-    :print  [1 0]
-    :outlet [1 0]
-    :s      [1 0]
-            [1 1]))
-
-(defn iolets-xy [cmd x y w h]
-  (let [[ni no] (num-iolets cmd)]
-    [(spread-xy ni x y w)
-     (spread-xy no x (+ y h) w)]))
+  (int (.. (reagent.core/dom-node elt) getBBox -width)))
 
 (defn obj-as-svg [id x y w h label]
   [:g
     [:rect.obj {:x x :y y :width w :height h}]
     ; https://stackoverflow.com/questions/27602592/reagent-component-did-mount
     ; inlined, this adjusts the enclosing rect's width to the text after render
-    [^{:component-did-mount #(>evt [:set-label-width
-                                    id
-                                    (int (get-dom-width %))])}
+    [^{:component-did-mount #(>evt [:set-label-width id (get-dom-width %)])}
       #(do [:text.obj {:x (+ x 5) :y (+ y 15)} label])]])
 
 (defn bang-as-svg [id x y]
   [:circle.bang {:cx (+ x 2.5) :cy (+ y 10) :r 10}])
 
-(defn gadget-as-svg [id [x y typ & cmd :as obj]]
-  (let [w          (<sub [:rect-width id])
-        h          20
-        [ins outs] (iolets-xy cmd x y w h)]
+(defn gadget-as-svg [id obj]
+  (let [[[x y w h] ic oc] (<sub [:gadget-coords id])]
     ^{:key id}
      [:g.draggable {:on-mouse-down #(drag-start id x y %)}
       (map (fn [[cx cy :as xy]]
              ^{:key xy}
-              [:circle {:cx cx :cy cy :r 3}]) (concat ins outs))
-      (if (= typ :obj)
+              [:circle {:cx cx :cy cy :r 3}]) (concat ic oc))
+      (if (= (nth obj 2) :obj)
           (obj-as-svg id x y w h (obj-name obj))
           (bang-as-svg id x y))]))
 
-(defn wire-path [x1 y1 x2 y2] ;; either straight line or cubic bezier
+(defn wire-path [[x1 y1] [x2 y2]] ;; either straight line or cubic bezier
 ; (str/join " " ["M" x1 y1 "L" x2 y2])
   (str/join " " ["M" x1 y1 "C" x1 (+ y1 25) x2 (- y2 25) x2 y2]))
 
-(defn wire-as-svg [[src-pos src-out dst-pos dst-in :as wire]]
-  (let [[sx sy]   (<sub [:gadget-num src-pos])
-        [dx dy]   (<sub [:gadget-num dst-pos])
-        src-width (<sub [:rect-width src-pos])
-        dst-width (<sub [:rect-width dst-pos])]
+(defn wire-as-svg [[s-id s-outlet d-id d-inlet :as wire]]
+  (let [[[sx sy sw sh] _     s-outs] (<sub [:gadget-coords s-id])
+        [[dx dy dw _]  d-ins _     ] (<sub [:gadget-coords d-id])]
     ^{:key wire}
-     [:path.wire {:d (wire-path (+ sx (* (- src-width 5) src-out) 2.5)
-                                (+ sy 20)
-                                (+ dx (* (- dst-width 5) dst-in) 2.5)
-                                (+ dy 0))}])) 
+     [:path.wire {:d (wire-path (nth s-outs s-outlet)
+                                (nth d-ins d-inlet))}]))
 
 (defn design-as-svg []
   (let [objs   (<sub [:gadgets])
