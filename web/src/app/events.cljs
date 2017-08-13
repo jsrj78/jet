@@ -1,5 +1,5 @@
 (ns app.events
-  (:require [re-frame.core :as rf]
+  (:require [re-frame.core :as rf :refer [debug trim-v]]
             [app.db :as db]))
 
 (rf/reg-event-db
