@@ -10,9 +10,6 @@
 (defn obj-name [obj]
   (subs (str/join " " (subvec obj 3)) 1))
 
-(defn obj-id [[_ x y]]
-  (str x "," y))
-
 (defn client-xy [evt]
   [(.-clientX evt) (.-clientY evt)])
 
@@ -44,22 +41,39 @@
 
 (defn spread-xy [n x y w]
   (let [s (/ (- w 5) (dec n))]
-    (mapv #(vector % y) (range (+ x 2.5) (+ x w) s))))
+    (mapv #(do [% y]) (range (+ x 2.5) (+ x w) s))))
 
 (defn num-iolets [cmd] ; TODO hard-coded for now
   (case (first cmd)
-    :inlet [0 1]
-    :r     [0 1]
-    :moses [2 2]
-    :swap  [2 2]
-           [1 0]))
+    :inlet  [0 1]
+    :r      [0 1]
+    :moses  [2 2]
+    :swap   [2 2]
+    :metro  [2 1]
+    :print  [1 0]
+    :outlet [1 0]
+    :s      [1 0]
+            [1 1]))
 
 (defn iolets-xy [cmd x y w h]
   (let [[ni no] (num-iolets cmd)]
     [(spread-xy ni x y w)
      (spread-xy no x (+ y h) w)]))
 
-(defn obj-as-svg [id [_ x y & cmd :as obj]]
+(defn obj-as-svg [id x y w h obj]
+  [:g
+    [:rect.obj {:id id :x x :y y :width w :height h}]
+    ; https://stackoverflow.com/questions/27602592/reagent-component-did-mount
+    ; inlined, this adjusts the enclosing rect's width to the text after render
+    [^{:component-did-mount #(>evt [:set-label-width
+                                    id
+                                    (int (get-dom-width %))])}
+      #(do [:text.obj {:x (+ x 5) :y (+ y 15)} (obj-name obj)])]])
+
+(defn bang-as-svg [id x y]
+  [:circle.bang {:id id :cx (+ x 2.5) :cy (+ y 10) :r 10}])
+
+(defn gadget-as-svg [id [x y typ & cmd :as obj]]
   (let [w          (<sub [:rect-width id])
         h          20
         [ins outs] (iolets-xy cmd x y w h)]
@@ -68,22 +82,17 @@
       (map (fn [[cx cy :as xy]]
              ^{:key xy}
               [:circle {:cx cx :cy cy :r 3}]) (concat ins outs))
-      [:rect.obj {:id id :x x :y y :width w :height h}]
-      ; https://stackoverflow.com/questions/27602592/reagent-component-did-mount
-      ; inlined, this allows adjusting the enclosing rect's width to the text
-      [^{:component-did-mount #(>evt [:set-label-width
-                                      id
-                                      (int (get-dom-width %))])}
-        (fn []
-          [:text.obj {:x (+ x 5) :y (+ y 15)} (obj-name obj)])]]))
+      (if (= typ :obj)
+          (obj-as-svg id x y w h obj)
+          (bang-as-svg id x y))]))
 
 (defn wire-path [x1 y1 x2 y2] ;; either straight line or cubic bezier
 ; (str/join " " ["M" x1 y1 "L" x2 y2])
   (str/join " " ["M" x1 y1 "C" x1 (+ y1 25) x2 (- y2 25) x2 y2]))
 
 (defn wire-as-svg [[src-pos src-out dst-pos dst-in :as wire]]
-  (let [[_ sx sy] (<sub [:gadget-num src-pos])
-        [_ dx dy] (<sub [:gadget-num dst-pos])
+  (let [[sx sy]   (<sub [:gadget-num src-pos])
+        [dx dy]   (<sub [:gadget-num dst-pos])
         src-width (<sub [:rect-width src-pos])
         dst-width (<sub [:rect-width dst-pos])]
     ^{:key wire}
@@ -95,10 +104,10 @@
 (defn design-as-svg []
   (let [objs   (<sub [:gadgets])
         wires  (<sub [:wires])]
-    [:svg {:width "100%" :height 500
+    [:svg {:width "100%" :height 400
            :on-mouse-down #(>evt [:select-gadget nil])}
       ; can't leave reactive refs in a lazy sequences
-      (doall (map-indexed obj-as-svg objs))
+      (doall (map-indexed gadget-as-svg objs))
       (doall (map wire-as-svg wires))]))
 
 (defn main-menu []

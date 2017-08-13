@@ -9,3 +9,4 @@ svg { background: #eee; }
 path.wire { stroke: black; fill: none; }
 text.obj { pointer-events: none; }
 rect.obj { stroke: black; fill: white; }
+circle.bang { stroke: black; fill: white; }

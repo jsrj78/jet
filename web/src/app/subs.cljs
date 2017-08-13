@@ -24,4 +24,4 @@
 (rf/reg-sub
  :rect-width
  (fn [db [_ id]]
-   (+ (get-in db [:label-widths id]) 10)))
+   (+ (get-in db [:label-widths id]) 11)))

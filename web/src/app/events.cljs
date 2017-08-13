@@ -11,8 +11,8 @@
   :move-gadget
   (fn [db [_ id dx dy]]
     (update-in db [:gadgets id]
-                  (fn [[vhead vx vy & vtail]]
-                    (into [vhead (+ vx dx) (+ vy dy)] vtail)))))
+                  (fn [[vx vy & vtail]]
+                    (into [(+ vx dx) (+ vy dy)] vtail)))))
 
 (rf/reg-event-db
   :select-gadget
