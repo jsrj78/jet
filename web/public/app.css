@@ -11,3 +11,7 @@ text.obj { pointer-events: none; }
 rect.obj { stroke: black; fill: white; }
 circle.bang { stroke: black; fill: white; }
 circle.bang:hover { fill: lightgreen; }
+rect.toggle { stroke: black; fill: white; }
+rect.toggle:hover { fill: lightblue; }
+rect.msg { stroke: black; fill: white; }
+rect.msg:hover { fill: yellow; }

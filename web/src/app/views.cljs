@@ -1,7 +1,8 @@
 (ns app.views
   (:require [re-frame.core]
             [clojure.string :as str]
-            [goog.events :as ev]))
+            [goog.events :as ev]
+            [cljs.pprint :refer [pprint]]))
 
 ; see https://lambdaisland.com/blog/11-02-2017-re-frame-form-1-subscriptions
 (def <sub (comp deref re-frame.core/subscribe))
@@ -44,8 +45,19 @@
     [^{:component-did-mount #(>evt [:set-label-width id (get-dom-width %)])}
       #(do [:text.obj {:x (+ x 5) :y (+ y 15)} label])]])
 
+(defn msg-as-svg [id x y w h]
+  [:g
+    [:rect.msg {:x (- x 10) :y y :width (+ w 3) :height h :rx (/ h 2)}]
+    ; https://stackoverflow.com/questions/27602592/reagent-component-did-mount
+    ; inlined, this adjusts the enclosing rect's width to the text after render
+    [^{:component-did-mount #(>evt [:set-label-width id (get-dom-width %)])}
+      #(do [:text.obj {:x (- x 3) :y (+ y 15)} "message"])]])
+
 (defn bang-as-svg [id x y]
   [:circle.bang {:cx (+ x 2.5) :cy (+ y 10) :r 10}])
+
+(defn toggle-as-svg [id x y]
+  [:rect.toggle {:x (- x 7.5) :y y :width 20 :height 20}])
 
 (defn gadget-as-svg [id obj]
   (let [[gbox ic oc] (<sub [:gadget-coords id])
@@ -57,7 +69,10 @@
               [:circle {:cx cx :cy cy :r 3}]) (concat ic oc))
       (if (= (nth obj 2) :obj)
         (obj-as-svg id x y w h (<sub [:gadget-name id]))
-        (bang-as-svg id x y))]))
+        (case (nth obj 3)
+          :bang   (bang-as-svg id x y)
+          :toggle (toggle-as-svg id x y)
+          :msg    (msg-as-svg id x y w h)))]))
 
 (defn wire-path [[x1 y1] [x2 y2]] ;; either straight line or cubic bezier
 ; (str/join " " ["M" x1 y1 "L" x2 y2])
@@ -111,7 +126,7 @@
      [:div#content
       [design-as-svg]
       ;[:pre [:small (pr-str @re-frame.db/app-db)]]
-      [:pre [:small (with-out-str (cljs.pprint/pprint @re-frame.db/app-db))]]]]
+      [:pre [:small (with-out-str (pprint @re-frame.db/app-db))]]]]
     [:div.pure-g.pure-u-2-5
      [:div#sidebar
       (if-let [obj (<sub [:curr-gadget])]
