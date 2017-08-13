@@ -1,14 +1,14 @@
 (ns app.views
   (:require [re-frame.core]
-            [clojure.string :as s]
+            [clojure.string :as str]
             [goog.events :as ev]))
 
 ; see https://lambdaisland.com/blog/11-02-2017-re-frame-form-1-subscriptions
 (def <sub (comp deref re-frame.core/subscribe))
 (def >evt re-frame.core/dispatch)
 
-(defn obj-name [[_ _ _ & cmd]]
-  (subs (s/join " " cmd) 1))
+(defn obj-name [obj]
+  (subs (str/join " " (subvec obj 3)) 1))
 
 (defn obj-id [[_ x y]]
   (str x "," y))
@@ -42,31 +42,55 @@
 (defn get-dom-width [elt]
   (.. (reagent.core/dom-node elt) getBBox -width))
 
-(defn obj-as-svg [id [_ x y & cmd :as obj]]
-  ; see https://stackoverflow.com/questions/27602592/reagent-component-did-mount
-  (let [new-width #(>evt [:set-label-width id (int (get-dom-width %))])
-        did-mount (with-meta identity {:component-did-mount new-width})]
-    ^{:key id}
-    [:g.draggable {:on-mouse-down #(drag-start x y %)}
-      [:rect.obj {:id id :x x :y y :width (<sub [:rect-width id]) :height 20}]
-      [did-mount
-        [:text.obj {:x (+ x 5) :y (+ y 15)} (obj-name obj)]]]))
+(defn spread-xy [n x y w]
+  (let [s (/ (- w 5) (dec n))]
+    (mapv #(vector % y) (range (+ x 2.5) (+ x w) s))))
 
-(defn wire-id [wire]
-  (s/join ":" wire))
+(defn num-iolets [cmd] ; TODO hard-coded for now
+  (case (first cmd)
+    :inlet [0 1]
+    :r     [0 1]
+    :moses [2 2]
+    :swap  [2 2]
+           [1 0]))
+
+(defn iolets-xy [cmd x y w h]
+  (let [[ni no] (num-iolets cmd)]
+    [(spread-xy ni x y w)
+     (spread-xy no x (+ y h) w)]))
+
+(defn obj-as-svg [id [_ x y & cmd :as obj]]
+  (let [w          (<sub [:rect-width id])
+        h          20
+        [ins outs] (iolets-xy cmd x y w h)]
+    ^{:key id}
+     [:g.draggable {:on-mouse-down #(drag-start x y %)}
+      (map (fn [[cx cy :as xy]]
+             ^{:key xy}
+              [:circle {:cx cx :cy cy :r 3}]) (concat ins outs))
+      [:rect.obj {:id id :x x :y y :width w :height h}]
+      ; https://stackoverflow.com/questions/27602592/reagent-component-did-mount
+      ; inlined, this allows adjusting the enclosing rect's width to the text
+      [^{:component-did-mount #(>evt [:set-label-width
+                                      id
+                                      (int (get-dom-width %))])}
+        (fn []
+          [:text.obj {:x (+ x 5) :y (+ y 15)} (obj-name obj)])]]))
 
 (defn wire-path [x1 y1 x2 y2] ;; either straight line or cubic bezier
-; (s/join " " ["M" x1 y1 "L" x2 y2])
-  (s/join " " ["M" x1 y1 "C" x1 (+ y1 25) x2 (- y2 25) x2 y2]))
+; (str/join " " ["M" x1 y1 "L" x2 y2])
+  (str/join " " ["M" x1 y1 "C" x1 (+ y1 25) x2 (- y2 25) x2 y2]))
 
 (defn wire-as-svg [[src-pos src-out dst-pos dst-in :as wire]]
   (let [[_ sx sy] (<sub [:gadget-num src-pos])
         [_ dx dy] (<sub [:gadget-num dst-pos])
         src-width (<sub [:rect-width src-pos])
         dst-width (<sub [:rect-width dst-pos])]
-    ^{:key (wire-id wire)}
-    [:path.wire {:d (wire-path (+ sx (* src-width src-out)) (+ sy 20)
-                               (+ dx (* dst-width dst-in))  (+ dy 0))}])) 
+    ^{:key wire}
+     [:path.wire {:d (wire-path (+ sx (* (- src-width 5) src-out) 2.5)
+                                (+ sy 20)
+                                (+ dx (* (- dst-width 5) dst-in) 2.5)
+                                (+ dy 0))}])) 
 
 (defn design-as-svg []
   (let [objs   (<sub [:gadgets])

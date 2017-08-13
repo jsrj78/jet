@@ -6,6 +6,6 @@ pre { white-space: pre-wrap; }
 
 svg { background: #eee; }
 .draggable { cursor: move; }
-path.wire { stroke: red; fill: none; }
+path.wire { stroke: black; fill: none; }
 text.obj { pointer-events: none; }
 rect.obj { stroke: black; fill: white; }
