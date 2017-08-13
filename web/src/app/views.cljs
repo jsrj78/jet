@@ -37,13 +37,20 @@
     (swap! state assoc :end done-fn)
     (ev/listen js/window "mousemove" move-fn)
     (ev/listen js/window "mouseup" done-fn)
-    (.stopPropagation evt)))
+    #_(.stopPropagation evt)))
+
+(defn get-dom-width [elt]
+  (.. (reagent.core/dom-node elt) getBBox -width))
 
 (defn obj-as-svg [id [_ x y & cmd :as obj]]
-  ^{:key id}
-  [:g.draggable {:on-mouse-down #(drag-start x y %)}
-    [:rect.obj {:id id :x x :y y :width 65 :height 20}]
-    [:text.obj {:x (+ x 5) :y (+ y 15)} (obj-name obj)]])
+  ; see https://stackoverflow.com/questions/27602592/reagent-component-did-mount
+  (let [new-width #(>evt [:set-label-width id (+ (get-dom-width %) 10)])
+        did-mount (with-meta identity {:component-did-mount new-width})]
+    ^{:key id}
+    [:g.draggable {:on-mouse-down #(drag-start x y %)}
+      [:rect.obj {:id id :x x :y y :width (<sub [:label-width id]) :height 20}]
+      [did-mount
+        [:text.obj {:x (+ x 5) :y (+ y 15)} (obj-name obj)]]]))
 
 (defn wire-id [wire]
   (s/join ":" wire))
@@ -54,18 +61,20 @@
 
 (defn wire-as-svg [[src-pos src-out dst-pos dst-in :as wire]]
   (let [[_ sx sy] (<sub [:gadget-num src-pos])
-        [_ dx dy] (<sub [:gadget-num dst-pos])]
+        [_ dx dy] (<sub [:gadget-num dst-pos])
+        src-width (<sub [:label-width src-pos])
+        dst-width (<sub [:label-width dst-pos])]
     ^{:key (wire-id wire)}
-    [:path.wire {:d (wire-path (+ sx (* 65 src-out)) (+ sy 20)
-                               (+ dx (* 65 dst-in))  (+ dy 0))}])) 
+    [:path.wire {:d (wire-path (+ sx (* src-width src-out)) (+ sy 20)
+                               (+ dx (* dst-width dst-in))  (+ dy 0))}])) 
 
 (defn design-as-svg []
   (let [objs   (<sub [:gadgets])
         wires  (<sub [:wires])]
     [:svg {:width "100%" :height 500
            :on-mouse-down #(>evt [:select-gadget nil])}
-      (map-indexed obj-as-svg objs)
-      ; can't leave reactive refs in a lazy sequence
+      ; can't leave reactive refs in a lazy sequences
+      (doall (map-indexed obj-as-svg objs))
       (doall (map wire-as-svg wires))]))
 
 (defn main-menu []

@@ -18,3 +18,8 @@
   :select-gadget
   (fn [db [_ id]]
     (assoc db :selected-gadget id)))
+
+(rf/reg-event-db
+  :set-label-width
+  (fn [db [_ id size]]
+    (assoc-in db [:label-widths id] size)))

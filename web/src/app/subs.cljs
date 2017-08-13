@@ -20,3 +20,8 @@
  :current-gadget
  (fn [db _]
    (:selected-gadget db)))
+
+(rf/reg-sub
+ :label-width
+ (fn [db [_ id]]
+   (get-in db [:label-widths id])))
