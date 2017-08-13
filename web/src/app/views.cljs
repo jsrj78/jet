@@ -22,19 +22,18 @@
 
 (defn drag-end-fn [id move-fn state]
   (fn [evt]
-    (>evt [:select-gadget id])
     (ev/unlisten js/window "mousemove" move-fn)
     (ev/unlisten js/window "mouseup" (:end @state))))
 
-(defn drag-start [x y evt]
+(defn drag-start [id x y evt]
   (let [state   (atom {:pos (client-xy evt)})
-        id      (js/parseInt (.-id (.-target evt)))
         move-fn (drag-move-fn id state)
         done-fn (drag-end-fn id move-fn state)]
     (swap! state assoc :end done-fn)
     (ev/listen js/window "mousemove" move-fn)
     (ev/listen js/window "mouseup" done-fn)
-    #_(.stopPropagation evt)))
+    (>evt [:select-gadget id])
+    (.stopPropagation evt)))
 
 (defn get-dom-width [elt]
   (.. (reagent.core/dom-node elt) getBBox -width))
@@ -60,30 +59,30 @@
     [(spread-xy ni x y w)
      (spread-xy no x (+ y h) w)]))
 
-(defn obj-as-svg [id x y w h obj]
+(defn obj-as-svg [id x y w h label]
   [:g
-    [:rect.obj {:id id :x x :y y :width w :height h}]
+    [:rect.obj {:x x :y y :width w :height h}]
     ; https://stackoverflow.com/questions/27602592/reagent-component-did-mount
     ; inlined, this adjusts the enclosing rect's width to the text after render
     [^{:component-did-mount #(>evt [:set-label-width
                                     id
                                     (int (get-dom-width %))])}
-      #(do [:text.obj {:x (+ x 5) :y (+ y 15)} (obj-name obj)])]])
+      #(do [:text.obj {:x (+ x 5) :y (+ y 15)} label])]])
 
 (defn bang-as-svg [id x y]
-  [:circle.bang {:id id :cx (+ x 2.5) :cy (+ y 10) :r 10}])
+  [:circle.bang {:cx (+ x 2.5) :cy (+ y 10) :r 10}])
 
 (defn gadget-as-svg [id [x y typ & cmd :as obj]]
   (let [w          (<sub [:rect-width id])
         h          20
         [ins outs] (iolets-xy cmd x y w h)]
     ^{:key id}
-     [:g.draggable {:on-mouse-down #(drag-start x y %)}
+     [:g.draggable {:on-mouse-down #(drag-start id x y %)}
       (map (fn [[cx cy :as xy]]
              ^{:key xy}
               [:circle {:cx cx :cy cy :r 3}]) (concat ins outs))
       (if (= typ :obj)
-          (obj-as-svg id x y w h obj)
+          (obj-as-svg id x y w h (obj-name obj))
           (bang-as-svg id x y))]))
 
 (defn wire-path [x1 y1 x2 y2] ;; either straight line or cubic bezier
