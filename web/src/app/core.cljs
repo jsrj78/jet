@@ -5,19 +5,16 @@
             [app.subs]
             [app.views :as views]))
 
-(def debug?
-  ^boolean goog.DEBUG)
-
-(defn dev-setup []
-  (when debug?
-    (enable-console-print!)
-    (println "dev mode")))
-
 (defn mount-root []
   (rf/clear-subscription-cache!)
   (r/render [views/app-page] (.getElementById js/document "app")))
 
+(def debug?
+  ^boolean goog.DEBUG)
+
 (defn ^:export init []
   (rf/dispatch-sync [:initialize-db])
-  (dev-setup)
+  (when debug?
+    (enable-console-print!)
+    (println "dev mode"))
   (mount-root))

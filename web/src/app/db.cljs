@@ -2,6 +2,7 @@
 
 (def default-db
   {:selected-gadget nil
+   :label-widths {}
    :gadgets
    [[50 30 :obj :inlet]
     [120 40 [] :bang]
