@@ -4,6 +4,8 @@
             [goog.events :as ev]
             [cljs.pprint :refer [pprint]]))
 
+(set! *warn-on-infer* true)
+
 ; see https://lambdaisland.com/blog/11-02-2017-re-frame-form-1-subscriptions
 (def <sub (comp deref re-frame.core/subscribe))
 (def >evt re-frame.core/dispatch)
@@ -35,6 +37,8 @@
     (.stopPropagation evt)))
 
 (defn get-dom-width [elt]
+  ; getBBox found via externs file copied from:
+  ;https://github.com/google/closure-compiler/blob/master/contrib/externs/svg.js
   (int (.. (reagent.core/dom-node elt) getBBox -width)))
 
 (defn obj-as-svg [id x y w h label]

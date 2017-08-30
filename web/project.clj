@@ -1,6 +1,6 @@
 (defproject app "0.1.0-SNAPSHOT"
   :dependencies [[org.clojure/clojure "1.8.0"]
-                 [org.clojure/clojurescript "1.9.854"]
+                 [org.clojure/clojurescript "1.9.908"]
                  [reagent "0.7.0"]
                  [re-frame "0.9.4"]
                  [devcards "0.2.3" :exclusions [cljsjs/react]]]
@@ -61,5 +61,6 @@
      :compiler     {:main            app.core
                     :output-to       "public/js/app.js"
                     :optimizations   :advanced
+                    :externs         ["svg.js"]
                     :closure-defines {goog.DEBUG false}
                     :pretty-print    false}}]})
