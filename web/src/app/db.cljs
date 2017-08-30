@@ -10,7 +10,7 @@
     [160 90 [] :bang]
     [200 75 [] :toggle]
     [70 140 [] :msg]
-    [150 140 :obj :print 2]
+    [170 140 :obj :print 2]
     [50 180 :obj :print 1]]
    :wires
    [[0 0 2 0]
