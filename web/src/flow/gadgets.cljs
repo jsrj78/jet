@@ -5,8 +5,8 @@
   (fn [label]
     (let [gob (f/init-gadget)]
       (f/add-inlet gob (fn [msg]
-                        (let [args (if label (cons label msg) msg)] 
-                          (prn (vec args))))))))
+                        (let [args (if label (into [label] msg) msg)]
+                          (prn args)))))))
 
 (f/defgadget :pass
   (fn []
@@ -65,7 +65,7 @@
       (f/add-outlets gob 1)
       (-> gob
           (f/add-inlet (fn [msg]
-                        (let [[o] @order]
+                        (let [o @order]
                           (reset! hist (int (/ (+ (* o @hist) msg) (inc o))))
                           (f/emit gob 0 [@hist]))))
           (f/add-inlet #(reset! order %))))))
@@ -88,7 +88,7 @@
       (f/add-outlets gob 1)
       (-> gob
           (f/add-inlet (fn [msg]
-                        (if (< msg (first @split))
+                        (if (< msg @split)
                           (f/emit gob 0 [msg])
                           (f/emit gob 1 [msg]))))
           (f/add-inlet #(reset! split %))))))

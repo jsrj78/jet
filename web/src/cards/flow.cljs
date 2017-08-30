@@ -12,6 +12,12 @@
       (is (= "[1 2 3]\n"
             (with-out-str (f/feed f-print 0 [1 2 3]))))))
 
+  (testing "print scalar"
+    (let [f-print (f/make-gadget :print)] 
+      (is f-print)
+      (is (= "333\n"
+            (with-out-str (f/feed f-print 0 333))))))
+
   (testing "print with label"
     (let [f-print (f/make-gadget :print :hello)] 
       (is (= "[:hello 1 2 3]\n"
@@ -102,7 +108,7 @@
   (testing "smooth gadget"
     (let [c (-> (f/make-circuit)
                 (f/add (f/make-gadget :inlet))
-                (f/add (f/make-gadget :smooth [3]))
+                (f/add (f/make-gadget :smooth 3))
                 (f/add (f/make-gadget :print))
                 (f/add-wire [0 0 1 0])
                 (f/add-wire [1 0 2 0]))]
@@ -124,7 +130,7 @@
   (testing "moses gadget"
     (let [c (-> (f/make-circuit)
                 (f/add (f/make-gadget :inlet))
-                (f/add (f/make-gadget :moses [5]))
+                (f/add (f/make-gadget :moses 5))
                 (f/add (f/make-gadget :print :a))
                 (f/add (f/make-gadget :print :b))
                 (f/add-wire [0 0 1 0])
