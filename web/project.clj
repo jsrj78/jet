@@ -2,7 +2,7 @@
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [org.clojure/clojurescript "1.9.908"]
                  [reagent "0.7.0"]
-                 [re-frame "0.9.4"]
+                 [re-frame "0.10.1"]
                  [devcards "0.2.3" :exclusions [cljsjs/react]]]
 
   :plugins [[lein-cljsbuild "1.1.7"]]
@@ -14,7 +14,7 @@
   :figwheel {:css-dirs ["public"]}
 
   :profiles {:dev {:dependencies [[binaryage/devtools "0.9.4"]]
-                   :plugins      [[lein-figwheel "0.5.12"]]}}
+                   :plugins      [[lein-figwheel "0.5.13"]]}}
 
   :resource-paths ["."]
 

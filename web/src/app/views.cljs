@@ -39,21 +39,21 @@
   ;https://github.com/google/closure-compiler/blob/master/contrib/externs/svg.js
   (int (.. (reagent.core/dom-node elt) getBBox -width)))
 
+(defn adjust-label-width [id x y label]
+  ; https://stackoverflow.com/questions/27602592/reagent-component-did-mount
+  ; inlined, this adjusts the enclosing rect's width to the text after render
+  [^{:component-did-mount #(>evt [:set-label-width id (get-dom-width %)])}
+    #(do [:text.obj {:x x :y y} label])])
+
 (defn obj-as-svg [id x y w h label]
   [:g
     [:rect.obj {:x x :y y :width w :height h}]
-    ; https://stackoverflow.com/questions/27602592/reagent-component-did-mount
-    ; inlined, this adjusts the enclosing rect's width to the text after render
-    [^{:component-did-mount #(>evt [:set-label-width id (get-dom-width %)])}
-      #(do [:text.obj {:x (+ x 5) :y (+ y 15)} label])]])
+    (adjust-label-width id (+ x 5) (+ y 15) label)])
 
 (defn msg-as-svg [id x y w h]
   [:g
     [:rect.msg {:x (- x 10) :y y :width (+ w 3) :height h :rx (/ h 2)}]
-    ; https://stackoverflow.com/questions/27602592/reagent-component-did-mount
-    ; inlined, this adjusts the enclosing rect's width to the text after render
-    [^{:component-did-mount #(>evt [:set-label-width id (get-dom-width %)])}
-      #(do [:text.obj {:x (- x 3) :y (+ y 15)} "message"])]])
+    (adjust-label-width id (- x 3) (+ y 15) "message")])
 
 (defn bang-as-svg [id x y]
   [:circle.bang {:cx (+ x 2.5) :cy (+ y 10) :r 10}])
