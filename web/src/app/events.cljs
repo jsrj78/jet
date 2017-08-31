@@ -1,11 +1,11 @@
 (ns app.events
-  (:require [re-frame.core :as rf :refer [debug trim-v]]
-            [app.db :as db]))
+  (:require [app.db]
+            [re-frame.core :as rf]))
 
 (rf/reg-event-db
   :initialize-db
   (fn  [_ _]
-    db/default-db))
+    app.db/default-db))
 
 (rf/reg-event-db
   :move-gadget

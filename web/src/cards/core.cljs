@@ -1,6 +1,6 @@
 (ns cards.core
-  (:require [devcards.core :as dc]
+  (:require [devcards.core]
             [cards.smoke]
             [cards.flow]))
 
-(dc/start-devcard-ui!)
+(devcards.core/start-devcard-ui!)

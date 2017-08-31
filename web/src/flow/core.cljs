@@ -1,11 +1,10 @@
-(ns flow.core
-  (:require [clojure.string :as s]))
+(ns flow.core)
 
-(defonce registry (atom {})) 
+(defonce *registry (atom {})) 
 
 ; TODO use macro to inject the "fn" and use a symbol iso a keyword
 (defn defgadget [key fun]
-  (swap! registry assoc key fun))
+  (swap! *registry assoc key fun))
 
 (defn init-gadget []
   {:inlets []
@@ -31,7 +30,7 @@
     (emit gob outlet msg)))
 
 (defn make-gadget [k & args]
-  (let [g-fn (k @registry)] 
+  (let [g-fn (k @*registry)] 
     (if g-fn
       (apply g-fn args)
       (.error js/console "no such gadget:" key))))

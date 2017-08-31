@@ -1,6 +1,6 @@
 (ns app.db)
 
-(def default-db
+#_(def default-db)
   {:selected-gadget nil
    :label-widths {}
    :gadgets
@@ -19,4 +19,13 @@
     [1 0 4 0]
     [2 0 5 0]
     [2 0 7 0]
-    [2 1 6 0]]})
+    [2 1 6 0]]}
+
+(def default-db
+  {:selected-gadget nil
+   :label-widths {}
+   :gadgets
+   [[100 50 [] :bang]
+    [100 100 :obj :print]]
+   :wires
+   [[0 0 1 0]]})

@@ -1,7 +1,7 @@
 (ns app.views
   (:require [re-frame.core]
             [clojure.string :as str]
-            [goog.events :as ev]
+            [goog.events :as events]
             [cljs.pprint :refer [pprint]]))
 
 ; see https://lambdaisland.com/blog/11-02-2017-re-frame-form-1-subscriptions
@@ -11,26 +11,26 @@
 (defn client-xy [evt]
   [(.-clientX evt) (.-clientY evt)])
 
-(defn drag-move-fn [id state]
+(defn drag-move-fn [id *state]
   (fn [evt]
-    (let [[ox oy]       (:pos @state)
+    (let [[ox oy]       (:pos @*state)
           [cx cy :as c] (client-xy evt)]
-      (swap! state assoc :pos c)
+      (swap! *state assoc :pos c)
       (>evt [:move-gadget id (- cx ox) (- cy oy)])
       (.preventDefault evt)))) ; avoid text selection, at least in Chrome
 
-(defn drag-end-fn [move-fn state]
+(defn drag-end-fn [move-fn *state]
   (fn [evt]
-    (ev/unlisten js/window "mousemove" move-fn)
-    (ev/unlisten js/window "mouseup" (:end @state))))
+    (events/unlisten js/window "mousemove" move-fn)
+    (events/unlisten js/window "mouseup" (:end @*state))))
 
 (defn drag-start [id x y evt]
-  (let [state   (atom {:pos (client-xy evt)})
-        move-fn (drag-move-fn id state)
-        done-fn (drag-end-fn move-fn state)]
-    (swap! state assoc :end done-fn)
-    (ev/listen js/window "mousemove" move-fn)
-    (ev/listen js/window "mouseup" done-fn)
+  (let [*state  (atom {:pos (client-xy evt)})
+        move-fn (drag-move-fn id *state)
+        done-fn (drag-end-fn move-fn *state)]
+    (swap! *state assoc :end done-fn)
+    (events/listen js/window "mousemove" move-fn)
+    (events/listen js/window "mouseup" done-fn)
     (>evt [:select-gadget id])
     (.stopPropagation evt)))
 

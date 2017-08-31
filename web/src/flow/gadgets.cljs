@@ -1,94 +1,95 @@
 (ns flow.gadgets
-  (:require [flow.core :as f]))
+  (:require [flow.core :as flow]))
 
-(f/defgadget :print
+(flow/defgadget :print
   (fn [label]
-    (let [gob (f/init-gadget)]
-      (f/add-inlet gob (fn [msg]
-                        (let [args (if label (into [label] msg) msg)]
-                          (prn args)))))))
+    (let [gob (flow/init-gadget)]
+      (flow/add-inlet gob (fn [msg]
+                            (let [args (if label (into [label] msg) msg)]
+                              (prn args)))))))
 
-(f/defgadget :pass
+(flow/defgadget :pass
   (fn []
-    (let [gob (f/init-gadget)]
-      (f/add-outlets gob 1)
-      (f/add-inlet gob (f/emitter gob 0)))))
+    (let [gob (flow/init-gadget)]
+      (flow/add-outlets gob 1)
+      (flow/add-inlet gob (flow/emitter gob 0)))))
 
-(f/defgadget :inlet
+(flow/defgadget :inlet
   (fn []
-    (let [gob (f/init-gadget)]
-      (f/add-outlets gob 1)
+    (let [gob (flow/init-gadget)]
+      (flow/add-outlets gob 1)
       (assoc gob :on-add (fn [cob]
-                           (f/add-inlet cob (f/emitter gob 0)))))))
+                           (flow/add-inlet cob (flow/emitter gob 0)))))))
 
-(f/defgadget :outlet
+(flow/defgadget :outlet
   (fn []
-    (let [gob (f/init-gadget)]
+    (let [gob (flow/init-gadget)]
       (assoc gob :on-add (fn [cob]
                           (let [off (count (:gadgets cob))]
-                            (->> (f/add-outlets cob 1)
-                                 (f/emitter cob)
-                                 (f/add-inlet gob)
+                            (->> (flow/add-outlets cob 1)
+                                 (flow/emitter cob)
+                                 (flow/add-inlet gob)
                                  (assoc-in cob [:gadgets off]))))))))
 
-(f/defgadget :swap
+(flow/defgadget :swap
   (fn [args]
-    (let [val (atom args)
-          gob (f/init-gadget)]
-      (f/add-outlets gob 2)
+    (let [*val (atom args)
+          gob (flow/init-gadget)]
+      (flow/add-outlets gob 2)
       (-> gob
-          (f/add-inlet (fn [msg]
-                        (f/emit gob 1 msg)
-                        (f/emit gob 0 @val)))
-          (f/add-inlet #(reset! val %))))))
+          (flow/add-inlet (fn [msg]
+                            (flow/emit gob 1 msg)
+                            (flow/emit gob 0 @*val)))
+          (flow/add-inlet #(reset! *val %))))))
 
-(f/defgadget :s
+(flow/defgadget :s
   (fn [topic]
-    (let [parent (atom nil)]
-      (-> (f/init-gadget)
-          (f/add-inlet #(f/notify @parent topic %))
-          (assoc :on-add #(reset! parent %))))))
+    (let [*parent (atom nil)]
+      (-> (flow/init-gadget)
+          (flow/add-inlet #(flow/notify @*parent topic %))
+          (assoc :on-add #(reset! *parent %))))))
 
-(f/defgadget :r
+(flow/defgadget :r
   (fn [topic]
-    (let [gob (f/init-gadget)]
-      (f/add-outlets gob 1)
+    (let [gob (flow/init-gadget)]
+      (flow/add-outlets gob 1)
       (assoc gob :on-add (fn [cob]
-                           (f/on cob topic (f/emitter gob 0))
+                           (flow/on cob topic (flow/emitter gob 0))
                            cob)))))
 
-(f/defgadget :smooth
+(flow/defgadget :smooth
   (fn [arg]
-    (let [hist  (atom 0)
-          order (atom arg)
-          gob   (f/init-gadget)]
-      (f/add-outlets gob 1)
+    (let [*hist  (atom 0)
+          *order (atom arg)
+          gob    (flow/init-gadget)]
+      (flow/add-outlets gob 1)
       (-> gob
-          (f/add-inlet (fn [msg]
-                        (let [o @order]
-                          (reset! hist (int (/ (+ (* o @hist) msg) (inc o))))
-                          (f/emit gob 0 [@hist]))))
-          (f/add-inlet #(reset! order %))))))
+          (flow/add-inlet (fn [msg]
+                            (let [o @*order
+                                  h @*hist]
+                              (reset! *hist (int (/ (+ (* o h) msg) (inc o))))
+                              (flow/emit gob 0 [@*hist]))))
+          (flow/add-inlet #(reset! *order %))))))
 
-(f/defgadget :change
+(flow/defgadget :change
   (fn []
-    (let [last  (atom nil)
-          gob   (f/init-gadget)]
-      (f/add-outlets gob 1)
-      (f/add-inlet gob (fn [msg]
-                        (if (not= msg @last)
-                          (do
-                            (reset! last msg)
-                            (f/emit gob 0 [msg]))))))))
+    (let [*last (atom nil)
+          gob   (flow/init-gadget)]
+      (flow/add-outlets gob 1)
+      (flow/add-inlet gob (fn [msg]
+                            (if (not= msg @*last)
+                              (do
+                                (reset! *last msg)
+                                (flow/emit gob 0 [msg]))))))))
 
-(f/defgadget :moses
+(flow/defgadget :moses
   (fn [arg]
-    (let [split (atom arg)
-          gob   (f/init-gadget)]
-      (f/add-outlets gob 1)
+    (let [*split (atom arg)
+          gob    (flow/init-gadget)]
+      (flow/add-outlets gob 1)
       (-> gob
-          (f/add-inlet (fn [msg]
-                        (if (< msg @split)
-                          (f/emit gob 0 [msg])
-                          (f/emit gob 1 [msg]))))
-          (f/add-inlet #(reset! split %))))))
+          (flow/add-inlet (fn [msg]
+                            (if (< msg @*split)
+                              (flow/emit gob 0 [msg])
+                              (flow/emit gob 1 [msg]))))
+          (flow/add-inlet #(reset! *split %))))))
