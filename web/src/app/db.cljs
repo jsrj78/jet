@@ -20,6 +20,19 @@
 
 (def default-db
   {:label-widths {}
+   :gadgets [[120 40 [] :bang]
+             [50 90 :obj :swap 555]
+             [50 180 :obj :print 1]
+             [170 140 :obj :print 2]]
+   :wires [[0 0 1 0]
+           [1 0 2 0]
+           [1 1 3 0]]})
+
+#_(def default-db)
+  {:label-widths {}
    :gadgets [[100 50 [] :bang]
-             [100 100 :obj :print 123]]
-   :wires [[0 0 1 0]]})
+             [100 100 :obj :print 123]
+             [200 50 [] :bang]
+             [200 100 :obj :print 456]]
+   :wires [[0 0 1 0]
+           [2 0 3 0]]}

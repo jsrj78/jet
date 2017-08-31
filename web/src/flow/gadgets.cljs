@@ -4,9 +4,7 @@
 (flow/defgadget :print
   (fn [label]
     (let [gob (flow/init-gadget)]
-      (flow/add-inlet gob (fn [msg]
-                            (let [args (if label (into [label] msg) msg)]
-                              (prn args)))))))
+      (flow/add-inlet gob #(prn (or label :print) %)))))
 
 (flow/defgadget :pass
   (fn []
