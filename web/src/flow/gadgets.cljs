@@ -55,6 +55,13 @@
                            (flow/on cob topic (flow/emitter gob 0))
                            cob)))))
 
+(flow/defgadget :message
+  (fn [arg]
+    (let [gob (flow/init-gadget)]
+      (flow/add-outlets gob 1)
+      (flow/add-inlet gob (fn [msg]
+                            (flow/emit gob 0 arg))))))
+
 (flow/defgadget :smooth
   (fn [arg]
     (let [*hist  (atom 0)

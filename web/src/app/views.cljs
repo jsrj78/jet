@@ -51,10 +51,11 @@
     [:rect.obj {:x x :y y :width w :height h}]
     (adjust-label-width id (+ x 5) (+ y 15) label)])
 
-(defn msg-as-svg [id x y w h]
+(defn msg-as-svg [id x y w h label]
   [:g
-    [:rect.msg {:x (- x 10) :y y :width (+ w 3) :height h :rx (/ h 2)}]
-    (adjust-label-width id (- x 3) (+ y 15) "message")])
+    [:rect.msg {:x (- x 10) :y y :width (+ w 3) :height h :rx (/ h 2)
+                :on-mouse-down #(>evt [:to-engine id])}]
+    (adjust-label-width id (- x 3) (+ y 15) label)])
 
 (defn bang-as-svg [id x y]
   [:circle.bang {:cx (+ x 2.5) :cy (+ y 10) :r 10
@@ -76,7 +77,7 @@
         (case (nth obj 3)
           :bang   (bang-as-svg id x y)
           :toggle (toggle-as-svg id x y)
-          :msg    (msg-as-svg id x y w h)))]))
+          :msg    (msg-as-svg id x y w h (<sub [:gadget-name id]))))]))
 
 (defn wire-path [[x1 y1] [x2 y2]] ;; either straight line or cubic bezier
 ; (str/join " " ["M" x1 y1 "L" x2 y2])

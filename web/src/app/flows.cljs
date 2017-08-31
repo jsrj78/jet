@@ -6,7 +6,9 @@
 (defn map-gadget-to-engine [id obj]
   (if (= (nth obj 2) :obj)
     (subvec obj 3)
-    [:r id]))
+    (case (nth obj 3)
+      :msg [:message (nth obj 4)]
+           [:pass id])))
 
 (defn create-engine [gadgets wires]
   (let [g  (map-indexed map-gadget-to-engine gadgets)
@@ -26,4 +28,4 @@
 (rf/reg-fx
   :send-bang
   (fn [[cob id]]
-    (flow/notify cob id [])))
+    (flow/feed (get-in cob [:gadgets id]) 0 [])))

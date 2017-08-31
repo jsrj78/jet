@@ -22,7 +22,8 @@
   (fn [[_ id]]
     (rf/subscribe [:gadget-num id]))
   (fn [obj]
-    (subs (str/join " " (subvec obj 3)) 1)))
+    (let [pos (case (nth obj 3) :msg 4 3)]
+      (str/join " " (subvec obj pos)))))
 
 (rf/reg-sub :num-iolets
   (fn [[_ id]]
