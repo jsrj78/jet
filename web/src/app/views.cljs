@@ -53,7 +53,7 @@
 
 (defn msg-as-svg [id x y w h label]
   [:g
-    [:rect.msg {:x (- x 10) :y y :width (+ w 3) :height h :rx (/ h 2)
+    [:rect.msg {:x (- x 10) :y y :width (+ w 3) :height h :rx (/ h 3)
                 :on-mouse-down #(>evt [:to-engine id])}]
     (adjust-label-width id (- x 3) (+ y 15) label)])
 
@@ -62,7 +62,7 @@
                  :on-mouse-down #(>evt [:to-engine id])}])
 
 (defn toggle-as-svg [id x y]
-  [:rect.toggle {:x (- x 7.5) :y y :width 20 :height 20}])
+  [:rect.toggle {:x (- x 7.5) :y y :width 20 :height 19}])
 
 (defn gadget-as-svg [id obj]
   (let [[gbox ic oc] (<sub [:gadget-coords id])

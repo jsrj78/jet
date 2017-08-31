@@ -42,7 +42,7 @@
 
 (rf/reg-sub :rect-width
   (fn [db [_ id]]
-    (+ (get-in db [:label-widths id]) 11)))
+    (+ (get-in db [:label-widths id]) 12)))
 
 (defn spread-xy [n x y w]
   (let [s (/ (- w 5) (dec n))]
@@ -54,6 +54,6 @@
      (rf/subscribe [:rect-width id])
      (rf/subscribe [:num-iolets id])])
   (fn [[[x y typ & cmd :as obj] w [ni no]] _]
-     [[x y w 20]
+     [[x y w 19]
       (spread-xy ni x y w)
       (spread-xy no x (+ y 20) w)]))
