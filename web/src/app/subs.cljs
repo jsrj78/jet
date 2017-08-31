@@ -56,4 +56,4 @@
   (fn [[[x y typ & cmd :as obj] w [ni no]] _]
      [[x y w 19]
       (spread-xy ni x y w)
-      (spread-xy no x (+ y 20) w)]))
+      (spread-xy no x (+ y 19) w)]))
