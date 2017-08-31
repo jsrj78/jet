@@ -1,12 +1,13 @@
 (ns app.views
-  (:require [re-frame.core]
+  (:require [reagent.core :as reagent]
+            [re-frame.core :as rf]
             [clojure.string :as str]
             [goog.events :as events]
             [cljs.pprint :refer [pprint]]))
 
 ; see https://lambdaisland.com/blog/11-02-2017-re-frame-form-1-subscriptions
-(def <sub (comp deref re-frame.core/subscribe))
-(def >evt re-frame.core/dispatch)
+(def <sub (comp deref rf/subscribe))
+(def >evt rf/dispatch)
 
 (defn client-xy [evt]
   [(.-clientX evt) (.-clientY evt)])
@@ -35,12 +36,12 @@
     (.stopPropagation evt)))
 
 (defn get-dom-width [elt]
-  ; getBBox found via externs file copied from:
-  ;https://github.com/google/closure-compiler/blob/master/contrib/externs/svg.js
-  (int (.. (reagent.core/dom-node elt) getBBox -width)))
+  ; getBBox will be found via the "svg.js" externs file available here:
+  ;  https://github.com/google/closure-compiler/blob/master/contrib/externs/
+  (-> elt reagent/dom-node .getBBox .-width int))
 
 (defn adjust-label-width [id x y label]
-  ; https://stackoverflow.com/questions/27602592/reagent-component-did-mount
+  ; see https://stackoverflow.com/questions/27602592/reagent-component-did-mount
   ; inlined, this adjusts the enclosing rect's width to the text after render
   [^{:component-did-mount #(>evt [:set-label-width id (get-dom-width %)])}
     #(do [:text.obj {:x x :y y} label])])
@@ -56,7 +57,8 @@
     (adjust-label-width id (- x 3) (+ y 15) "message")])
 
 (defn bang-as-svg [id x y]
-  [:circle.bang {:cx (+ x 2.5) :cy (+ y 10) :r 10}])
+  [:circle.bang {:cx (+ x 2.5) :cy (+ y 10) :r 10
+                 :on-mouse-down #(>evt [:to-engine id])}])
 
 (defn toggle-as-svg [id x y]
   [:rect.toggle {:x (- x 7.5) :y y :width 20 :height 20}])
