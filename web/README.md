@@ -18,8 +18,7 @@ Wait for the `Prompt will show ...` message, then click on this link:
 To generate a self-contained production release:
 
 ```
-lein clean
-lein cljsbuild once min
+lein do clean, cljsbuild once min
 ```
 
 The result ends up in `public/` and can be used with any HTTP server:
