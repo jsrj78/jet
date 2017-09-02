@@ -11,7 +11,7 @@ lein figwheel
 ```
 
 Wait for the `Prompt will show ...` message, then click on this link:
-<http://localhost:3449](http://localhost:3449/>.
+<http://localhost:3449>.
 
 ### Production build
 
