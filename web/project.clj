@@ -11,9 +11,13 @@
 
   :clean-targets ^{:protect false} ["public/js" "target"]
 
-  :figwheel {:css-dirs ["public"]}
+  :repl-options {:nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}
+  :figwheel {:css-dirs ["public"]
+             :nrepl-port 7888}
 
-  :profiles {:dev {:dependencies [[binaryage/devtools "0.9.4"]]
+  :profiles {:dev {:dependencies [[com.cemerick/piggieback "0.2.2"]
+                                  [org.clojure/tools.nrepl "0.2.10"]
+                                  [binaryage/devtools "0.9.4"]]
                    :plugins      [[lein-figwheel "0.5.13"]]}}
 
   :resource-paths ["."]
