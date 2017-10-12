@@ -1,2 +1,2 @@
 all:
-	./core.py
+	python test.py
