@@ -63,7 +63,7 @@ def on_message(client, userdata, msg):
         print(e, (msg.topic, msg.payload))
 
 # loop back test circuit: print msgs from inlet 0 and pass them to outlet 0
-c = ConnectedCircuit('circ1')
+c = ConnectedCircuit('loop')
 c.add('inlet')
 c.add('pass')
 c.add('print', 'got:')
