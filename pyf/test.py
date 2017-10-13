@@ -42,6 +42,7 @@ c.wire(0, 0, 1, 0)
 c.wire(2, 0, 3, 0)
 
 c.feed(0, [1, 2, 3])
+c.feed(0, [4, 5, 6])
 
 print(">>> smooth gadget")
 

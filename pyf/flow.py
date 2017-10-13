@@ -20,6 +20,7 @@ class Circuit(Gadget):
 
     def __init__(self):
         self.inlets = []
+        self.outlets = []
         self.gadgets = []
         self.wiring = []
         self.notifiers = {}
