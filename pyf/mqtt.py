@@ -40,24 +40,27 @@ def on_connect(client, userdata, flags, rc):
     client.subscribe(subs)
 
 def on_message(client, userdata, msg):
-    payload = json.loads(msg.payload)
-    if msg.topic == PREFIX:
-        print("CMD:", payload)
-        assert(len(payload) == 2 and payload[0] == "create")
-        name = payload[1]
-        exists = name in circuits
-        cob = ConnectedCircuit(name)
-        if not exists:
-            client.subscribe(cob.subscriptions())
-    else:
-        topic = msg.topic[len(PREFIX)+1:]
-        parts = topic.split('/')
-        cob = circuits[parts[0]]
-        if len(parts) == 1:
-            cob.control(payload)
+    try:
+        payload = json.loads(msg.payload)
+        if msg.topic == PREFIX:
+            print("CMD:", payload)
+            assert(len(payload) == 2 and payload[0] == "create")
+            name = payload[1]
+            exists = name in circuits
+            cob = ConnectedCircuit(name)
+            if not exists:
+                client.subscribe(cob.subscriptions())
         else:
-            assert(len(parts) == 3 and parts[1] == 'in')
-            cob.feed(int(parts[2]), payload)
+            topic = msg.topic[len(PREFIX)+1:]
+            parts = topic.split('/')
+            cob = circuits[parts[0]]
+            if len(parts) == 1:
+                cob.control(payload)
+            else:
+                assert(len(parts) == 3 and parts[1] == 'in')
+                cob.feed(int(parts[2]), payload)
+    except Exception as e:
+        print(e, (msg.topic, msg.payload))
 
 # loop back test circuit: print msgs from inlet 0 and pass them to outlet 0
 c = ConnectedCircuit('circ1')
