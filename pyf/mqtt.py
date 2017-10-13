@@ -60,6 +60,8 @@ def on_message(client, userdata, msg):
                 assert(len(parts) == 3 and parts[1] == 'in')
                 cob.feed(int(parts[2]), payload)
     except Exception as e:
+        if str(e) == '':
+            e = 'error'
         print(e, (msg.topic, msg.payload))
 
 # loop back test circuit: print msgs from inlet 0 and pass them to outlet 0
