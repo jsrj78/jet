@@ -15,15 +15,20 @@ class ConnectedCircuit(flow.Circuit):
         self.name = name
         circuits[name] = self
 
+    def subscriptions(self):
+        return [("%s/%s" % (PREFIX, self.name), 0),
+                ("%s/%s/in/+" % (PREFIX, self.name), 0)]
+
     def control(self, msg):
         print("CONTROL:", self.name, msg)
-
-    def incoming(self, inum, msg):
-        print("IN:", self.name, inum, msg)
-        self.feed(inum, msg)
+        for ctrl in msg:
+            assert(isinstance(ctrl, list) and len(ctrl) > 0)
+            if isinstance(ctrl[0], int):
+                self.wire(*ctrl)
+            else:
+                self.add(*ctrl)
 
     def emit(self, onum, msg):
-        print("OUT:", onum, msg)
         topic = "%s/%s/out/%d" % (PREFIX, self.name, onum)
         client.publish(topic, json.dumps(msg))
 
@@ -31,14 +36,19 @@ def on_connect(client, userdata, flags, rc):
     print("Connected: code", rc)
     subs = [(PREFIX, 0)]
     for name in circuits:
-        subs += [("%s/%s" % (PREFIX, name), 0),
-                 ("%s/%s/in/+" % (PREFIX, name), 0)]
+        subs += circuits[name].subscriptions()
     client.subscribe(subs)
 
 def on_message(client, userdata, msg):
     payload = json.loads(msg.payload)
     if msg.topic == PREFIX:
         print("CMD:", payload)
+        assert(len(payload) == 2 and payload[0] == "create")
+        name = payload[1]
+        exists = name in circuits
+        cob = ConnectedCircuit(name)
+        if not exists:
+            client.subscribe(cob.subscriptions())
     else:
         topic = msg.topic[len(PREFIX)+1:]
         parts = topic.split('/')
@@ -47,7 +57,7 @@ def on_message(client, userdata, msg):
             cob.control(payload)
         else:
             assert(len(parts) == 3 and parts[1] == 'in')
-            cob.incoming(int(parts[2]), payload)
+            cob.feed(int(parts[2]), payload)
 
 # loop back test circuit: print msgs from inlet 0 and pass them to outlet 0
 c = ConnectedCircuit('circ1')
