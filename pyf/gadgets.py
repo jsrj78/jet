@@ -87,7 +87,7 @@ class SmoothG(flow.Gadget):
     def feed(self, inum, msg):
         if inum == 0:
             o = self.order
-            self.hist = ((o * self.hist) + msg) / (o + 1)
+            self.hist = ((o * self.hist) + msg) // (o + 1)
             self.emit(0, self.hist)
         else:
             self.order = msg
