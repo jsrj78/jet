@@ -4,7 +4,6 @@ import paho.mqtt.client as mqtt
 import json, time
 
 def on_connect(client, userdata, flags, rc):
-    print("Connected: code", rc)
     client.subscribe('s/pyf-demo/test/out/0')
 
 def on_message(client, userdata, msg):

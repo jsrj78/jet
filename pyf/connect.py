@@ -5,7 +5,7 @@ import flow, gadgets
 import json
 
 SERVICE_PREFIX = "s/pyf-demo"
-REGISTRY_PREFIX = "registry-" + SERVICE_PREFIX
+REGISTRY_TOPIC = "registry-" + SERVICE_PREFIX
 
 circuits = {}
 client = None
@@ -79,8 +79,8 @@ client = mqtt.Client()
 
 client.on_connect = on_connect
 client.on_message = on_message
-client.will_set(REGISTRY_PREFIX, retain=True)
+client.will_set(REGISTRY_TOPIC, retain=True)
 client.connect("localhost")
-client.publish(REGISTRY_PREFIX, json.dumps({}), retain=True)
+client.publish(REGISTRY_TOPIC, json.dumps({}), retain=True)
 
 client.loop_forever()
