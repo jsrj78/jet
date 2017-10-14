@@ -1,7 +1,6 @@
 from __future__ import print_function
 
-import flow
-import gadgets
+import flow, gadgets
 
 print(">>> pass gadget")
 
