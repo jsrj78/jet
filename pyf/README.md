@@ -17,7 +17,7 @@ Sample test, with a serial connection to an attached STM32 w/ Mecrisp Forth:
 Sample output:
 
     $ python test_serial.py
-    reply: s/pyf-demo/test/out/0 "12 + . 3  ok."
+    reply: s/pyf-demo/test/out/0 "1 2 + . 3  ok."
     reply: s/pyf-demo/test/out/0 "11 22 + . 33  ok."
 
 This is a dump of all MQTT messages exchanged in the above test:
@@ -25,7 +25,7 @@ This is a dump of all MQTT messages exchanged in the above test:
     s/pyf-demo ["create", "test"]
     s/pyf-demo/test [["inlet"], ["serial", "/dev/cu.usbmodem34208131"], ["outlet"], [0, 0, 1, 0], [1, 0, 2, 0]]
     s/pyf-demo/test/in/0 "1 2 + ."
-    s/pyf-demo/test/out/0 "12 + . 3  ok."
+    s/pyf-demo/test/out/0 "1 2 + . 3  ok."
     s/pyf-demo/test/in/0 "11 22 + ."
     s/pyf-demo/test/out/0 "11 22 + . 33  ok."
 
