@@ -4,8 +4,6 @@ import flow
 import threading
 import serial
 
-print(serial)
-
 class SerialG(flow.Gadget):
     def __init__(self, dev):
         flow.Gadget.__init__(self, 1)
@@ -22,7 +20,7 @@ class SerialG(flow.Gadget):
     def reader(self):
         while True:
             line = self.ser.readline()
-            self.emit(0, line.rstrip('\n'))
+            self.emit(0, line[:-1])
 
     def feed(self, inum, msg):
         self.ser.write(msg.encode('utf-8') + b'\r')
