@@ -7,7 +7,7 @@ def on_connect(client, userdata, flags, rc):
     client.subscribe('s/pyf-demo/test/out/0')
 
 def on_message(client, userdata, msg):
-    print('reply:', msg.topic, str(msg.payload))
+    print('reply:', msg.topic, msg.payload)
 
 client = mqtt.Client()
 
