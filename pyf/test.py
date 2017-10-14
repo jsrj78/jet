@@ -1,82 +1,35 @@
 from __future__ import print_function
 
-import flow, gadgets
+import paho.mqtt.client as mqtt
+import json, time
 
-print(">>> pass gadget")
+def on_connect(client, userdata, flags, rc):
+    print("Connected: code", rc)
+    client.subscribe('s/pyf-demo/test/out/0')
 
-c = flow.Circuit()
-c.add('inlet')
-c.add('pass')
-c.add('print', 1)
-c.add('print', 2)
-c.wire(0, 0, 1, 0)
-c.wire(1, 0, 2, 0)
-c.wire(1, 0, 3, 0)
-c.wire(0, 0, 3, 0)
+def on_message(client, userdata, msg):
+    print('reply:', msg.topic, msg.payload)
 
-c.feed(0, 'bingo')
+client = mqtt.Client()
 
-print(">>> swap gadget")
+def send(topic, msg):
+    client.publish(topic, json.dumps(msg))
 
-c = flow.Circuit()
-c.add('inlet')
-c.add('swap', [1, 2, 3])
-c.add('print', 'a')
-c.add('print', 'b')
-c.wire(0, 0, 1, 0)
-c.wire(1, 0, 2, 0)
-c.wire(1, 1, 3, 0)
+print('>>> serial via mqtt')
 
-for msg in [111, 222]:
-    c.feed(0, msg)
+client.on_connect = on_connect
+client.on_message = on_message
+client.connect('localhost')
+client.loop_start()
 
-print(">>> s and r gadgets")
+send('s/pyf-demo', ['create', 'test'])
+send('s/pyf-demo/test', [['inlet'],
+                         ['serial', '/dev/cu.usbmodem34208131'],
+                         ['outlet'],
+                         [0, 0, 1, 0],
+                         [1, 0, 2, 0]])
 
-c = flow.Circuit()
-c.add('inlet')
-c.add('s', 'blah')
-c.add('r', 'blah')
-c.add('print')
-c.wire(0, 0, 1, 0)
-c.wire(2, 0, 3, 0)
-
-c.feed(0, [1, 2, 3])
-c.feed(0, [4, 5, 6])
-
-print(">>> smooth gadget")
-
-c = flow.Circuit()
-c.add('inlet')
-c.add('smooth', 3)
-c.add('print')
-c.wire(0, 0, 1, 0)
-c.wire(1, 0, 2, 0)
-
-for msg in [0] + 10*[100]:
-    c.feed(0, msg)
-
-print(">>> change gadget")
-
-c = flow.Circuit()
-c.add('inlet')
-c.add('change')
-c.add('print')
-c.wire(0, 0, 1, 0)
-c.wire(1, 0, 2, 0)
-
-for msg in [0, 1, 1, 2, 2, 3, 0]:
-    c.feed(0, msg)
-
-print(">>> moses gadget")
-
-c = flow.Circuit()
-c.add('inlet')
-c.add('moses', 5)
-c.add('print', 'a')
-c.add('print', 'b')
-c.wire(0, 0, 1, 0)
-c.wire(1, 0, 2, 0)
-c.wire(1, 1, 3, 0)
-
-for msg in [4, 5, 6, 5, 4]:
-    c.feed(0, msg)
+send('s/pyf-demo/test/in/0', '1 2 + .')
+time.sleep(1)
+send('s/pyf-demo/test/in/0', '11 22 + .')
+time.sleep(1)
