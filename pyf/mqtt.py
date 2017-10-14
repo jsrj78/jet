@@ -4,7 +4,8 @@ import paho.mqtt.client as mqtt
 import flow, gadgets
 import json
 
-PREFIX = "s/pyf1"
+SERVICE_PREFIX = "s/pyf-demo"
+REGISTRY_PREFIX = "registry-" + SERVICE_PREFIX
 
 circuits = {}
 client = None
@@ -16,8 +17,8 @@ class ConnectedCircuit(flow.Circuit):
         circuits[name] = self
 
     def subscriptions(self):
-        return [("%s/%s" % (PREFIX, self.name), 0),
-                ("%s/%s/in/+" % (PREFIX, self.name), 0)]
+        return [("%s/%s" % (SERVICE_PREFIX, self.name), 0),
+                ("%s/%s/in/+" % (SERVICE_PREFIX, self.name), 0)]
 
     def control(self, msg):
         print("CONTROL:", self.name, msg)
@@ -29,12 +30,12 @@ class ConnectedCircuit(flow.Circuit):
                 self.add(*ctrl)
 
     def emit(self, onum, msg):
-        topic = "%s/%s/out/%d" % (PREFIX, self.name, onum)
+        topic = "%s/%s/out/%d" % (SERVICE_PREFIX, self.name, onum)
         client.publish(topic, json.dumps(msg))
 
 def on_connect(client, userdata, flags, rc):
     print("Connected: code", rc)
-    subs = [(PREFIX, 0)]
+    subs = [(SERVICE_PREFIX, 0)]
     for name in circuits:
         subs += circuits[name].subscriptions()
     client.subscribe(subs)
@@ -42,7 +43,7 @@ def on_connect(client, userdata, flags, rc):
 def on_message(client, userdata, msg):
     try:
         payload = json.loads(msg.payload)
-        if msg.topic == PREFIX:
+        if msg.topic == SERVICE_PREFIX:
             print("CMD:", payload)
             assert(len(payload) == 2 and payload[0] == "create")
             name = payload[1]
@@ -51,7 +52,7 @@ def on_message(client, userdata, msg):
             if not exists:
                 client.subscribe(cob.subscriptions())
         else:
-            topic = msg.topic[len(PREFIX)+1:]
+            topic = msg.topic[len(SERVICE_PREFIX)+1:]
             parts = topic.split('/')
             cob = circuits[parts[0]]
             if len(parts) == 1:
@@ -75,8 +76,11 @@ c.wire(1, 0, 2, 0)
 c.wire(1, 0, 3, 0)
 
 client = mqtt.Client()
+
 client.on_connect = on_connect
 client.on_message = on_message
-
+client.will_set(REGISTRY_PREFIX, retain=True)
 client.connect("localhost")
+client.publish(REGISTRY_PREFIX, json.dumps({}), retain=True)
+
 client.loop_forever()
