@@ -1,6 +1,7 @@
 from __future__ import print_function
 
 import flow
+import threading
 
 class PrintG(flow.Gadget):
     def __init__(self, label=None):
@@ -122,3 +123,36 @@ class MosesG(flow.Gadget):
             self.split = msg
 
 flow.registry['moses'] = MosesG
+
+class MetroG(flow.Gadget):
+    def __init__(self, ms):
+        flow.Gadget.__init__(self, 1)
+        self.ms = self.timer = None
+        self.arm(ms)
+
+    def arm(self, msg):
+        if self.timer:
+            self.timer.cancel()
+            self.timer = None
+        if isinstance(msg, int) and msg > 1:
+            self.ms = msg
+        if msg and self.ms > 0:
+            # TODO a new thread for each tick, probably very inefficient
+            #   a better way would be to use a queue w/ circuit notifications
+            self.timer = threading.Timer(self.ms * 0.001, self.trigger)
+            self.timer.daemon = True
+            self.timer.start()
+        else:
+            self.timer = None
+
+    def trigger(self):
+        self.emit(0, None)
+        self.arm(self.ms)
+
+    def feed(self, inum, msg):
+        if inum == 0:
+            self.arm(msg)
+        else:
+            self.ms = msg
+
+flow.registry['metro'] = MetroG
