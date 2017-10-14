@@ -137,13 +137,11 @@ class MetroG(flow.Gadget):
         if isinstance(msg, int) and msg > 1:
             self.ms = msg
         if msg and self.ms > 0:
-            # TODO a new thread for each tick, probably very inefficient
+            # TODO a new thread for each tick is probably very inefficient
             #   a better way would be to use a queue w/ circuit notifications
             self.timer = threading.Timer(self.ms * 0.001, self.trigger)
             self.timer.daemon = True
             self.timer.start()
-        else:
-            self.timer = None
 
     def trigger(self):
         self.emit(0, None)
