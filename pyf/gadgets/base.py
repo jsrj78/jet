@@ -58,6 +58,7 @@ flow.registry['swap'] = SwapG
 
 class SendG(flow.Gadget):
     def __init__(self, topic):
+        flow.Gadget.__init__(self)
         self.topic = topic
 
     def feed(self, inum, msg):

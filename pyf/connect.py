@@ -31,7 +31,7 @@ class ConnectedCircuit(flow.Circuit):
 
     def emit(self, onum, msg):
         topic = "%s/%s/out/%d" % (SERVICE_PREFIX, self.name, onum)
-        client.publish(topic, json.dumps(msg))
+        client.publish(topic, json.dumps(str(msg)))
 
 def on_connect(client, userdata, flags, rc):
     print("Connected: code", rc)

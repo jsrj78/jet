@@ -4,6 +4,8 @@ import flow
 import threading
 import serial
 
+openPorts = {}
+
 class SerialG(flow.Gadget):
     def __init__(self, dev):
         flow.Gadget.__init__(self, 1)
@@ -12,10 +14,15 @@ class SerialG(flow.Gadget):
         except Exception as e:
             print("PySerial package not found")
             raise
-        self.ser = serial.Serial(dev, 115200)
-        t = threading.Thread(target=self.reader)
-        t.daemon = True
-        t.start()
+        try:
+            self.ser = openPorts[dev]  # only open each port once
+        except:
+            openPorts[dev] = serial.Serial(dev, 115200)
+            self.ser = openPorts[dev]
+            # create a separate thread to read all incoming text lines
+            t = threading.Thread(target=self.reader)
+            t.daemon = True
+            t.start()
 
     def reader(self):
         while True:
