@@ -1,3 +1,28 @@
-linux:
+include ../arch
 
-macos:
+VPATH= .. ../gadgets/$(ARCH) ../gadgets/any ../demos/$(ARCH) ../demos/any
+CFLAGS= -I..
+
+D_SRCS:= $(notdir $(wildcard ../demos/$(ARCH)/*.c)) \
+         $(notdir $(wildcard ../demos/any/*.c))
+D_EXES:= $(patsubst %.c,%,$(D_SRCS))
+
+G_SRCS:= $(notdir $(wildcard ../gadgets/$(ARCH)/*.c)) \
+         $(notdir $(wildcard ../gadgets/any/*.c))
+G_OBJS:= $(patsubst %.c,%.o,$(G_SRCS))
+
+all: demos
+
+demos: $(G_OBJS) $(D_EXES)
+
+$(G_OBJS): jet.h
+$(D_EXES): $(G_OBJS) jet.o
+
+info:
+	@echo "ARCH   = $(ARCH)"
+	@echo "D_SRCS = $(D_SRCS)"
+	@echo "D_EXES = $(D_EXES)"
+	@echo "G_SRCS = $(G_SRCS)"
+	@echo "G_OBJS = $(G_OBJS)"
+
+.PHONY: all demos info

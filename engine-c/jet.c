@@ -2,3 +2,4 @@
 
 #include "jet.h"
 
+const char* jet() { return "jet"; }
