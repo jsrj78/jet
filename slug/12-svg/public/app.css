@@ -1,9 +1,0 @@
-/* application-specific styles */
-
-#main { margin: 0 20px; }
-
-svg { background: #EEE; }
-.draggable { cursor: move; }
-path.wire { stroke: red; fill: none; }
-text.obj { pointer-events: none; }
-rect.obj { stroke: black; fill: white; }
