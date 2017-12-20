@@ -29,6 +29,9 @@ none:
 	@echo "(after that you can just use 'make')"
 
 clean:
-	rm -rf arch build
+	rm -rf build
 
-.PHONY: default arch $(ARCHS) dry none clean
+distclean: clean
+	rm -f arch
+
+.PHONY: default arch $(ARCHS) dry none clean distclean
