@@ -276,7 +276,7 @@ static void defineGadget (Gadget_t* gp, Value_t v) {
     int h = lookupHandler(s);
     gp->handler = h;
     gp->state = nextState;
-    gp->outlet = nextOutlet;
+    gp->outlets = nextOutlet;
 
     Config_t cfg;
     memset(&cfg, 0, sizeof cfg);
@@ -312,7 +312,7 @@ static void setupOutlet (int low, int high) {
     //        wp->from.gadget, wp->from.iolet, low, high);
 
     Gadget_t* gp = gadgets + wp->from.gadget;
-    Outlet_t* op = outlets + gp->outlet + wp->from.iolet;
+    Outlet_t* op = outlets + gp->outlets + wp->from.iolet;
     switch (high - low) {
         case 0: break;
         case 1:
@@ -357,7 +357,7 @@ void jPrint (Value_t v) {
 }
 
 void jEmit (Gadget_t* gptr, int outlet, Value_t msg) {
-    Outlet_t* op = outlets + gptr->outlet + outlet;
+    Outlet_t* op = outlets + gptr->outlets + outlet;
     if (op->dir.last)
         sendTo(gadgets + op->dir.gadget, op->dir.iolet, msg);
     else if (op->net.ref > 0) {

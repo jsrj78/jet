@@ -17,7 +17,7 @@ typedef struct {
 typedef struct {
     uint16_t handler :8;
     uint16_t state   :14;
-    uint16_t outlet  :12;
+    uint16_t outlets :12;
     uint16_t chunk   :12;
 } Gadget_t;
 
