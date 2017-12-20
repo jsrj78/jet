@@ -12,8 +12,6 @@ G_SRCS:= $(notdir $(wildcard ../gadgets/$(ARCH)/*.c)) \
 G_OBJS:= $(patsubst %.c,%.o,$(G_SRCS))
 
 all: demos
-	# $(ARCH):
-	@ls -l $(D_EXES)
 
 demos: $(D_EXES)
 
