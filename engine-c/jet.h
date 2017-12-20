@@ -8,16 +8,18 @@ typedef struct {
 } Value_t;
 
 typedef struct {
-    uint16_t v;
-} Iolet_t;
-
-typedef struct {
-} Gadget_t;
-
-typedef struct {
-    int inlets;
-    int outlets;
+    int8_t   inlets;
+    int8_t   outlets;
+    void*    state;
+    uint16_t stateLen;
 } Config_t;
+
+typedef struct {
+    uint16_t handler :8;
+    uint16_t state   :14;
+    uint16_t outlet  :12;
+    uint16_t chunk   :12;
+} Gadget_t;
 
 extern const char* jNameTable [];
 extern void (*jConfigTable[])(Config_t*,Value_t);
