@@ -1,5 +1,5 @@
 # Top level makefile for the JET engine in C.
-# Configures the architecture and defers to demo/ for the actual builds.
+# Configures the architecture and defers to demos/ for the actual builds.
 
 ARCH= none
 -include arch

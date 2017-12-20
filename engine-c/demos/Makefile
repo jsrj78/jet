@@ -12,10 +12,12 @@ G_SRCS:= $(notdir $(wildcard ../gadgets/$(ARCH)/*.c)) \
 G_OBJS:= $(patsubst %.c,%.o,$(G_SRCS))
 
 all: demos
+	@echo $(ARCH):
+	@ls -l $(D_EXES)
 
-demos: $(G_OBJS) $(D_EXES)
+demos: $(D_EXES)
 
-$(G_OBJS): jet.h
+$(G_OBJS) jet.o: jet.h
 $(D_EXES): $(G_OBJS) jet.o
 
 info:
