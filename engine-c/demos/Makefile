@@ -1,7 +1,7 @@
 include ../arch
 
 VPATH= .. ../gadgets/$(ARCH) ../gadgets/any ../demos/$(ARCH) ../demos/any
-CFLAGS= -I.. -I../gadgets/$(ARCH) -I../gadgets/any
+CFLAGS= -std=c99 -I.. -I../gadgets/$(ARCH) -I../gadgets/any
 
 D_SRCS:= $(notdir $(wildcard ../demos/$(ARCH)/*.c)) \
          $(notdir $(wildcard ../demos/any/*.c))
