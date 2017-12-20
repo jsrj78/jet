@@ -12,7 +12,7 @@ $(ARCHS)::
 	@echo 'ARCH=$@' >arch
 
 $(ARCHS):: | build
-	cd build && make -f ../demos/Makefile all
+	cd build && make -f ../demos/Makefile
 
 dry:
 	cd build && make -f ../demos/Makefile -n
@@ -21,7 +21,8 @@ dry:
 	cd build && make -f ../demos/Makefile $@
 
 build:
-	mkdir $@
+	mkdir build # and deps
+	@cd build && make -f ../demos/Makefile deps
 
 none:
 	@echo "Please run 'make ARCH', where ARCH is one of:"

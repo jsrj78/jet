@@ -17,14 +17,21 @@ all: demos
 
 demos: $(D_EXES)
 
-$(G_OBJS) jet.o: jet.h
 $(D_EXES): $(G_OBJS) jet.o
+
+deps: $(D_SRCS) $(G_SRCS) jet.c
+	@$(CC) $(CFLAGS) -MM $^ >$@
 
 info:
 	@echo "ARCH   = $(ARCH)"
+	@echo "VPATH  = $(VPATH)"
+	@echo "CFLAGS = $(CFLAGS)"
 	@echo "D_SRCS = $(D_SRCS)"
 	@echo "D_EXES = $(D_EXES)"
 	@echo "G_SRCS = $(G_SRCS)"
 	@echo "G_OBJS = $(G_OBJS)"
 
 .PHONY: all demos info
+
+# dependencies, auto-generated
+-include deps
