@@ -1,1 +1,1 @@
-const char* linux() { return "linux"; }
+const char* leenux() { return "leenux"; }
