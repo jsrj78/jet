@@ -18,14 +18,14 @@
     core_passDispatch, \
     core_printDispatch, \
 
-extern void core_jetConfig (JConfig*,JValue);
-extern void core_jetDispatch (JGadget*,int,JValue);
+extern void core_jetConfig (Config_t*,Value_t);
+extern void core_jetDispatch (Gadget_t*,int,Value_t);
 
-extern void core_initConfig (JConfig*,JValue);
-extern void core_initDispatch (JGadget*,int,JValue);
+extern void core_initConfig (Config_t*,Value_t);
+extern void core_initDispatch (Gadget_t*,int,Value_t);
 
-extern void core_passConfig (JConfig*,JValue);
-extern void core_passDispatch (JGadget*,int,JValue);
+extern void core_passConfig (Config_t*,Value_t);
+extern void core_passDispatch (Gadget_t*,int,Value_t);
 
-extern void core_printConfig (JConfig*,JValue);
-extern void core_printDispatch (JGadget*,int,JValue);
+extern void core_printConfig (Config_t*,Value_t);
+extern void core_printDispatch (Gadget_t*,int,Value_t);

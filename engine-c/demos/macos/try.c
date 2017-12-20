@@ -4,7 +4,6 @@
 extern const char* macos();
 
 int main () {
-    puts(jet());
     puts(macos());
     return 0;
 }

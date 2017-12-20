@@ -8,18 +8,16 @@ const char* jNameTable [] = {
     0
 };
 
-void (*jConfigTable[])() = {
+void (*jConfigTable[])(Config_t*,Value_t) = {
     CORE_CONFIG_LIST
 };
 
-void (*jDispatchTable[])(JGadget*,int,JValue) = {
+void (*jDispatchTable[])(Gadget_t*,int,Value_t) = {
     CORE_DISPATCH_LIST
 };
 
 int main () {
-    puts(jet());
-
-    assert(sizeof (JValue) == 2);
+    assert(sizeof (Value_t) == 2);
 
     int nameLen = sizeof jNameTable / sizeof *jNameTable - 1;
     int configLen = sizeof jConfigTable / sizeof *jConfigTable;
