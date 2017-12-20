@@ -26,11 +26,19 @@ info:
 	@echo "ARCH   = $(ARCH)"
 	@echo "VPATH  = $(VPATH)"
 	@echo "CFLAGS = $(CFLAGS)"
+	@echo "LDLIBS = $(LDLIBS)"
 	@echo "D_SRCS = $(D_SRCS)"
 	@echo "D_EXES = $(D_EXES)"
 	@echo "G_SRCS = $(G_SRCS)"
 	@echo "G_OBJS = $(G_OBJS)"
 
+.c.o:
+	@echo [CC] $<
+	@$(CC) -c $(CFLAGS) $< -o $@
+%: %.o
+	@echo [LD] $@
+	@$(CC) $^ $(LDLIBS) -o $@
+	
 .PHONY: all demos info
 
 # dependencies, auto-generated
