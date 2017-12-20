@@ -70,6 +70,13 @@ typedef struct {
     Iolet_t from, to;
 } Wire_t;
 
+struct Gadget_s {
+    uint16_t handler :8;
+    uint16_t state   :14;
+    uint16_t outlets :12;
+    uint16_t chunk   :12;
+};
+
 //------------------------------------------------------------------------------
 
 Tag_t    tags     [STORE_SIZE];

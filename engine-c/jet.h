@@ -14,12 +14,7 @@ typedef struct {
     uint16_t stateLen;
 } Config_t;
 
-typedef struct {
-    uint16_t handler :8;
-    uint16_t state   :14;
-    uint16_t outlets :12;
-    uint16_t chunk   :12;
-} Gadget_t;
+typedef struct Gadget_s Gadget_t;
 
 extern const char* jNameTable [];
 extern void (*jConfigTable[])(Config_t*,Value_t);
