@@ -21,8 +21,7 @@ dry:
 	cd build && make -f ../demos/Makefile $@
 
 build:
-	mkdir build # and deps
-	@cd build && make -f ../demos/Makefile deps
+	mkdir build
 
 none:
 	@echo "Please run 'make ARCH', where ARCH is one of:"
